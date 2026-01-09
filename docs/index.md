@@ -1,0 +1,147 @@
+# RecapIt - Project Documentation Index
+
+**Generated:** 2026-01-08 | **Scan Level:** Exhaustive | **Project Type:** Flutter Mobile Application
+
+---
+
+## Project Overview
+
+- **Type:** Monolith (Single Flutter App)
+- **Primary Language:** Dart (SDK ^3.9.2)
+- **Architecture:** Clean Architecture with Service Layer
+- **Framework:** Flutter with Provider State Management
+
+---
+
+## Quick Reference
+
+| Category | Technology | Version |
+|----------|------------|---------|
+| **Framework** | Flutter | Latest |
+| **Language** | Dart | ^3.9.2 |
+| **State Management** | Provider | ^6.1.2 |
+| **HTTP Client** | Dio | ^5.7.0 |
+| **Audio Recording** | record | ^6.1.2 |
+| **Audio Playback** | just_audio | ^0.9.40 |
+| **Local Storage** | SharedPreferences | ^2.3.2 |
+| **Permissions** | permission_handler | ^11.3.1 |
+
+---
+
+## Generated Documentation
+
+### Core Documents
+- [Project Overview PDR](./project-overview-pdr.md) - Product requirements and features
+- [System Architecture](./system-architecture.md) - High-level architecture and data flow
+- [Codebase Summary](./codebase-summary.md) - Comprehensive code analysis
+- [Code Standards](./code-standards.md) - Coding conventions and patterns
+- [Project Roadmap](./project-roadmap.md) - Development milestones
+- [Project Summary](./project-summary.md) - Executive summary
+- [Source Tree Analysis](./source-tree-analysis.md) - Directory structure and annotations
+- [Component Inventory](./component-inventory.md) - UI components catalog
+
+---
+
+## Source Tree
+
+```
+recapit/
+├── lib/                           # Main source code
+│   ├── main.dart                  # ★ Entry point
+│   ├── components/                # Base UI components
+│   ├── constants/                 # URLs and constants
+│   ├── contexts/                  # State management (AppState)
+│   ├── data/                      # Repositories and mock data
+│   ├── models/                    # Data models (Recording, User)
+│   ├── navigation/                # Routes and navigation
+│   ├── screens/                   # UI screens by feature
+│   │   ├── auth/                  # Login screen
+│   │   ├── main/                  # Tab screens (Recordings, Settings)
+│   │   ├── onboarding/            # Onboarding flow
+│   │   ├── recording/             # Recording screens & widgets
+│   │   └── subscription/          # Upgrade screen
+│   ├── services/                  # API, Storage, AudioRecorder
+│   ├── theme/                     # Colors, Typography, Theme
+│   ├── utils/                     # Device, File utilities
+│   └── widgets/                   # Reusable widgets
+├── android/                       # Android platform code
+├── ios/                           # iOS platform code
+├── assets/                        # Images and fonts
+├── docs/                          # Documentation
+├── pubspec.yaml                   # Dependencies
+└── README.md                      # Project readme
+```
+
+---
+
+## Key Entry Points
+
+| File | Purpose |
+|------|---------|
+| `lib/main.dart` | App initialization and Provider setup |
+| `lib/contexts/app_context.dart` | Global AppState with boot/onboard logic |
+| `lib/services/audio_recorder_service.dart` | Core audio recording service |
+| `lib/data/recordings_repository.dart` | Recording data management |
+| `lib/navigation/app_navigator.dart` | Named route handling |
+
+---
+
+## Core Features
+
+1. **Audio Recording** - Real-time recording with pause/resume, M4A output
+2. **Recording Management** - List, play, delete recordings
+3. **Onboarding** - First-time user flow
+4. **Authentication** - Social login (Google, Apple) - planned
+5. **AI Summarization** - Transcription and summarization - planned
+6. **Settings** - User preferences management
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Flutter SDK ^3.9.2
+- Dart SDK ^3.9.2
+- Android Studio / VS Code
+- Android SDK / Xcode (for iOS)
+
+### Installation
+```bash
+# Clone and install
+git clone <repository-url>
+cd recapit
+flutter pub get
+
+# Run
+flutter run
+```
+
+### Development Commands
+```bash
+flutter run                    # Debug mode
+flutter run -d android         # Android device
+flutter run -d ios             # iOS device
+flutter test                   # Run tests
+flutter build apk              # Build APK
+flutter build ios              # Build iOS
+```
+
+---
+
+## AI-Assisted Development Guidance
+
+When working with this codebase:
+
+1. **State Management**: Use `Provider` pattern. Access state via `context.read<T>()` for actions, `context.watch<T>()` for reactive UI.
+
+2. **Theme**: Always use `AppColors` and `AppTypography` from `lib/theme/`. Dark mode is default.
+
+3. **Audio Recording**: Use `AudioRecorderService` for all recording operations. It handles permissions and file management.
+
+4. **Navigation**: Use named routes from `AppRoutes` class.
+
+5. **Screens**: Follow the existing pattern - StatefulWidget for screens with async operations.
+
+---
+
+*Documentation generated by BMAD Document Project Workflow v1.2.0*
