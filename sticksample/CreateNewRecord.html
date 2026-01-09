@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Meeting Recordings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#3b82f6",
+              "background-light": "#f8fafc",
+              "background-dark": "#0f172a",
+              "card-light": "#ffffff",
+              "card-dark": "#1e293b",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            boxShadow: {
+                'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                'upward': '0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 1,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+      .no-scrollbar::-webkit-scrollbar {
+          display: none;
+      }
+      .no-scrollbar {
+          -ms-overflow-style: none;scrollbar-width: none;
+      }
+    </style>
+<style>
+        body {
+            min-height: 100vh;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased selection:bg-primary/20 pb-24">
+<div class="relative flex h-full min-h-screen w-full flex-col">
+<div class="sticky top-0 z-30 flex items-center justify-between bg-background-light/80 dark:bg-background-dark/80 px-6 py-4 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Ghi âm</h1>
+<p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">4 bản ghi gần đây</p>
+</div>
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-[22px]">search</span>
+</button>
+</div>
+<main class="flex-1 px-4 py-6 space-y-4 pb-32">
+<div class="flex items-center justify-between px-2 mb-2">
+<h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Danh sách</h2>
+<button class="text-sm font-medium text-primary hover:text-primary/80">Sắp xếp</button>
+</div>
+<div class="group relative overflow-hidden rounded-2xl bg-card-light dark:bg-card-dark p-4 shadow-soft ring-1 ring-slate-900/5 dark:ring-white/10 hover:ring-primary/50 dark:hover:ring-primary/50 transition-all active:scale-[0.98]">
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<div class="flex gap-3.5 flex-1 min-w-0">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined text-xl">mic</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h3 class="font-bold text-base text-slate-900 dark:text-slate-100 truncate pr-2">Họp kế hoạch Quý 4</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500">25 thg 10</span>
+<span class="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">45:32</span>
+</div>
+</div>
+</div>
+<button class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-500 transition-colors -mr-2 -mt-1">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center">
+<span class="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                Đã tóm tắt
+                            </span>
+</div>
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+</button>
+</div>
+</div>
+</div>
+<div class="group relative overflow-hidden rounded-2xl bg-card-light dark:bg-card-dark p-4 shadow-soft ring-1 ring-slate-900/5 dark:ring-white/10 hover:ring-primary/50 dark:hover:ring-primary/50 transition-all active:scale-[0.98]">
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<div class="flex gap-3.5 flex-1 min-w-0">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+<span class="material-symbols-outlined text-xl">groups</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h3 class="font-bold text-base text-slate-900 dark:text-slate-100 truncate pr-2">Thảo luận dự án mới</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500">24 thg 10</span>
+<span class="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">01:12:15</span>
+</div>
+</div>
+</div>
+<button class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-500 transition-colors -mr-2 -mt-1">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center">
+<span class="inline-flex items-center gap-1.5 rounded-md bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-500/20">
+<span class="material-symbols-outlined text-[14px]">hourglass_top</span>
+                                Chưa tóm tắt
+                            </span>
+</div>
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+</button>
+</div>
+</div>
+</div>
+<div class="group relative overflow-hidden rounded-2xl bg-card-light dark:bg-card-dark p-4 shadow-soft ring-1 ring-slate-900/5 dark:ring-white/10 hover:ring-primary/50 dark:hover:ring-primary/50 transition-all active:scale-[0.98]">
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<div class="flex gap-3.5 flex-1 min-w-0">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined text-xl">update</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h3 class="font-bold text-base text-slate-900 dark:text-slate-100 truncate pr-2">Cập nhật hàng tuần</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500">22 thg 10</span>
+<span class="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">28:50</span>
+</div>
+</div>
+</div>
+<button class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-500 transition-colors -mr-2 -mt-1">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center">
+<span class="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                Đã tóm tắt
+                            </span>
+</div>
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+</button>
+</div>
+</div>
+</div>
+<div class="group relative overflow-hidden rounded-2xl bg-card-light dark:bg-card-dark p-4 shadow-soft ring-1 ring-slate-900/5 dark:ring-white/10 hover:ring-primary/50 dark:hover:ring-primary/50 transition-all active:scale-[0.98]">
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<div class="flex gap-3.5 flex-1 min-w-0">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined text-xl">person_search</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h3 class="font-bold text-base text-slate-900 dark:text-slate-100 truncate pr-2">Phỏng vấn ứng viên Dev</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500">21 thg 10</span>
+<span class="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">55:10</span>
+</div>
+</div>
+</div>
+<button class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-500 transition-colors -mr-2 -mt-1">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center">
+<span class="inline-flex items-center gap-1.5 rounded-md bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-500/20">
+<span class="material-symbols-outlined text-[14px]">hourglass_top</span>
+                                Chưa tóm tắt
+                            </span>
+</div>
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary hover:text-white dark:hover:bg-primary transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed inset-0 bg-slate-900/50 dark:bg-black/60 z-40 backdrop-blur-sm"></div>
+<div class="fixed bottom-0 left-0 right-0 z-50 p-4 pb-6">
+<div class="mx-auto max-w-lg overflow-hidden rounded-[32px] bg-white dark:bg-slate-800 shadow-upward ring-1 ring-slate-900/10 dark:ring-white/10 animate-slide-up">
+<div class="flex justify-center pt-3 pb-1">
+<div class="h-1.5 w-12 rounded-full bg-slate-200 dark:bg-slate-600"></div>
+</div>
+<div class="px-6 pb-6 pt-2">
+<div class="mb-6 flex items-center justify-between">
+<h2 class="text-xl font-bold text-slate-900 dark:text-white">Bản ghi mới</h2>
+<button class="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="space-y-3">
+<button class="group flex w-full items-center gap-4 rounded-2xl bg-primary p-4 text-left transition-all hover:bg-blue-600 active:scale-[0.98]">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
+<span class="material-symbols-outlined text-2xl">mic</span>
+</div>
+<div class="flex-1">
+<div class="font-bold text-white text-lg">Bắt đầu ghi âm ngay</div>
+<div class="text-sm text-blue-100">Chạm để bắt đầu</div>
+</div>
+<span class="material-symbols-outlined text-white/70 group-hover:text-white">arrow_forward</span>
+</button>
+<div class="grid grid-cols-2 gap-3">
+<button class="group flex flex-col items-center justify-center gap-3 rounded-2xl bg-slate-50 dark:bg-slate-700/50 p-4 text-center ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-[0.98]">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+<span class="material-symbols-outlined">calendar_month</span>
+</div>
+<span class="font-semibold text-sm text-slate-700 dark:text-slate-200">Đặt lịch ghi âm</span>
+</button>
+<button class="group flex flex-col items-center justify-center gap-3 rounded-2xl bg-slate-50 dark:bg-slate-700/50 p-4 text-center ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-[0.98]">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined">upload_file</span>
+</div>
+<span class="font-semibold text-sm text-slate-700 dark:text-slate-200">Nhập âm thanh</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<nav class="fixed bottom-0 left-0 right-0 z-30 border-t border-slate-200 bg-white/90 px-6 py-2 backdrop-blur-xl dark:border-slate-800 dark:bg-background-dark/90 pb-[max(1rem,env(safe-area-inset-bottom))]">
+<div class="flex items-center justify-around">
+<button class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-slate-900 dark:text-slate-500 dark:hover:text-slate-200">
+<span class="material-symbols-outlined text-[26px]">format_list_bulleted</span>
+<span class="text-[10px] font-medium">Danh sách</span>
+</button>
+<div class="relative -top-8">
+<button class="flex h-16 w-16 items-center justify-center rounded-[20px] bg-primary text-white shadow-lg shadow-primary/30 ring-4 ring-white dark:ring-background-dark transition-all hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-[32px]">mic</span>
+</button>
+</div>
+<button class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-slate-900 dark:text-slate-500 dark:hover:text-slate-200">
+<span class="material-symbols-outlined text-[26px]">settings</span>
+<span class="text-[10px] font-medium">Cài đặt</span>
+</button>
+</div>
+</nav>
+</div>
+
+</body></html>

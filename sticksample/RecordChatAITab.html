@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chi tiết bản ghi &amp; Tóm tắt</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "card-light": "#ffffff",
+              "card-dark": "#1C2A38",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 1,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }.material-symbols-outlined.outlined {
+        font-variation-settings: 'FILL' 0;
+      }
+      .material-symbols-outlined.filled {
+        font-variation-settings: 'FILL' 1;
+      }.no-scrollbar::-webkit-scrollbar {
+          display: none;
+      }
+      .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+      }
+      @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in {
+          animation: fade-in 0.3s ease-out forwards;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark overflow-hidden text-gray-900 dark:text-white">
+<div class="relative flex h-full max-h-[100dvh] h-[100dvh] w-full flex-col">
+<div class="sticky top-0 z-10 flex shrink-0 items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-gray-200/10 dark:border-gray-700/50">
+<button class="flex size-10 shrink-0 items-center justify-start text-gray-800 dark:text-white transition-opacity hover:opacity-70">
+<span class="material-symbols-outlined text-2xl outlined">arrow_back</span>
+</button>
+<h2 class="flex-1 text-center text-base font-bold leading-tight tracking-[-0.015em] truncate px-2">
+            Họp kế hoạch Quý 4
+        </h2>
+<button class="flex size-10 shrink-0 items-center justify-end text-gray-800 dark:text-white transition-opacity hover:opacity-70">
+<span class="material-symbols-outlined text-2xl outlined">more_vert</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-6 pb-28" id="main-content">
+<div class="flex flex-col gap-1 text-center">
+<h1 class="text-xl font-bold leading-tight">Q4_Planning_Meeting.m4a</h1>
+<p class="text-gray-500 dark:text-[#92adc9] text-sm font-normal">Đã ghi vào 26/10/2023</p>
+</div>
+<div class="grid grid-cols-3 p-1 bg-gray-200/60 dark:bg-gray-800/60 rounded-xl gap-1">
+<button class="py-2 text-sm font-medium rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all hover:bg-black/5 dark:hover:bg-white/5">
+                Phiên âm
+            </button>
+<button class="py-2 text-sm font-medium rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all hover:bg-black/5 dark:hover:bg-white/5">
+                Tóm tắt
+            </button>
+<button class="py-2 text-sm font-semibold rounded-lg bg-white dark:bg-card-dark text-gray-900 dark:text-white shadow-sm transition-all border border-black/5 dark:border-white/5">
+                Chat AI
+            </button>
+</div>
+<div class="flex flex-col gap-5 animate-fade-in">
+<div class="flex justify-center my-2">
+<span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Hôm nay</span>
+</div>
+<div class="flex gap-3">
+<div class="size-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center shrink-0 text-white shadow-sm">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+</div>
+<div class="flex flex-col gap-1 max-w-[85%]">
+<span class="text-xs font-medium text-gray-500 ml-1">AI Assistant</span>
+<div class="p-4 bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-800 rounded-2xl rounded-tl-none shadow-sm text-[15px] text-gray-800 dark:text-gray-100 leading-relaxed">
+                        Chào bạn! Tôi đã phân tích file ghi âm "Họp kế hoạch Quý 4". Bạn có thể hỏi tôi về các quyết định, nhiệm vụ hoặc bất kỳ chi tiết nào trong cuộc họp.
+                    </div>
+</div>
+</div>
+<div class="flex flex-row-reverse gap-3">
+<div class="flex flex-col gap-1 items-end max-w-[85%]">
+<div class="p-4 bg-primary text-white rounded-2xl rounded-tr-none shadow-md text-[15px] leading-relaxed">
+                        Tóm tắt các vấn đề chính về ngân sách Marketing?
+                    </div>
+<span class="text-[10px] text-gray-400 mr-1">10:45</span>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="size-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center shrink-0 text-white shadow-sm">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+</div>
+<div class="flex flex-col gap-1 max-w-[85%]">
+<span class="text-xs font-medium text-gray-500 ml-1">AI Assistant</span>
+<div class="p-4 bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-800 rounded-2xl rounded-tl-none shadow-sm text-[15px] text-gray-800 dark:text-gray-100 leading-relaxed">
+<p class="mb-2">Dựa trên cuộc họp, vấn đề ngân sách Marketing có các điểm chính sau:</p>
+<ul class="list-disc list-outside ml-4 space-y-2 text-gray-700 dark:text-gray-300">
+<li>Chi phí quảng cáo hiện tại đang <span class="font-semibold text-red-500 dark:text-red-400">vượt 15%</span> so với dự kiến.</li>
+<li>Chị Mai được giao nhiệm vụ rà soát và tối ưu lại chi phí Ads trước ngày 01/11.</li>
+<li>Mục tiêu doanh thu Q4 vẫn giữ nguyên bất chấp chi phí tăng.</li>
+</ul>
+</div>
+<div class="flex gap-2 mt-1 overflow-x-auto pb-1 no-scrollbar w-full">
+<button class="flex-shrink-0 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300 transition border border-transparent dark:border-gray-700">
+                            Chi tiết hành động của Mai?
+                        </button>
+<button class="flex-shrink-0 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300 transition border border-transparent dark:border-gray-700">
+                            Ngân sách server thế nào?
+                        </button>
+</div>
+</div>
+</div>
+<div class="flex flex-row-reverse gap-3">
+<div class="flex flex-col gap-1 items-end max-w-[85%]">
+<div class="p-4 bg-primary text-white rounded-2xl rounded-tr-none shadow-md text-[15px] leading-relaxed">
+                        Vậy còn việc nâng cấp server?
+                    </div>
+<span class="text-[10px] text-gray-400 mr-1">10:46</span>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="size-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center shrink-0 text-white shadow-sm">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+</div>
+<div class="flex flex-col gap-1 max-w-[85%]">
+<span class="text-xs font-medium text-gray-500 ml-1">AI Assistant</span>
+<div class="p-4 bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-800 rounded-2xl rounded-tl-none shadow-sm text-[15px] text-gray-800 dark:text-gray-100 leading-relaxed">
+                        Việc nâng cấp server đã được <strong>phê duyệt</strong> thực hiện ngay trong tuần tới. Đây là biện pháp nhằm tránh rủi ro quá tải (overload) vào dịp mua sắm cuối năm.
+                        <br/><br/>
+                        An là người chịu trách nhiệm liên hệ đối tác hạ tầng server. Đây được đánh giá là việc khẩn cấp.
+                    </div>
+</div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 z-20 w-full bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pt-3 pb-6 px-4">
+<div class="flex items-end gap-3">
+<button class="group flex items-center justify-center size-11 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition shrink-0">
+<span class="material-symbols-outlined text-[26px] group-hover:text-primary transition-colors">add_circle</span>
+</button>
+<div class="flex-1 bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 rounded-[24px] flex items-center shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition min-h-[44px]">
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-base py-2.5 pl-4 text-gray-800 dark:text-white placeholder-gray-400 leading-normal" placeholder="Gửi tin nhắn cho AI..." type="text"/>
+<button class="p-2 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+</button>
+</div>
+<button class="flex items-center justify-center size-11 rounded-full bg-primary text-white shadow-lg shadow-blue-500/30 hover:bg-blue-600 active:scale-95 transition shrink-0">
+<span class="material-symbols-outlined text-[22px] translate-x-[2px] filled">send</span>
+</button>
+</div>
+</div>
+</div>
+
+</body></html>

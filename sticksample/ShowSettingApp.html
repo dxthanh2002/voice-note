@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cài đặt</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-background-light/[.85] p-4 pb-3 backdrop-blur-sm dark:bg-background-dark/[.85]">
+<div class="flex size-10 shrink-0 items-center text-slate-800 dark:text-white">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</div>
+<h2 class="flex-1 text-center text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">Cài đặt</h2>
+<div class="w-10"></div>
+</div>
+<div class="flex flex-col gap-6 p-4">
+<!-- Recording Settings Section -->
+<div class="flex flex-col gap-2">
+<h3 class="px-2 pb-1 pt-2 text-sm font-bold uppercase tracking-wider text-primary">GHI ÂM</h3>
+<div class="flex flex-col overflow-hidden rounded-xl bg-white dark:bg-[#1a2632]">
+<div class="flex items-center justify-between gap-4 p-4 min-h-[72px]">
+<div class="flex items-center gap-4">
+<div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">graphic_eq</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-base font-medium leading-normal text-slate-900 dark:text-white line-clamp-1">Chất lượng âm thanh</p>
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400 line-clamp-2">Cao</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<div class="mx-4 h-px bg-slate-200 dark:bg-slate-700/50"></div>
+<div class="flex items-center justify-between gap-4 p-4 min-h-[72px]">
+<div class="flex items-center gap-4">
+<div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">record_voice_over</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-base font-medium leading-normal text-slate-900 dark:text-white line-clamp-1">Tự động phát hiện giọng nói</p>
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400 line-clamp-2">Tự động tạm dừng khi im lặng</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full bg-slate-200 p-0.5 has-[:checked]:bg-primary dark:bg-slate-700">
+<div class="h-full w-[27px] rounded-full bg-white transition-transform duration-200 ease-in-out" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px;"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<div class="mx-4 h-px bg-slate-200 dark:bg-slate-700/50"></div>
+<div class="flex items-center justify-between gap-4 p-4 min-h-[72px]">
+<div class="flex items-center gap-4">
+<div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">noise_control_off</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-base font-medium leading-normal text-slate-900 dark:text-white line-clamp-1">Lọc tiếng ồn</p>
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400 line-clamp-2">Giảm tạp âm nền trong bản ghi</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full bg-slate-200 p-0.5 has-[:checked]:bg-primary dark:bg-slate-700">
+<div class="h-full w-[27px] rounded-full bg-white transition-transform duration-200 ease-in-out" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px;"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Summarization Settings Section -->
+<div class="flex flex-col gap-2">
+<h3 class="px-2 pb-1 pt-2 text-sm font-bold uppercase tracking-wider text-primary">TÓM TẮT</h3>
+<div class="flex flex-col overflow-hidden rounded-xl bg-white dark:bg-[#1a2632]">
+<div class="flex items-center justify-between gap-4 p-4 min-h-[72px]">
+<div class="flex items-center gap-4">
+<div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">translate</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-base font-medium leading-normal text-slate-900 dark:text-white line-clamp-1">Ngôn ngữ tóm tắt</p>
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400 line-clamp-2">Tiếng Việt</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<div class="mx-4 h-px bg-slate-200 dark:bg-slate-700/50"></div>
+<div class="flex items-center justify-between gap-4 p-4 min-h-[72px]">
+<div class="flex items-center gap-4">
+<div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">auto_awesome</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-base font-medium leading-normal text-slate-900 dark:text-white line-clamp-1">Tự động tạo tóm tắt</p>
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400 line-clamp-2">Sau khi dừng ghi âm</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full bg-slate-200 p-0.5 has-[:checked]:bg-primary dark:bg-slate-700">
+<div class="h-full w-[27px] rounded-full bg-white transition-transform duration-200 ease-in-out" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px;"></div>
+<input class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- General Settings Section -->
+<div class="flex flex-col gap-2">
+<h3 class="px-2 pb-1 pt-2 text-sm font-bold uppercase tracking-wider text-primary">CHUNG</h3>
+<div class="flex flex-col overflow-hidden rounded-xl bg-white dark:bg-[#1a2632]">
+<div class="flex items-center justify-between gap-4 p-4 min-h-[72px]">
+<div class="flex items-center gap-4">
+<div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">account_circle</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-base font-medium leading-normal text-slate-900 dark:text-white line-clamp-1">Quản lý tài khoản</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+<div class="mx-4 h-px bg-slate-200 dark:bg-slate-700/50"></div>
+<div class="flex items-center justify-between gap-4 p-4 min-h-[72px]">
+<div class="flex items-center gap-4">
+<div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-base font-medium leading-normal text-slate-900 dark:text-white line-clamp-1">Thông báo</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+<div class="mx-4 h-px bg-slate-200 dark:bg-slate-700/50"></div>
+<div class="flex items-center justify-between gap-4 p-4 min-h-[72px]">
+<div class="flex items-center gap-4">
+<div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-base font-medium leading-normal text-slate-900 dark:text-white line-clamp-1">Giao diện</p>
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400 line-clamp-2">Tự động theo hệ thống</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Other Section -->
+<div class="flex flex-col gap-2">
+<h3 class="px-2 pb-1 pt-2 text-sm font-bold uppercase tracking-wider text-primary">KHÁC</h3>
+<div class="flex flex-col overflow-hidden rounded-xl bg-white dark:bg-[#1a2632]">
+<div class="flex items-center justify-between gap-4 p-4 min-h-[72px]">
+<div class="flex items-center gap-4">
+<div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">help</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-base font-medium leading-normal text-slate-900 dark:text-white line-clamp-1">Trợ giúp &amp; Phản hồi</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+<div class="mx-4 h-px bg-slate-200 dark:bg-slate-700/50"></div>
+<div class="flex items-center justify-between gap-4 p-4 min-h-[72px]">
+<div class="flex items-center gap-4">
+<div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">info</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-base font-medium leading-normal text-slate-900 dark:text-white line-clamp-1">Về ứng dụng</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Logout Button -->
+<div class="py-4">
+<button class="flex w-full items-center justify-center gap-2 rounded-xl bg-red-500/10 px-4 py-3 text-base font-bold text-red-500 transition-colors hover:bg-red-500/20">
+<span class="material-symbols-outlined">logout</span>
+<span>Đăng xuất</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

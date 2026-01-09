@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Đăng nhập</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="flex w-full grow flex-col items-center justify-center p-4">
+<div class="flex w-full max-w-[480px] flex-col items-center justify-center space-y-8 py-10">
+<!-- Logo Section -->
+<div class="flex flex-col items-center gap-4 text-center">
+<div class="flex h-20 w-20 items-center justify-center rounded-xl bg-primary">
+<span class="material-symbols-outlined text-white" style="font-size: 48px;">mic</span>
+</div>
+</div>
+<!-- HeadlineText Section -->
+<div class="w-full text-center">
+<h2 class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight px-4 pb-2 pt-5">Ghi âm và tóm tắt cuộc họp dễ dàng</h2>
+</div>
+<!-- ButtonGroup Section -->
+<div class="flex w-full flex-col items-stretch gap-3 px-4 py-3">
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-lg h-12 px-5 bg-white text-slate-800 text-base font-medium leading-normal tracking-[0.015em] border border-slate-200 hover:bg-slate-50">
+<img alt="Google logo" class="h-5 w-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGpfyn6rlomZvX6KXZ7AP-D61Dim-9TMbVpv1YOun5OqxXFit7m0S0jfOrOkNhAW0hOeJM_X5Ycdur-6RUQvvvuK-pKFMwWvGzSULQl2K9u73r_beYP8wu8-X3U8g5nwKXdLkHLt9v-3fwlC31RyWgYKIlzoUt1P-K1ZMlDITkCpkh8-pP2mjqp3CAntlI3__poxfRMQIx3Wt5QBVUpKaZaz2nylMLuUu0EcCDt7DDvumWxltE0Q7kwnSIH_ioj4MuXYSA1NO_5826"/>
+<span class="truncate">Tiếp tục với Google</span>
+</button>
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-lg h-12 px-5 bg-black text-white text-base font-medium leading-normal tracking-[0.015em] hover:bg-gray-800">
+<svg class="h-5 w-5" fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.1425 21.0268C15.2287 21.6115 14.1259 22.0001 12.8339 22.0001C11.531 22.0001 10.4282 21.6115 9.53125 21.0268C8.61741 20.4322 7.91505 19.6644 7.42411 18.7235C6.93317 17.7826 6.6877 16.7329 6.6877 15.5744C6.6877 14.4952 6.94211 13.5135 7.45102 12.6293C7.95992 11.7451 8.67576 11.0241 9.59858 10.4664C10.5214 9.90863 11.6066 9.62973 12.8528 9.62973C13.2505 9.62973 13.7846 9.69837 14.4551 9.83566C15.1256 9.97295 15.7171 10.1583 16.2295 10.3917L16.0315 12.0298C15.4211 11.728 14.868 11.5209 14.3721 11.4084C13.8762 11.296 13.3892 11.2398 12.9112 11.2398C11.9632 11.2398 11.137 11.5187 10.4325 12.0764C9.7281 12.6341 9.37583 13.4357 9.37583 14.4811C9.37583 15.1589 9.53423 15.7573 9.85102 16.2766C10.1678 16.7958 10.6064 17.202 11.1668 17.495C11.7271 17.788 12.3559 17.9345 13.0531 17.9345C13.5936 17.9345 14.1238 17.8488 14.6441 17.6775C15.1643 17.5061 15.6116 17.2797 15.9858 17.0009L16.2869 18.4958C15.8674 18.7975 15.3595 19.0359 14.7634 19.2104C14.1673 19.385 13.5295 19.4723 12.8504 19.4723C11.6917 19.4723 10.702 19.1415 9.88125 18.48C9.06054 17.8184 8.65019 16.826 8.65019 15.5029C8.65019 14.6421 8.85714 13.8693 9.27143 13.1845C9.68571 12.4996 10.2625 11.9565 11.0018 11.5552C11.7411 11.1539 12.6022 10.9532 13.5852 10.9532C13.9142 10.9532 14.2884 10.985 14.708 11.0483C15.1276 11.1117 15.4842 11.1989 15.7777 11.3099L16.4822 7.74977C15.8266 7.50278 15.0664 7.30141 14.2016 7.14566C13.3368 6.9899 12.4583 6.91202 11.5664 6.91202C10.1691 6.91202 8.90822 7.29573 7.78367 8.06313C6.65911 8.83054 5.82661 9.87153 5.28612 11.1861C4.74563 12.5007 4.47539 13.9884 4.47539 15.6493C4.47539 17.2222 4.79469 18.5991 5.43317 19.78C6.07166 20.9609 6.98549 21.8732 8.17456 22.5168C9.36362 23.1604 10.7597 23.4822 12.3629 23.4822C13.2989 23.4822 14.2583 23.3215 15.2411 22.9999C16.2239 22.6783 17.0601 22.2437 17.7496 21.696L16.1425 21.0268Z"></path><path d="M13.2458 6.27365C13.7863 5.62512 14.3317 5.11832 14.8819 4.75324C15.4322 4.38816 16.0337 4.20562 16.6864 4.20562C16.8237 4.20562 17.0163 4.22456 17.2643 4.26244C17.5123 4.30032 17.7024 4.33327 17.8346 4.3613L18.4239 2.80993C18.2386 2.76219 17.9896 2.70952 17.677 2.65191C17.3643 2.5943 17.0065 2.5655 16.5989 2.5655C15.7592 2.5655 15.0038 2.78444 14.3324 3.2223C13.6609 3.66016 13.129 4.24948 12.7368 4.99026C12.3446 5.73104 12.1485 6.54573 12.1485 7.43433V7.55139C12.4469 7.03961 12.7932 6.60633 13.1873 6.25155L13.2458 6.27365Z"></path><path d="M18.8924 10.875C19.1042 10.5757 19.21 10.2372 19.21 9.85938C19.21 9.48646 19.1018 9.15049 18.8852 8.85156C18.6687 8.55264 18.3994 8.28018 18.0773 8.03418C17.7552 7.78818 17.3823 7.56865 16.9587 7.37559C16.3151 7.0874 15.6578 6.94336 14.9868 6.94336C14.5946 6.94336 14.1613 6.9874 13.6865 7.0755L14.2392 8.6533C14.5828 8.53623 14.9381 8.4777 15.3051 8.4777C15.7024 8.4777 16.0366 8.56801 16.3076 8.74867C16.5786 8.92934 16.7141 9.20035 16.7141 9.56172C16.7141 9.81318 16.6359 10.0277 16.4795 10.2052C16.323 10.3828 16.0884 10.5555 15.7757 10.7232C15.463 10.891 15.087 11.0637 14.6477 11.2414C13.9116 11.5344 13.2974 11.8984 12.8051 12.3336C12.3128 12.7688 12.0666 13.3364 12.0666 14.0364C12.0666 14.5143 12.2131 14.9427 12.5061 15.3215C12.8038 15.7003 13.2114 16.0159 13.7288 16.2684C14.2461 16.5208 14.8369 16.647 15.5009 16.647C16.3454 16.647 17.0628 16.4401 17.6521 16.0264L17.1518 14.4828C16.7024 14.7709 16.2043 14.9149 15.6578 14.9149C15.3051 14.9149 14.9996 14.8341 14.7411 14.6725C14.4825 14.5109 14.3532 14.2639 14.3532 13.9316C14.3532 13.6802 14.4363 13.4682 14.6033 13.2955C14.7703 13.1228 15.0183 12.9526 15.3472 12.7848C15.6762 12.617 16.0634 12.4418 16.5098 12.2593C17.3013 11.9219 17.9449 11.5037 18.4409 11.0049L18.8924 10.875Z"></path></svg>
+<span class="truncate">Tiếp tục với Apple</span>
+</button>
+</div>
+<!-- MetaText Section -->
+<div class="w-full text-center">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal px-4">Bằng việc tiếp tục, bạn đồng ý với <a class="underline hover:text-primary dark:hover:text-primary/80" href="#">Điều khoản Dịch vụ</a> và <a class="underline hover:text-primary dark:hover:text-primary/80" href="#">Chính sách Bảo mật</a> của chúng tôi.</p>
+</div>
+</div>
+</div>
+</div>
+</body></html>

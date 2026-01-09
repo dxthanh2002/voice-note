@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nâng cấp lên Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<div class="flex items-center justify-end p-4 pb-2">
+<button class="text-slate-500 dark:text-slate-400 flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10">
+<span class="material-symbols-outlined" style="font-size: 24px;">close</span>
+</button>
+</div>
+<!-- Headline and Body Text -->
+<h1 class="text-slate-900 dark:text-white tracking-light text-[32px] font-bold leading-tight px-4 text-center pb-3 pt-4">Ghi âm &amp; Tóm tắt không giới hạn với Pro</h1>
+<p class="text-slate-600 dark:text-slate-300 text-base font-normal leading-normal pb-3 pt-1 px-4 text-center">Nâng cao hiệu suất cuộc họp của bạn, không bỏ lỡ bất kỳ chi tiết quan trọng nào.</p>
+<!-- Benefits List -->
+<div class="flex flex-col gap-2 p-4 mt-6">
+<div class="flex items-center gap-4 min-h-14">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined" style="font-size: 24px;">timer</span>
+</div>
+<p class="text-slate-800 dark:text-slate-200 text-base font-normal leading-normal flex-1">Ghi âm không giới hạn thời gian</p>
+</div>
+<div class="flex items-center gap-4 min-h-14">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined" style="font-size: 24px;">auto_awesome</span>
+</div>
+<p class="text-slate-800 dark:text-slate-200 text-base font-normal leading-normal flex-1">Tóm tắt AI nâng cao &amp; chính xác hơn</p>
+</div>
+<div class="flex items-center gap-4 min-h-14">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined" style="font-size: 24px;">cloud_upload</span>
+</div>
+<p class="text-slate-800 dark:text-slate-200 text-base font-normal leading-normal flex-1">Lưu trữ trên cloud không giới hạn</p>
+</div>
+<div class="flex items-center gap-4 min-h-14">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined" style="font-size: 24px;">description</span>
+</div>
+<p class="text-slate-800 dark:text-slate-200 text-base font-normal leading-normal flex-1">Xuất file với nhiều định dạng</p>
+</div>
+<div class="flex items-center gap-4 min-h-14">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined" style="font-size: 24px;">support_agent</span>
+</div>
+<p class="text-slate-800 dark:text-slate-200 text-base font-normal leading-normal flex-1">Hỗ trợ ưu tiên</p>
+</div>
+</div>
+<!-- Pricing Cards -->
+<div class="flex flex-col gap-4 p-4 mt-4">
+<div class="flex flex-col cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 p-4">
+<div class="flex items-start justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="size-6 rounded-full border-2 border-slate-400 dark:border-slate-600 bg-transparent"></div>
+<p class="text-base font-semibold text-slate-900 dark:text-white">Gói Tháng</p>
+</div>
+<p class="text-base font-semibold text-slate-900 dark:text-white">129.000đ/tháng</p>
+</div>
+</div>
+<div class="flex flex-col cursor-pointer rounded-xl border-2 border-primary bg-primary/10 dark:bg-primary/20 p-4 relative overflow-hidden">
+<div class="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-4 py-1.5" style="border-bottom-left-radius: 0.75rem;">TIẾT KIỆM 30%</div>
+<div class="flex items-start justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="flex size-6 items-center justify-center rounded-full border-2 border-primary">
+<div class="size-3 rounded-full bg-primary"></div>
+</div>
+<p class="text-base font-semibold text-slate-900 dark:text-white">Gói Năm</p>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-base font-semibold text-slate-900 dark:text-white">1.099.000đ/năm</p>
+<p class="text-sm text-slate-600 dark:text-slate-300">Chỉ 91.500đ/tháng</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Footer for CTA and Payment Info -->
+<div class="sticky bottom-0 mt-auto w-full bg-background-light dark:bg-background-dark pt-4 pb-6 px-4 flex flex-col items-center gap-4 border-t border-slate-200 dark:border-slate-800">
+<button class="flex h-12 w-full items-center justify-center rounded-xl bg-primary px-6 text-base font-bold text-white shadow-lg shadow-primary/30 hover:bg-primary/90">
+                Nâng cấp ngay
+            </button>
+<div class="flex items-center justify-center gap-4 opacity-60">
+<img class="h-6" data-alt="App Store logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAR0r8hYVhiz5tpUg1tspnXyw4njkq8IwvXc0WcvmUe-I6fejGjTPIGsl9Pzax90hrcQGn7vtuQm-j_G_Pcmp8hsoLWiJ_OKGvZBg-CF8gXudYqdeEqRb8T_OAYS6lmuOcJbLnpL1F7WcdJF4peHnFvkDYL6P9NeVqUy8pgNUankTBYru28SsI_3iwaiK9yhh6nY7YUF9wFYA245vQmAI-u2HteuulIszPD7w8V2oj-738-fXZ9XHSo0S0EBtdGEe5TGwfCc3jpgT80"/>
+<img class="h-6" data-alt="Google Play logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5UDzGyxWclMJXIdRRJIiF-2mz85bwey0uqmj26PrHL4Rg45f3I9SUebYwoRPPC4va1tabsEW34WXaICZBVTLlk80_LFDqJVmv9q055eZCfOqgeVfIkWx5oIwTNi-wyA7kk2vSyUOZN8vfTJfjsDyXvlPrXA-TZHPRrDAzYxpw4GA2AUjwSaM3-u007jGFjIRBDnlxKPbZVctlvPmuiAARSp9ITQwqnklTbGyDV6C0e93_lqN5t5Bc006KRvmWkv5g9rE-toS19TNG"/>
+<img class="h-6" data-alt="Visa logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbKZpdvcz1jeH3Tf84c1rssD2e6wFzcZpZR3tP_GgDMKGtlDje29EYqpD2GOQq-HD6SQUMKF1ArlCy6mq8_xfgN-Rv13AjKpdh4LOzLMTA1MeMfouOf54OrgLF74YCSyCHje59pijeGXtVsH0RrG5odhOVoYHTSTOCo7qQ_EcjXpjkmwROnWOp4lbuh2Xc73cZnriIhwEo1iTCTs92osKp1qUndMi4WVChNw6yQuliasOY3Jb7F2O1hVX6ICZOmaDH3gNCL3nsAIzH"/>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 text-center">Giao dịch sẽ tự động gia hạn. Hủy bất cứ lúc nào.</p>
+<a class="text-sm font-medium text-primary hover:underline" href="#">Khôi phục giao dịch</a>
+</div>
+</div>
+</body></html>
