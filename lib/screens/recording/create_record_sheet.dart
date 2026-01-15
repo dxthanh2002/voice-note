@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../navigation/app_routes.dart';
 import '../../theme/colors.dart';
+import 'widgets/recording_modal.dart';
 
 class CreateRecordSheet extends StatelessWidget {
   const CreateRecordSheet({super.key});
@@ -66,11 +67,17 @@ class CreateRecordSheet extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Primary action - Start Recording Now
               _PrimaryRecordButton(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, AppRoutes.recordDetail);
+                onTap: () async {
+                  final meetingId = await RecordingModal.show(context);
+
+                  if (meetingId != null && meetingId.isNotEmpty) {
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.recordDetail,
+                      arguments: meetingId,
+                    );
+                  }
                 },
               ),
               const SizedBox(height: 12),

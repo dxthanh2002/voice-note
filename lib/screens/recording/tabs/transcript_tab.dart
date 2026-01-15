@@ -1,9 +1,55 @@
 import 'package:flutter/material.dart';
 
 import '../../../theme/colors.dart';
+import '../../../services/repository.dart';
 
 class TranscriptTab extends StatelessWidget {
-  const TranscriptTab({super.key});
+  const TranscriptTab({super.key, this.id});
+
+  final String? id;
+
+  /*  Future<void> getTranscript() async {
+    await Repository.processTranscript(id!);
+
+    bool isDone = false;
+    while (!isDone) {
+      await Future.delayed(const Duration(seconds: 5));
+      final transcriptReponse = await Repository.status(id!);
+
+      if (transcriptReponse == 'DONE') {
+        isDone = true;
+      }
+    }
+  } */
+
+  Future<void> getTranscript() async {
+    if (id == null) return;
+
+    try {
+      // Start transcription
+      await Repository.processTranscript(id!);
+
+      // Poll with timeout
+      const timeoutSeconds = 150; // 2.5 minutes
+      const checkInterval = 5; // Check every 5 seconds
+      final maxChecks = timeoutSeconds ~/ checkInterval; // round down
+
+      for (int i = 0; i < maxChecks; i++) {
+        await Future.delayed(const Duration(seconds: checkInterval));
+
+        await Repository.status(id!);
+
+        // Update progress
+        print('Still PROCESSING... (${(i + 1) * checkInterval} seconds)');
+      }
+
+      throw Exception('Transcription timeout');
+    } catch (e) {
+      print('Error in getTranscript: $e'); // Better error logging
+    }
+  }
+
+  // TODO: small screen for sumary and transcript
 
   @override
   Widget build(BuildContext context) {
@@ -69,9 +115,9 @@ class TranscriptTab extends StatelessWidget {
           // Title
           Text(
             'Chưa có bản phiên âm',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           // Description
@@ -81,9 +127,9 @@ class TranscriptTab extends StatelessWidget {
               'Đoạn hội thoại này chưa được xử lý. Nhấn nút bên dưới để tạo bản phiên âm văn bản.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.5,
-                  ),
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -93,9 +139,7 @@ class TranscriptTab extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Start transcription
-                },
+                onPressed: getTranscript,
                 icon: const Icon(Icons.transcribe, size: 20),
                 label: const Text('Phiên âm đoạn hội thoại'),
                 style: ElevatedButton.styleFrom(

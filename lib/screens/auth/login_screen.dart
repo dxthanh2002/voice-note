@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/colors.dart';
+import '../../services/device.dart';
+import '../../services/repository.dart';
+import '../../services/client_request.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -37,9 +40,9 @@ class LoginScreen extends StatelessWidget {
                   Text(
                     'Record & Summarize\nMeetings Easily',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          height: 1.2,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.headlineMedium?.copyWith(height: 1.2),
                   ),
                   const SizedBox(height: 48),
                   // Google button
@@ -75,9 +78,23 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  void _handleLogin(BuildContext context) {
-    // Mock login - go directly to home
-    Navigator.pushReplacementNamed(context, '/');
+  void _handleLogin(BuildContext context) async {
+    try {
+      final deviceId = await DeviceService.getDeviceId();
+      final platform = DeviceService.getPlatform();
+
+      final response = await Repository.login(deviceId, platform);
+
+      debugPrint('New token: ${response.accessToken}');
+      debugPrint('User: ${response.user.id}');
+
+      setAuthToken(response.accessToken);
+
+      Navigator.pushReplacementNamed(context, '/');
+    } catch (e) {
+      debugPrint('Login error: $e');
+    }
+    // Navigator.pushReplacementNamed(context, '/');
   }
 }
 

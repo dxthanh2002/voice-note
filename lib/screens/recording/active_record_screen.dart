@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
-import '../../services/audio_recorder_service.dart';
+import '../../services/audio.dart';
 import '../../theme/colors.dart';
 
 class ActiveRecordScreen extends StatefulWidget {
@@ -15,7 +15,7 @@ class ActiveRecordScreen extends StatefulWidget {
 
 class _ActiveRecordScreenState extends State<ActiveRecordScreen>
     with SingleTickerProviderStateMixin {
-  late final AudioRecorderService _recorderService;
+  late final AudioService _recorderService;
   Duration _duration = Duration.zero;
   RecordingState _state = RecordingState.idle;
   StreamSubscription<Duration>? _durationSubscription;
@@ -27,7 +27,7 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
   @override
   void initState() {
     super.initState();
-    _recorderService = AudioRecorderService();
+    _recorderService = AudioService();
 
     // Pulse animation for recording indicator
     _pulseController = AnimationController(
@@ -72,7 +72,9 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền truy cập.'),
+          content: Text(
+            'Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền truy cập.',
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -206,10 +208,7 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
               isPaused
                   ? 'Nhấn nút phát để tiếp tục'
                   : 'Đang thu âm từ microphone',
-              style: TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: AppColors.textMuted, fontSize: 14),
             ),
             const SizedBox(height: 32),
             // Waveform placeholder
@@ -237,10 +236,11 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
                       height: height,
                       margin: const EdgeInsets.symmetric(horizontal: 2),
                       decoration: BoxDecoration(
-                        color: (isRecording
-                                ? AppColors.primary
-                                : AppColors.textMuted)
-                            .withValues(alpha: isRecording ? 0.8 : 0.3),
+                        color:
+                            (isRecording
+                                    ? AppColors.primary
+                                    : AppColors.textMuted)
+                                .withValues(alpha: isRecording ? 0.8 : 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     );
@@ -267,9 +267,13 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
                   const SizedBox(width: 32),
                   // Pause/Resume button
                   _ControlButton(
-                    icon: isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                    icon: isPaused
+                        ? Icons.play_arrow_rounded
+                        : Icons.pause_rounded,
                     label: isPaused ? 'Tiếp tục' : 'Tạm dừng',
-                    backgroundColor: isPaused ? AppColors.success : AppColors.primary,
+                    backgroundColor: isPaused
+                        ? AppColors.success
+                        : AppColors.primary,
                     iconColor: Colors.white,
                     size: 88,
                     isMain: true,
@@ -337,11 +341,7 @@ class _ControlButton extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(
-              icon,
-              size: size * 0.5,
-              color: iconColor,
-            ),
+            child: Icon(icon, size: size * 0.5, color: iconColor),
           ),
         ),
         const SizedBox(height: 8),

@@ -1,9 +1,12 @@
 import 'dart:async';
-
+import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 
-import '../../../services/audio_recorder_service.dart';
+import 'package:aimateflutter/services/repository.dart';
+
+import '../../../services/audio.dart';
 import '../../../theme/colors.dart';
+import '../../../utils/format.dart';
 
 enum RecordingModalState { initial, recording, paused }
 
@@ -11,8 +14,8 @@ class RecordingModal extends StatefulWidget {
   const RecordingModal({super.key});
 
   /// Shows the recording modal and returns the file path on success, null on cancel
-  static Future<RecordingResult?> show(BuildContext context) {
-    return showDialog<RecordingResult>(
+  static Future<String?> show(BuildContext context) {
+    return showDialog<String?>(
       context: context,
       barrierDismissible: false, // We control this manually based on state
       barrierColor: Colors.black.withValues(alpha: 0.7),
@@ -24,20 +27,12 @@ class RecordingModal extends StatefulWidget {
   State<RecordingModal> createState() => _RecordingModalState();
 }
 
-class RecordingResult {
-  final String filePath;
-  final Duration duration;
-
-  RecordingResult({required this.filePath, required this.duration});
-}
-
 class _RecordingModalState extends State<RecordingModal>
     with SingleTickerProviderStateMixin {
-  RecordingModalState _modalState = RecordingModalState.initial;
-  AudioRecorderService? _recorderService;
+  RecordingModalState _state = RecordingModalState.initial;
+  AudioService? _audioService;
+
   Duration _duration = Duration.zero;
-  StreamSubscription<Duration>? _durationSubscription;
-  StreamSubscription<RecordingState>? _stateSubscription;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -58,36 +53,36 @@ class _RecordingModalState extends State<RecordingModal>
 
   @override
   void dispose() {
-    _durationSubscription?.cancel();
-    _stateSubscription?.cancel();
     _pulseController.dispose();
-    _recorderService?.dispose();
+    _audioService?.dispose();
     super.dispose();
   }
 
   Future<void> _startRecording() async {
-    _recorderService = AudioRecorderService();
+    _audioService = AudioService();
 
-    _durationSubscription = _recorderService!.durationStream.listen((duration) {
+    _audioService!.durationStream.listen((duration) {
       if (mounted) setState(() => _duration = duration);
     });
 
-    _stateSubscription = _recorderService!.stateStream.listen((state) {
+    _audioService!.stateStream.listen((state) {
       if (!mounted) return;
       if (state == RecordingState.recording) {
-        setState(() => _modalState = RecordingModalState.recording);
+        setState(() => _state = RecordingModalState.recording);
         _pulseController.repeat(reverse: true);
       } else if (state == RecordingState.paused) {
-        setState(() => _modalState = RecordingModalState.paused);
+        setState(() => _state = RecordingModalState.paused);
         _pulseController.stop();
       }
     });
 
-    final success = await _recorderService!.startRecording();
+    final success = await _audioService!.startRecording();
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền truy cập.'),
+          content: Text(
+            'Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền truy cập.',
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -96,23 +91,75 @@ class _RecordingModalState extends State<RecordingModal>
   }
 
   Future<void> _togglePause() async {
-    await _recorderService?.togglePause();
+    await _audioService?.togglePause();
   }
 
   Future<void> _stopRecording() async {
-    final filePath = await _recorderService?.stopRecording();
-    if (filePath != null && mounted) {
-      Navigator.pop(
-        context,
-        RecordingResult(filePath: filePath, duration: _duration),
-      );
-    } else if (mounted) {
-      Navigator.pop(context);
+    if (_audioService == null) return;
+
+    try {
+      final filePath = await _audioService!.stopRecording();
+
+      if (filePath == null) {
+        debugPrint('No file path returned from recording');
+        if (mounted) Navigator.pop(context, null);
+        return;
+      }
+
+      // Get file size
+      final fileSize = await _audioService!.getFileSize(filePath);
+      final fileName = path.basename(filePath);
+      debugPrint('Recording saved: $filePath');
+      debugPrint('Duration: ${_audioService!.recordedDuration}');
+
+      // Get presigned URL and upload to S3
+      debugPrint('Meeting title: $fileName');
+      final withoutExtension = fileName.substring(0, fileName.length - 4);
+      debugPrint('New name: $withoutExtension');
+
+      try {
+        final newMeeting = await Repository.createMeeting(withoutExtension);
+        // Get presigned URL for S3 upload
+        final presigned = await Repository.getPresignedUrl(
+          newMeeting.id,
+          fileName,
+          fileSize,
+        );
+
+        final code = await Repository.uploadAudio(presigned.url, filePath);
+        print("CODE: $code");
+
+        final responseConfirm = await Repository.confirm(presigned.audioId);
+
+        if (mounted) Navigator.pop(context, responseConfirm.meetingId);
+      } catch (e) {
+        debugPrint('Error getting presigned URL: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi khi tải lên: $e'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+          Navigator.pop(context, null);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error in stopRecording: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi dừng ghi âm: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        Navigator.pop(context, null);
+      }
     }
   }
 
   void _handleOutsideTap() {
-    if (_modalState == RecordingModalState.initial) {
+    if (_state == RecordingModalState.initial) {
       Navigator.pop(context);
     }
     // Ignore tap outside when recording or paused
@@ -121,7 +168,7 @@ class _RecordingModalState extends State<RecordingModal>
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: _modalState == RecordingModalState.initial,
+      canPop: _state == RecordingModalState.initial,
       child: GestureDetector(
         onTap: _handleOutsideTap,
         child: Material(
@@ -143,7 +190,7 @@ class _RecordingModalState extends State<RecordingModal>
                     ),
                   ],
                 ),
-                child: _modalState == RecordingModalState.initial
+                child: _state == RecordingModalState.initial
                     ? _buildInitialState()
                     : _buildRecordingState(),
               ),
@@ -166,11 +213,7 @@ class _RecordingModalState extends State<RecordingModal>
             color: AppColors.primary.withValues(alpha: 0.15),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.mic,
-            size: 40,
-            color: AppColors.primary,
-          ),
+          child: const Icon(Icons.mic, size: 40, color: AppColors.primary),
         ),
         const SizedBox(height: 20),
         const Text(
@@ -184,10 +227,7 @@ class _RecordingModalState extends State<RecordingModal>
         const SizedBox(height: 8),
         Text(
           'Nhấn nút bên dưới để bắt đầu',
-          style: TextStyle(
-            fontSize: 14,
-            color: AppColors.textMuted,
-          ),
+          style: TextStyle(fontSize: 14, color: AppColors.textMuted),
         ),
         const SizedBox(height: 24),
         // Start button
@@ -205,10 +245,7 @@ class _RecordingModalState extends State<RecordingModal>
             ),
             child: const Text(
               'Bắt đầu ghi âm',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -226,8 +263,8 @@ class _RecordingModalState extends State<RecordingModal>
   }
 
   Widget _buildRecordingState() {
-    final isPaused = _modalState == RecordingModalState.paused;
-    final isRecording = _modalState == RecordingModalState.recording;
+    final isPaused = _state == RecordingModalState.paused;
+    final isRecording = _state == RecordingModalState.recording;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -273,7 +310,7 @@ class _RecordingModalState extends State<RecordingModal>
         const SizedBox(height: 16),
         // Timer
         Text(
-          _formatDuration(_duration),
+          formatDuration(_duration),
           style: const TextStyle(
             fontSize: 48,
             fontWeight: FontWeight.w700,
@@ -300,8 +337,9 @@ class _RecordingModalState extends State<RecordingModal>
                   height: height,
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   decoration: BoxDecoration(
-                    color: (isRecording ? AppColors.primary : AppColors.textMuted)
-                        .withValues(alpha: isRecording ? 0.8 : 0.3),
+                    color:
+                        (isRecording ? AppColors.primary : AppColors.textMuted)
+                            .withValues(alpha: isRecording ? 0.8 : 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 );
@@ -333,16 +371,6 @@ class _RecordingModalState extends State<RecordingModal>
         ),
       ],
     );
-  }
-
-  String _formatDuration(Duration duration) {
-    final hours = duration.inHours.toString().padLeft(2, '0');
-    final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
-    final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
-    if (duration.inHours > 0) {
-      return '$hours:$minutes:$seconds';
-    }
-    return '$minutes:$seconds';
   }
 }
 
@@ -380,11 +408,7 @@ class _ModalControlButton extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(
-              icon,
-              size: 32,
-              color: Colors.white,
-            ),
+            child: Icon(icon, size: 32, color: Colors.white),
           ),
         ),
         const SizedBox(height: 8),
