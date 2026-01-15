@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 
-import '../services/audio_recorder_service.dart';
+import 'audio.dart';
 
 class Recording {
   final String id;
@@ -51,14 +51,18 @@ class Recording {
       }
 
       debugPrint('  File: ${file.path}');
-      debugPrint('  Size: $fileSizeBytes bytes, Duration: ~${estimatedSeconds}s');
+      debugPrint(
+        '  Size: $fileSizeBytes bytes, Duration: ~${estimatedSeconds}s',
+      );
 
       return Recording(
         id: fileName,
         title: _generateTitle(date),
         filePath: file.path,
         date: date,
-        duration: Duration(seconds: estimatedSeconds > 0 ? estimatedSeconds : 1),
+        duration: Duration(
+          seconds: estimatedSeconds > 0 ? estimatedSeconds : 1,
+        ),
         hasSummary: false,
       );
     } catch (e) {
@@ -95,7 +99,7 @@ class RecordingsRepository extends ChangeNotifier {
 
     try {
       // Always get fresh path from AudioRecorderService
-      final dirPath = await AudioRecorderService.getRecordingsDirectory();
+      final dirPath = await AudioService.getRecordingsDirectory();
       debugPrint('=== Loading Recordings ===');
       debugPrint('Directory: $dirPath');
 
@@ -147,9 +151,7 @@ class RecordingsRepository extends ChangeNotifier {
       final recordingFutures = files.map((file) => Recording.fromFile(file));
       final recordings = await Future.wait(recordingFutures);
 
-      _recordings = recordings
-          .whereType<Recording>()
-          .toList()
+      _recordings = recordings.whereType<Recording>().toList()
         ..sort((a, b) => b.date.compareTo(a.date)); // Newest first
 
       debugPrint('Loaded ${_recordings.length} recordings');

@@ -9,14 +9,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 
-enum RecordingState {
-  idle,
-  recording,
-  paused,
-  stopped,
-}
+enum RecordingState { idle, recording, paused, stopped }
 
-class AudioRecorderService {
+class AudioService {
   final AudioRecorder _recorder = AudioRecorder();
 
   RecordingState _state = RecordingState.idle;
@@ -42,8 +37,9 @@ class AudioRecorderService {
   static Future<String> getRecordingsDirectory() async {
     if (Platform.isAndroid) {
       // Try to get public Recordings directory
-      final dirs =
-          await getExternalStorageDirectories(type: StorageDirectory.music);
+      final dirs = await getExternalStorageDirectories(
+        type: StorageDirectory.music,
+      );
 
       if (dirs != null && dirs.isNotEmpty) {
         // dirs.first is like /storage/emulated/0/Android/data/[package]/files/Music
@@ -235,6 +231,17 @@ class AudioRecorderService {
     } catch (e) {
       debugPrint('Error stopping recording: $e');
       return null;
+    }
+  }
+
+  Future<int> getFileSize(String filePath) async {
+    try {
+      final file = File(filePath);
+      final exists = await file.exists();
+      return exists ? await file.length() : 0;
+    } catch (e) {
+      debugPrint('Error getting file size: $e');
+      return 0;
     }
   }
 

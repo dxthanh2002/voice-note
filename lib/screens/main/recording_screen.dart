@@ -1,10 +1,16 @@
+import 'package:aimateflutter/models/meeting.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../data/recordings_repository.dart';
+import '../../components/button.dart';
+import '../../services/meeting.dart';
 import '../../navigation/app_routes.dart';
 import '../../theme/colors.dart';
+import '../../utils/format.dart';
 import '../recording/create_record_sheet.dart';
+import '../../services/repository.dart';
+
+import 'package:intl/intl.dart';
 
 class RecordingsTab extends StatefulWidget {
   const RecordingsTab({super.key});
@@ -19,15 +25,15 @@ class _RecordingsTabState extends State<RecordingsTab> {
     super.initState();
     // Load recordings on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<RecordingsRepository>().loadRecordings();
+      context.read<MeetingService>().loadMeetings();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final repository = context.watch<RecordingsRepository>();
-    final recordings = repository.recordings;
-    final isLoading = repository.isLoading;
+    final meetingService = context.watch<MeetingService>();
+    final meetings = meetingService.meetings;
+    final isLoading = meetingService.isLoading;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
@@ -45,16 +51,15 @@ class _RecordingsTabState extends State<RecordingsTab> {
                     children: [
                       Text(
                         'Ghi âm',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${recordings.length} bản ghi gần đây',
+                        '${meetings.length} bản ghi gần đây',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textMuted,
-                            ),
+                          color: AppColors.textMuted,
+                        ),
                       ),
                     ],
                   ),
@@ -86,10 +91,10 @@ class _RecordingsTabState extends State<RecordingsTab> {
                   Text(
                     'DANH SÁCH',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textMuted,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.2,
-                        ),
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
@@ -117,10 +122,10 @@ class _RecordingsTabState extends State<RecordingsTab> {
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : RefreshIndicator(
-                      onRefresh: () => repository.refresh(),
-                      child: recordings.isEmpty
+                      onRefresh: () => meetingService.loadMeetings(),
+                      child: meetings.isEmpty
                           ? _buildEmptyState(context)
-                          : _buildRecordingsList(context, recordings, repository),
+                          : _buildMeetingList(context, meetings),
                     ),
             ),
           ],
@@ -186,15 +191,15 @@ class _RecordingsTabState extends State<RecordingsTab> {
                     'Nhấn nút mic để bắt đầu ghi âm cuộc họp đầu tiên.',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Kéo xuống để làm mới',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textMuted,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
                   ),
                 ],
               ),
@@ -205,75 +210,58 @@ class _RecordingsTabState extends State<RecordingsTab> {
     );
   }
 
-  Widget _buildRecordingsList(
+  Widget _buildMeetingList(
     BuildContext context,
-    List<Recording> recordings,
-    RecordingsRepository repository,
+    List<MeetingResponse> meetings,
   ) {
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-      itemCount: recordings.length,
+      itemCount: meetings.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final recording = recordings[index];
-        return _RecordingCard(
-          recording: recording,
-          onTap: () {
-            Navigator.pushNamed(
-              context,
-              AppRoutes.recordDetail,
-              arguments: recording,
-            );
-          },
-          onDelete: () => _confirmDelete(context, recording, repository),
-        );
+        final meeting = meetings[index];
+        return _MeetingCard(meeting: meeting);
       },
     );
   }
 
-  Future<void> _confirmDelete(
-    BuildContext context,
-    Recording recording,
-    RecordingsRepository repository,
-  ) async {
-    final messenger = ScaffoldMessenger.of(context);
+  // Future<void> _confirmDelete(BuildContext context) async {
+  //   final messenger = ScaffoldMessenger.of(context);
 
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
-        title: const Text('Xóa bản ghi?'),
-        content: Text(
-          'Bản ghi "${recording.title}" sẽ bị xóa vĩnh viễn.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Xóa'),
-          ),
-        ],
-      ),
-    );
+  //   final shouldDelete = await showDialog<bool>(
+  //     context: context,
+  //     builder: (ctx) => AlertDialog(
+  //       backgroundColor: AppColors.cardDark,
+  //       title: const Text('Xóa bản ghi?'),
+  //       content: Text('Bản ghi "${recording.title}" sẽ bị xóa vĩnh viễn.'),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(ctx, false),
+  //           child: const Text('Hủy'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(ctx, true),
+  //           style: TextButton.styleFrom(foregroundColor: AppColors.error),
+  //           child: const Text('Xóa'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
 
-    if (shouldDelete == true && mounted) {
-      final success = await repository.deleteRecording(recording.id);
-      if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(
-              success ? 'Đã xóa "${recording.title}"' : 'Không thể xóa bản ghi',
-            ),
-            backgroundColor: success ? AppColors.success : AppColors.error,
-          ),
-        );
-      }
-    }
-  }
+  //   if (shouldDelete == true && mounted) {
+  //     final success = await repository.deleteRecording(recording.id);
+  //     if (mounted) {
+  //       messenger.showSnackBar(
+  //         SnackBar(
+  //           content: Text(
+  //             success ? 'Đã xóa "${recording.title}"' : 'Không thể xóa bản ghi',
+  //           ),
+  //           backgroundColor: success ? AppColors.success : AppColors.error,
+  //         ),
+  //       );
+  //     }
+  //   }
+  // }
 
   void _showCreateRecordSheet(BuildContext context) {
     showModalBottomSheet(
@@ -287,16 +275,10 @@ class _RecordingsTabState extends State<RecordingsTab> {
   }
 }
 
-class _RecordingCard extends StatelessWidget {
-  const _RecordingCard({
-    required this.recording,
-    required this.onTap,
-    required this.onDelete,
-  });
+class _MeetingCard extends StatelessWidget {
+  const _MeetingCard({required this.meeting});
 
-  final Recording recording;
-  final VoidCallback onTap;
-  final VoidCallback onDelete;
+  final MeetingResponse meeting;
 
   @override
   Widget build(BuildContext context) {
@@ -304,15 +286,19 @@ class _RecordingCard extends StatelessWidget {
       color: AppColors.cardDark,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.recordDetail,
+            arguments: meeting.id,
+          );
+        },
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.05),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,10 +312,9 @@ class _RecordingCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          recording.title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          meeting.title,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -337,25 +322,25 @@ class _RecordingCard extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              _formatDate(recording.date),
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: AppColors.textMuted,
-                                  ),
+                              formatDate(meeting.startedAt),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.textMuted),
                             ),
                             Container(
                               width: 4,
                               height: 4,
                               margin: const EdgeInsets.symmetric(horizontal: 8),
                               decoration: BoxDecoration(
-                                color: AppColors.textMuted.withValues(alpha: 0.5),
+                                color: AppColors.textMuted.withValues(
+                                  alpha: 0.5,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                             ),
                             Text(
-                              _formatDuration(recording.duration),
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
+                              formatDuration(meeting.duration),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -364,8 +349,13 @@ class _RecordingCard extends StatelessWidget {
                   ),
                   PopupMenuButton<String>(
                     onSelected: (value) {
+                      print(value);
+                      // TODO: delete
                       if (value == 'delete') {
-                        onDelete();
+                        Repository.delete(meeting.id);
+                      } else if (value == 'rename') {
+                        final newName = formatDate(DateTime.now());
+                        Repository.rename(meeting.id, newName);
                       }
                     },
                     icon: Icon(
@@ -382,7 +372,11 @@ class _RecordingCard extends StatelessWidget {
                         value: 'share',
                         child: Row(
                           children: [
-                            Icon(Icons.share, size: 20, color: AppColors.textSecondary),
+                            Icon(
+                              Icons.share,
+                              size: 20,
+                              color: AppColors.textSecondary,
+                            ),
                             const SizedBox(width: 12),
                             const Text('Chia sẻ'),
                           ],
@@ -392,7 +386,11 @@ class _RecordingCard extends StatelessWidget {
                         value: 'rename',
                         child: Row(
                           children: [
-                            Icon(Icons.edit, size: 20, color: AppColors.textSecondary),
+                            Icon(
+                              Icons.edit,
+                              size: 20,
+                              color: AppColors.textSecondary,
+                            ),
                             const SizedBox(width: 12),
                             const Text('Đổi tên'),
                           ],
@@ -403,9 +401,16 @@ class _RecordingCard extends StatelessWidget {
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete, size: 20, color: AppColors.error),
+                            Icon(
+                              Icons.delete,
+                              size: 20,
+                              color: AppColors.error,
+                            ),
                             const SizedBox(width: 12),
-                            Text('Xóa', style: TextStyle(color: AppColors.error)),
+                            Text(
+                              'Xóa',
+                              style: TextStyle(color: AppColors.error),
+                            ),
                           ],
                         ),
                       ),
@@ -418,10 +423,12 @@ class _RecordingCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _StatusBadge(hasSummary: recording.hasSummary),
-                  _PlayButton(onPressed: () {
-                    // TODO: Quick play
-                  }),
+                  _StatusBadge(hasSummary: meeting.hasSummary),
+                  PlayButton(
+                    onPressed: () {
+                      // TODO: Quick play
+                    },
+                  ),
                 ],
               ),
             ],
@@ -429,17 +436,6 @@ class _RecordingCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day} thg ${date.month}';
-  }
-
-  String _formatDuration(Duration duration) {
-    if (duration.inHours > 0) {
-      return '${duration.inHours}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
-    }
-    return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
   }
 }
 
@@ -483,40 +479,6 @@ class _StatusBadge extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PlayButton extends StatelessWidget {
-  const _PlayButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.cardDark,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(20),
-        hoverColor: AppColors.primary,
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
-          child: const Icon(
-            Icons.play_arrow,
-            size: 18,
-            color: AppColors.textSecondary,
-          ),
-        ),
       ),
     );
   }

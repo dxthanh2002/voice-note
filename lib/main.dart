@@ -1,18 +1,18 @@
+import 'package:aimateflutter/services/meeting.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'contexts/app_context.dart';
-import 'data/recordings_repository.dart';
 import 'navigation/app_navigator.dart';
-import 'screens/main/main_tabs_screen.dart';
+import 'screens/main/navigation_tab.dart';
 import 'screens/onboarding/onboarding_screen.dart';
-import 'services/app_bootstrap.dart';
+import 'services/bootstrap.dart';
 import 'theme/app_theme.dart';
 import 'theme/colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AppBootstrap.init();
+  await Bootstrap.init();
   runApp(const MeetingRecorderApp());
 }
 
@@ -24,7 +24,7 @@ class MeetingRecorderApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AppState()..boot()),
-        ChangeNotifierProvider(create: (_) => RecordingsRepository()),
+        ChangeNotifierProvider(create: (_) => MeetingService()),
       ],
       child: MaterialApp(
         title: 'Meeting Recorder',
@@ -47,15 +47,15 @@ class AppRoot extends StatelessWidget {
         if (!state.booted) {
           return Scaffold(
             backgroundColor: AppColors.backgroundDark,
-            body: const Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
         // Show onboarding for first time users, otherwise go to main
         if (!state.onboarded) {
           return const OnboardingScreen();
         }
+        // TODO: Check and extend token here
+        print("HIHI");
         return const MainTabsScreen();
       },
     );

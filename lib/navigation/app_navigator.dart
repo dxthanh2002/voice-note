@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../data/recordings_repository.dart';
 import '../navigation/app_routes.dart';
 import '../screens/auth/login_screen.dart';
-import '../screens/main/main_tabs_screen.dart';
+import '../screens/main/navigation_tab.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/recording/active_record_screen.dart';
 import '../screens/recording/record_detail_screen.dart';
@@ -20,10 +19,8 @@ Route<dynamic> buildRoute(RouteSettings settings) {
     case AppRoutes.activeRecord:
       return MaterialPageRoute(builder: (_) => const ActiveRecordScreen());
     case AppRoutes.recordDetail:
-      final recording = settings.arguments as Recording?;
-      return MaterialPageRoute(
-        builder: (_) => RecordDetailScreen(recording: recording),
-      );
+      final id = settings.arguments as String;
+      return MaterialPageRoute(builder: (_) => RecordDetailScreen(id: id));
     case AppRoutes.upgrade:
       return MaterialPageRoute(builder: (_) => const UpgradeScreen());
     default:
