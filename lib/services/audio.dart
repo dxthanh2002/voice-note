@@ -12,7 +12,7 @@ import 'package:record/record.dart';
 enum RecordingState { idle, recording, paused, stopped }
 
 class AudioService {
-  final AudioRecorder _recorder = AudioRecorder();
+  AudioRecorder? _recorder;
 
   RecordingState _state = RecordingState.idle;
   RecordingState get state => _state;
@@ -31,6 +31,13 @@ class AudioService {
   final StreamController<RecordingState> _stateController =
       StreamController<RecordingState>.broadcast();
   Stream<RecordingState> get stateStream => _stateController.stream;
+
+  Future<void> _initRecorder() async {
+    if (_recorder == null) {
+      _recorder = AudioRecorder();
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+  }
 
   /// Get the recordings directory path
   /// Path: /storage/emulated/0/Recordings/Recapit/
@@ -129,6 +136,7 @@ class AudioService {
   /// Start recording
   Future<bool> startRecording() async {
     try {
+      await _initRecorder();
       // Request all permissions
       final granted = await requestPermissions();
       if (!granted) {
@@ -137,7 +145,7 @@ class AudioService {
       }
 
       // Check if device supports recording
-      if (!await _recorder.hasPermission()) {
+      if (!await _recorder!.hasPermission()) {
         debugPrint('Recorder does not have permission');
         return false;
       }
@@ -160,7 +168,7 @@ class AudioService {
       );
 
       // Start recording
-      await _recorder.start(config, path: _currentFilePath!);
+      await _recorder!.start(config, path: _currentFilePath!);
 
       _state = RecordingState.recording;
       _recordedDuration = Duration.zero;
@@ -182,7 +190,7 @@ class AudioService {
     if (_state != RecordingState.recording) return;
 
     try {
-      await _recorder.pause();
+      await _recorder!.pause();
       _state = RecordingState.paused;
       _stateController.add(_state);
       _stopDurationTimer();
@@ -196,7 +204,7 @@ class AudioService {
     if (_state != RecordingState.paused) return;
 
     try {
-      await _recorder.resume();
+      await _recorder!.resume();
       _state = RecordingState.recording;
       _stateController.add(_state);
       _startDurationTimer();
@@ -212,7 +220,7 @@ class AudioService {
     }
 
     try {
-      final path = await _recorder.stop();
+      final path = await _recorder!.stop();
       _state = RecordingState.stopped;
       _stateController.add(_state);
       _stopDurationTimer();
@@ -248,8 +256,8 @@ class AudioService {
   /// Cancel recording and delete file
   Future<void> cancelRecording() async {
     try {
-      await _recorder.stop();
-      await _recorder.cancel();
+      await _recorder!.stop();
+      await _recorder!.cancel();
       _state = RecordingState.idle;
       _stateController.add(_state);
       _stopDurationTimer();
@@ -287,6 +295,6 @@ class AudioService {
     _durationTimer?.cancel();
     _durationController.close();
     _stateController.close();
-    _recorder.dispose();
+    _recorder!.dispose();
   }
 }

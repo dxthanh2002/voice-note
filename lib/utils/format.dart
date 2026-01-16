@@ -6,7 +6,9 @@ String formatDate(DateTime date) {
 }
 
 String formatDuration(Duration? duration) {
-  if (duration == null) return 'Đang ghi';
+  if (duration == null || duration.inSeconds == 0) {
+    return '--:--';
+  }
 
   final hours = duration.inHours.toString().padLeft(2, '0');
   final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
@@ -14,11 +16,12 @@ String formatDuration(Duration? duration) {
 
   if (duration.inHours > 0) {
     return '$hours:$minutes:$seconds';
+  } else {
+    return '$minutes:$seconds';
   }
-  return '$minutes:$seconds';
 }
 
-void _printFormatted(dynamic data) {
+void printFormatted(dynamic data) {
   const encoder = JsonEncoder.withIndent('  ');
   final formatted = encoder.convert(data);
   print(formatted);

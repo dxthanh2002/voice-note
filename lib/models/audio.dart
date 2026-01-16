@@ -86,6 +86,16 @@ class AudioUploadResponse {
       version: json['__v'] ?? 0,
     );
   }
+
+  Duration get duration {
+    if (size <= 0) return Duration.zero;
+
+    // Formula: Duration (seconds) = File Size (bytes) * 8 / (Bitrate (kbps) * 1000)
+    // For AAC-LC at 128 kbps
+    final bitrate = 128000; // 128 kbps in bits per second
+    final seconds = (size * 8) / bitrate;
+    return Duration(seconds: seconds.floor());
+  }
 }
 
 class AudioInfo {

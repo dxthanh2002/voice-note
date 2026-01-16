@@ -10,8 +10,6 @@ import '../../utils/format.dart';
 import '../recording/create_record_sheet.dart';
 import '../../services/repository.dart';
 
-import 'package:intl/intl.dart';
-
 class RecordingsTab extends StatefulWidget {
   const RecordingsTab({super.key});
 
@@ -225,44 +223,6 @@ class _RecordingsTabState extends State<RecordingsTab> {
     );
   }
 
-  // Future<void> _confirmDelete(BuildContext context) async {
-  //   final messenger = ScaffoldMessenger.of(context);
-
-  //   final shouldDelete = await showDialog<bool>(
-  //     context: context,
-  //     builder: (ctx) => AlertDialog(
-  //       backgroundColor: AppColors.cardDark,
-  //       title: const Text('Xóa bản ghi?'),
-  //       content: Text('Bản ghi "${recording.title}" sẽ bị xóa vĩnh viễn.'),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(ctx, false),
-  //           child: const Text('Hủy'),
-  //         ),
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(ctx, true),
-  //           style: TextButton.styleFrom(foregroundColor: AppColors.error),
-  //           child: const Text('Xóa'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-
-  //   if (shouldDelete == true && mounted) {
-  //     final success = await repository.deleteRecording(recording.id);
-  //     if (mounted) {
-  //       messenger.showSnackBar(
-  //         SnackBar(
-  //           content: Text(
-  //             success ? 'Đã xóa "${recording.title}"' : 'Không thể xóa bản ghi',
-  //           ),
-  //           backgroundColor: success ? AppColors.success : AppColors.error,
-  //         ),
-  //       );
-  //     }
-  //   }
-  // }
-
   void _showCreateRecordSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -348,14 +308,48 @@ class _MeetingCard extends StatelessWidget {
                     ),
                   ),
                   PopupMenuButton<String>(
-                    onSelected: (value) {
-                      print(value);
-                      // TODO: delete
+                    onSelected: (value) async {
                       if (value == 'delete') {
-                        Repository.delete(meeting.id);
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Xóa bản ghi?'),
+                            content: Text(
+                              'Bạn có chắc muốn xóa "${meeting.title}"?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Hủy'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text(
+                                  'Xóa',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirmed == true) {
+                          try {
+                            await Repository.delete(meeting.id);
+                            context.read<MeetingService>().loadMeetings();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Đã xóa "${meeting.title}"'),
+                              ),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Lỗi: ${e.toString()}')),
+                            );
+                          }
+                        }
                       } else if (value == 'rename') {
-                        final newName = formatDate(DateTime.now());
-                        Repository.rename(meeting.id, newName);
+                        _showRenameDialog(context, meeting);
                       }
                     },
                     icon: Icon(
@@ -423,7 +417,7 @@ class _MeetingCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _StatusBadge(hasSummary: meeting.hasSummary),
+                  _StatusBadge(meeting: meeting),
                   PlayButton(
                     onPressed: () {
                       // TODO: Quick play
@@ -439,39 +433,96 @@ class _MeetingCard extends StatelessWidget {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.hasSummary});
+void _showRenameDialog(BuildContext context, MeetingResponse meeting) {
+  final controller = TextEditingController(text: meeting.title);
 
-  final bool hasSummary;
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Đổi tên'),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        decoration: const InputDecoration(hintText: 'Nhập tên mới'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Hủy'),
+        ),
+        TextButton(
+          onPressed: () async {
+            final newName = controller.text.trim();
+            if (newName.isNotEmpty && newName != meeting.title) {
+              try {
+                await Repository.rename(meeting.id, newName);
+                context.read<MeetingService>().loadMeetings();
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Đã đổi tên thành "$newName"')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}')));
+              }
+            }
+          },
+          child: const Text('Lưu'),
+        ),
+      ],
+    ),
+  );
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.meeting});
+
+  final MeetingResponse meeting;
 
   @override
   Widget build(BuildContext context) {
-    final color = hasSummary ? AppColors.success : AppColors.warning;
-    final bgColor = hasSummary
-        ? AppColors.success.withValues(alpha: 0.1)
-        : AppColors.warning.withValues(alpha: 0.1);
-    final borderColor = hasSummary
-        ? AppColors.success.withValues(alpha: 0.2)
-        : AppColors.warning.withValues(alpha: 0.2);
+    Color color;
+    Color bgColor;
+    String text;
+    IconData icon;
+
+    if (meeting.transcriptStatus == 'DONE' && meeting.hasSummary) {
+      color = AppColors.success;
+      bgColor = AppColors.success.withValues(alpha: 0.1);
+      text = 'Hoàn thành';
+      icon = Icons.check_circle;
+    } else if (meeting.transcriptStatus == 'PROCESSING') {
+      color = AppColors.warning;
+      bgColor = AppColors.warning.withValues(alpha: 0.1);
+      text = 'Đang xử lý';
+      icon = Icons.schedule;
+    } else if (meeting.transcriptStatus == 'FAILED') {
+      color = AppColors.error;
+      bgColor = AppColors.error.withValues(alpha: 0.1);
+      text = 'Lỗi';
+      icon = Icons.error;
+    } else {
+      color = AppColors.textMuted;
+      bgColor = AppColors.textMuted.withValues(alpha: 0.1);
+      text = 'Chưa xử lý';
+      icon = Icons.hourglass_empty;
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            hasSummary ? Icons.check_circle : Icons.hourglass_top,
-            size: 14,
-            color: color,
-          ),
+          Icon(icon, size: 14, color: color),
           const SizedBox(width: 6),
           Text(
-            hasSummary ? 'Đã tóm tắt' : 'Chưa tóm tắt',
+            text,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,

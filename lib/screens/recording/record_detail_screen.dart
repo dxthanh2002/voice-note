@@ -50,7 +50,6 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
   }
 
   Future<void> _loadMeeting() async {
-    print("loading");
     try {
       final response = await Repository.getMeetingDetail(widget.id!);
 
@@ -59,7 +58,12 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
         _loading = false;
       });
 
-      await _initAudioPlayer(response.audio.playUrl);
+      if (response.audio?.playUrl != null) {
+        await _initAudioPlayer(response.audio!.playUrl);
+      } else {
+        debugPrint('No audio URL available for this meeting');
+        // You might want to show a message to the user
+      }
     } catch (e) {
       debugPrint('Failed to load meeting: $e');
     }
