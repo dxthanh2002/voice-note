@@ -95,6 +95,7 @@ class _RecordingModalState extends State<RecordingModal>
   }
 
   Future<void> _stopRecording() async {
+    print("WTFF");
     if (_audioService == null) return;
 
     try {

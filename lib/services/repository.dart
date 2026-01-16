@@ -119,6 +119,7 @@ class Repository {
       'app-audio-note/meetings/$id/transcript',
     );
 
+    print("processTranscript");
     print(response.data);
   }
 
@@ -129,14 +130,5 @@ class Repository {
     print(response);
 
     return response.data['data']['status'];
-  }
-
-  static Future<List<TranscriptItem>> getTranscript(String id) async {
-    final response = await clientRequest.get(
-      'app-audio-note/meetings/$id/transcript',
-    );
-
-    final List data = response.data['data'];
-    return data.map((item) => TranscriptItem.fromJson(item)).toList();
   }
 }
