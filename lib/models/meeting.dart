@@ -69,9 +69,11 @@ class MeetingDetail {
     return MeetingDetail(
       meeting: MeetingResponse.fromJson(json['meeting']),
       audio: AudioInfo.fromJson(json['audio']),
-      transcripts: (json['transcripts'] as List)
-          .map((item) => TranscriptItem.fromJson(item))
-          .toList(),
+      transcripts:
+          (json['transcripts'] as List?) // Use as List? instead of as List
+              ?.map((item) => TranscriptItem.fromJson(item))
+              .toList() ??
+          [], // Provide empty list as default
     );
   }
 }

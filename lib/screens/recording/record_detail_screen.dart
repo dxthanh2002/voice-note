@@ -50,6 +50,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
   }
 
   Future<void> _loadMeeting() async {
+    print("loading");
     try {
       final response = await Repository.getMeetingDetail(widget.id!);
 
