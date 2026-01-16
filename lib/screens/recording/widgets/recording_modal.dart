@@ -3,8 +3,10 @@ import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 
 import 'package:aimateflutter/services/repository.dart';
+import 'package:provider/provider.dart';
 
 import '../../../services/audio.dart';
+import '../../../services/meeting.dart';
 import '../../../theme/colors.dart';
 import '../../../utils/format.dart';
 
@@ -95,7 +97,6 @@ class _RecordingModalState extends State<RecordingModal>
   }
 
   Future<void> _stopRecording() async {
-    print("WTFF");
     if (_audioService == null) return;
 
     try {
@@ -131,6 +132,9 @@ class _RecordingModalState extends State<RecordingModal>
         print("CODE: $code");
 
         final responseConfirm = await Repository.confirm(presigned.audioId);
+
+        final meetingService = context.read<MeetingService>();
+        await meetingService.loadMeetings();
 
         if (mounted) Navigator.pop(context, responseConfirm.meetingId);
       } catch (e) {

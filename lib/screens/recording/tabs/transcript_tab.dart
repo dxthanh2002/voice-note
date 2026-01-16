@@ -6,10 +6,10 @@ import '../../../models/transcript.dart';
 import '../widgets/transcript_message_bubble.dart';
 
 enum TranscriptState {
-  empty, // No transcript, show button
+  none, // No transcript, show button
   processing, // Transcription in progress
   done, // Transcript loaded successfully
-  error, // Error occurred
+  failed, // Error occurred
 }
 
 class TranscriptTab extends StatefulWidget {
@@ -22,43 +22,59 @@ class TranscriptTab extends StatefulWidget {
 }
 
 class _TranscriptTabState extends State<TranscriptTab> {
-  TranscriptState _state = TranscriptState.empty;
   List<TranscriptItem> _transcriptItems = [];
-  double _processingProgress = 0.0;
+  TranscriptState? _state;
   String _errorMessage = '';
+  bool _isPolling = false; // Track polling state
 
   @override
   void initState() {
     super.initState();
-
     _checkCurrentStatus();
+  }
+
+  @override
+  void dispose() {
+    _isPolling = false; // Stop polling when widget is disposed
+    super.dispose();
   }
 
   Future<void> _checkCurrentStatus() async {
     if (widget.id == null) return;
 
-    print("status");
     try {
       final detail = await Repository.getMeetingDetail(widget.id!);
+      final transcriptStatus = detail.meeting.transcriptStatus;
 
-      if (detail.meeting.transcriptStatus == 'DONE' &&
-          detail.transcripts.isNotEmpty) {
+      if (transcriptStatus == 'DONE' && detail.transcripts.isNotEmpty) {
         // Transcript already exists, load it
         setState(() {
           _transcriptItems = detail.transcripts;
           _state = TranscriptState.done;
         });
-      } else if (detail.meeting.transcriptStatus == 'PROCESSING') {
+      } else if (transcriptStatus == 'PROCESSING') {
         // Transcription is in progress, start polling
         setState(() {
           _state = TranscriptState.processing;
+          _isPolling = true;
         });
         _pollTranscript();
+      } else if (transcriptStatus == 'FAILED') {
+        setState(() {
+          _state = TranscriptState.failed;
+          _errorMessage = 'Transcription previously failed. Please try again.';
+        });
+      } else {
+        setState(() {
+          _state = TranscriptState.none;
+        });
       }
-      // If status is empty or something else, stay in empty state
     } catch (e) {
       debugPrint('Error checking transcript status: $e');
-      // Stay in empty state, user can retry
+      setState(() {
+        _state = TranscriptState.failed;
+        _errorMessage = 'Error checking status: ${e.toString()}';
+      });
     }
   }
 
@@ -67,64 +83,104 @@ class _TranscriptTabState extends State<TranscriptTab> {
 
     setState(() {
       _state = TranscriptState.processing;
-      _processingProgress = 0.0;
+      _isPolling = true;
     });
 
     try {
-      // Step 1: Start transcription
+      // Start transcription
       await Repository.processTranscript(widget.id!);
 
-      // Step 2: Poll for completion
-      await _pollTranscript();
+      // Don't await - let it run in background
+      _pollTranscript();
     } catch (e) {
       setState(() {
-        _state = TranscriptState.error;
+        _state = TranscriptState.failed;
         _errorMessage = 'Không thể tạo bản phiên âm.\n${e.toString()}';
+        _isPolling = false;
       });
       debugPrint('Error in transcription: $e');
     }
   }
 
   Future<void> _pollTranscript() async {
-    const maxChecks = 30; // 30 checks * 5s = 2.5 minutes max
+    if (!_isPolling) return;
+
     const checkInterval = Duration(seconds: 5);
 
-    for (int i = 0; i < maxChecks; i++) {
+    while (_isPolling) {
       await Future.delayed(checkInterval);
 
-      // Update progress
-      setState(() {
-        _processingProgress = (i + 1) / maxChecks;
-      });
+      if (!_isPolling) break;
 
-      final statusResponse = await Repository.status(widget.id!);
+      try {
+        final statusResponse = await Repository.status(widget.id!);
+        debugPrint('Transcription status: $statusResponse');
 
-      debugPrint('Transcription status: $statusResponse (${(i + 1) * 5}s)');
-
-      if (statusResponse == 'DONE') {
-        final detail = await Repository.getMeetingDetail(widget.id!);
-        setState(() {
-          _transcriptItems = detail.transcripts;
-          _state = TranscriptState.done;
-        });
-        return;
+        if (statusResponse == 'DONE') {
+          final detail = await Repository.getMeetingDetail(widget.id!);
+          if (mounted) {
+            setState(() {
+              _transcriptItems = detail.transcripts;
+              _state = TranscriptState.done;
+              _isPolling = false;
+            });
+          }
+          break;
+        } else if (statusResponse == 'FAILED') {
+          if (mounted) {
+            setState(() {
+              _state = TranscriptState.failed;
+              _errorMessage = 'Transcription failed. Please try again.';
+              _isPolling = false;
+            });
+          }
+          break;
+        }
+      } catch (e) {
+        debugPrint('Error polling transcript: $e');
       }
     }
-
-    // Timeout
-    throw Exception('Transcription timeout after 2.5 minutes');
   }
 
   @override
   Widget build(BuildContext context) {
-    switch (_state) {
-      case TranscriptState.empty:
+    // Show loading while checking initial status
+    if (_state == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 80,
+                height: 80,
+                child: CircularProgressIndicator(
+                  strokeWidth: 6,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Đang kiểm tra...',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    switch (_state!) {
+      case TranscriptState.none:
         return _buildEmptyState();
       case TranscriptState.processing:
         return _buildProcessingState();
       case TranscriptState.done:
         return _buildTranscriptList();
-      case TranscriptState.error:
+      case TranscriptState.failed:
         return _buildErrorState();
     }
   }
@@ -252,7 +308,6 @@ class _TranscriptTabState extends State<TranscriptTab> {
               width: 80,
               height: 80,
               child: CircularProgressIndicator(
-                value: _processingProgress,
                 backgroundColor: AppColors.cardDark,
                 color: AppColors.primary,
                 strokeWidth: 6,
@@ -264,13 +319,6 @@ class _TranscriptTabState extends State<TranscriptTab> {
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${(_processingProgress * 100).toInt()}%',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 16),
             Text(

@@ -56,24 +56,25 @@ class MeetingResponse {
 
 class MeetingDetail {
   final MeetingResponse meeting;
-  final AudioInfo audio;
+  final AudioInfo? audio;
   final List<TranscriptItem> transcripts;
 
   const MeetingDetail({
     required this.meeting,
-    required this.audio,
+    this.audio,
     required this.transcripts,
   });
 
   factory MeetingDetail.fromJson(Map<String, dynamic> json) {
     return MeetingDetail(
       meeting: MeetingResponse.fromJson(json['meeting']),
-      audio: AudioInfo.fromJson(json['audio']),
+      // Handle null audio field
+      audio: json['audio'] != null ? AudioInfo.fromJson(json['audio']!) : null,
       transcripts:
-          (json['transcripts'] as List?) // Use as List? instead of as List
+          (json['transcripts'] as List?)
               ?.map((item) => TranscriptItem.fromJson(item))
               .toList() ??
-          [], // Provide empty list as default
+          [],
     );
   }
 }
