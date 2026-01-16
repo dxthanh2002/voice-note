@@ -4,9 +4,43 @@ import '../../theme/colors.dart';
 import '../../services/device.dart';
 import '../../services/repository.dart';
 import '../../services/client_request.dart';
+import '../../components/app_button.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  bool _isLoading = false;
+
+  Future<void> _handleLogin() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final deviceId = await DeviceService.getDeviceId();
+      final platform = DeviceService.getPlatform();
+
+      final response = await Repository.login(deviceId, platform);
+
+      debugPrint('New token: ${response.accessToken}');
+      debugPrint('User: ${response.user.id}');
+
+      setAuthToken(response.accessToken);
+
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/');
+      }
+    } catch (e) {
+      debugPrint('Login error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,19 +80,27 @@ class LoginScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 48),
                   // Google button
-                  _SocialLoginButton(
-                    onPressed: () => _handleLogin(context),
+                  AppButton(
+                    onPressed: _isLoading ? null : _handleLogin,
                     icon: Icons.g_mobiledata,
                     label: 'Continue with Google',
+                    isLoading: _isLoading,
+                    fullWidth: true,
+                    // Simulate Google Button Style
+                    variant: AppButtonVariant.outline,
                     backgroundColor: AppColors.white,
                     foregroundColor: AppColors.textPrimaryLight,
                   ),
                   const SizedBox(height: 12),
                   // Apple button
-                  _SocialLoginButton(
-                    onPressed: () => _handleLogin(context),
+                  AppButton(
+                    onPressed: _isLoading ? null : _handleLogin,
                     icon: Icons.apple,
                     label: 'Continue with Apple',
+                    isLoading: _isLoading,
+                    fullWidth: true,
+                    // Simulate Apple Button Style
+                    variant: AppButtonVariant.primary,
                     backgroundColor: AppColors.black,
                     foregroundColor: AppColors.white,
                   ),
@@ -72,65 +114,6 @@ class LoginScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _handleLogin(BuildContext context) async {
-    try {
-      final deviceId = await DeviceService.getDeviceId();
-      final platform = DeviceService.getPlatform();
-
-      final response = await Repository.login(deviceId, platform);
-
-      debugPrint('New token: ${response.accessToken}');
-      debugPrint('User: ${response.user.id}');
-
-      setAuthToken(response.accessToken);
-
-      Navigator.pushReplacementNamed(context, '/');
-    } catch (e) {
-      debugPrint('Login error: $e');
-    }
-    // Navigator.pushReplacementNamed(context, '/');
-  }
-}
-
-class _SocialLoginButton extends StatelessWidget {
-  const _SocialLoginButton({
-    required this.onPressed,
-    required this.icon,
-    required this.label,
-    required this.backgroundColor,
-    required this.foregroundColor,
-  });
-
-  final VoidCallback onPressed;
-  final IconData icon;
-  final String label;
-  final Color backgroundColor;
-  final Color foregroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 24),
-        label: Text(label),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: foregroundColor,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: backgroundColor == AppColors.white
-                ? BorderSide(color: AppColors.dividerLight)
-                : BorderSide.none,
           ),
         ),
       ),

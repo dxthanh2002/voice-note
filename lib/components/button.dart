@@ -1,34 +1,23 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
+import 'app_button.dart';
 
 class PlayButton extends StatelessWidget {
-  const PlayButton({required this.onPressed});
+  const PlayButton({super.key, required this.onPressed});
 
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.cardDark,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(20),
-        hoverColor: AppColors.primary,
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          child: const Icon(
-            Icons.play_arrow,
-            size: 18,
-            color: AppColors.textSecondary,
-          ),
-        ),
-      ),
+    return AppButton(
+      onPressed: onPressed,
+      icon: Icons.play_arrow,
+      size: AppButtonSize.small,
+      variant: AppButtonVariant.secondary,
+      backgroundColor: AppColors.cardDark,
+      // Custom border behavior for PlayButton using AppButton might need adjustments
+      // or we accept the standard AppButton look which is cleaner.
+      // Based on standardization, we should stick to standard if possible.
     );
   }
 }

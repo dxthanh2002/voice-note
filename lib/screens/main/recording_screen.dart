@@ -94,24 +94,24 @@ class _RecordingsTabState extends State<RecordingsTab> {
                       letterSpacing: 1.2,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      // TODO: Sort
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      'Sắp xếp',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+                  // TextButton(
+                  //   onPressed: () {
+                  //     // TODO: Sort
+                  //   },
+                  //   style: TextButton.styleFrom(
+                  //     padding: EdgeInsets.zero,
+                  //     minimumSize: Size.zero,
+                  //     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  //   ),
+                  //   child: Text(
+                  //     'Sắp xếp',
+                  //     style: TextStyle(
+                  //       color: AppColors.primary,
+                  //       fontSize: 14,
+                  //       fontWeight: FontWeight.w500,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),

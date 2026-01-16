@@ -177,14 +177,14 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Text(
-                '${_getFileName(meeting.title)}.mp3',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
+              // Text(
+              //   '${_getFileName(meeting.title)}.mp3',
+              //   style: Theme.of(
+              //     context,
+              //   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              //   textAlign: TextAlign.center,
+              // ),
+              // const SizedBox(height: 4),
               Text(
                 'Đã ghi vào ${formatDate(meeting.startedAt)}',
                 style: Theme.of(
