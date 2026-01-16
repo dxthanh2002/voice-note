@@ -85,39 +85,39 @@ class CreateRecordSheet extends StatelessWidget {
               const SizedBox(height: 12),
 
               // Secondary actions - Grid layout
-              Row(
-                children: [
-                  Expanded(
-                    child: _SecondaryOptionCard(
-                      icon: Icons.calendar_month,
-                      iconBackgroundColor: const Color(
-                        0xFF6366F1,
-                      ).withValues(alpha: 0.2),
-                      iconColor: const Color(0xFF818CF8),
-                      title: 'Đặt lịch ghi âm',
-                      onTap: () {
-                        Navigator.pop(context);
-                        // TODO: Schedule recording
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _SecondaryOptionCard(
-                      icon: Icons.upload_file,
-                      iconBackgroundColor: const Color(
-                        0xFFF97316,
-                      ).withValues(alpha: 0.2),
-                      iconColor: const Color(0xFFFB923C),
-                      title: 'Nhập âm thanh',
-                      onTap: () {
-                        Navigator.pop(context);
-                        // TODO: Import audio
-                      },
-                    ),
-                  ),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     Expanded(
+              //       child: _SecondaryOptionCard(
+              //         icon: Icons.calendar_month,
+              //         iconBackgroundColor: const Color(
+              //           0xFF6366F1,
+              //         ).withValues(alpha: 0.2),
+              //         iconColor: const Color(0xFF818CF8),
+              //         title: 'Đặt lịch ghi âm',
+              //         onTap: () {
+              //           Navigator.pop(context);
+              //           // TODO: Schedule recording
+              //         },
+              //       ),
+              //     ),
+              //     const SizedBox(width: 12),
+              //     Expanded(
+              //       child: _SecondaryOptionCard(
+              //         icon: Icons.upload_file,
+              //         iconBackgroundColor: const Color(
+              //           0xFFF97316,
+              //         ).withValues(alpha: 0.2),
+              //         iconColor: const Color(0xFFFB923C),
+              //         title: 'Nhập âm thanh',
+              //         onTap: () {
+              //           Navigator.pop(context);
+              //           // TODO: Import audio
+              //         },
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),

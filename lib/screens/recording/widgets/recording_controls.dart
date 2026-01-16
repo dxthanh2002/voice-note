@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../theme/colors.dart';
+import '../../../components/app_button.dart';
 
 class RecordingControlsBar extends StatelessWidget {
   const RecordingControlsBar({
@@ -61,21 +62,26 @@ class RecordingControlsBar extends StatelessWidget {
               children: [
                 // Pause button
                 Expanded(
-                  child: _ControlButton(
+                  child: AppButton(
+                    onPressed: onPause,
                     icon: isPaused ? Icons.play_arrow : Icons.pause,
                     label: isPaused ? 'Tiếp tục' : 'Tạm dừng',
-                    onPressed: onPause,
-                    isPrimary: false,
+                    size: AppButtonSize.large,
+                    variant: AppButtonVariant.secondary,
+                    fullWidth: true,
                   ),
                 ),
                 const SizedBox(width: 16),
                 // Stop button
                 Expanded(
-                  child: _ControlButton(
+                  child: AppButton(
+                    onPressed: onStop,
                     icon: Icons.stop,
                     label: 'Dừng',
-                    onPressed: onStop,
-                    isPrimary: true,
+                    size: AppButtonSize.large,
+                    variant: AppButtonVariant.primary,
+                    isDestructive: true,
+                    fullWidth: true,
                   ),
                 ),
               ],
@@ -226,69 +232,6 @@ class _WaveformVisualization extends StatelessWidget {
             ),
           );
         }),
-      ),
-    );
-  }
-}
-
-class _ControlButton extends StatelessWidget {
-  const _ControlButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-    required this.isPrimary,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-  final bool isPrimary;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: isPrimary ? Colors.red[500] : AppColors.cardDark,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          height: 56,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: isPrimary
-                ? null
-                : Border.all(color: AppColors.dividerDark),
-            boxShadow: isPrimary
-                ? [
-                    BoxShadow(
-                      color: Colors.red.withValues(alpha: 0.2),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 24,
-                color: isPrimary ? Colors.white : AppColors.textPrimary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isPrimary ? Colors.white : AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
