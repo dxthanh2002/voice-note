@@ -5,7 +5,7 @@ import 'client_request.dart';
 import '../models/login.dart';
 import '../models/audio.dart';
 import '../models/meeting.dart';
-import '../utils/format.dart';
+import '../models/transcript.dart';
 
 class Repository {
   static Future<LoginResponse> login(String deviceId, String platform) async {
@@ -122,12 +122,21 @@ class Repository {
     print(response.data);
   }
 
-  static Future<void> status(String id) async {
+  static Future<String> status(String id) async {
     final response = await clientRequest.get(
       'app-audio-note/meetings/$id/status',
     );
     print(response);
 
-    // return response.data['data']['status'];
+    return response.data['data']['status'];
+  }
+
+  static Future<List<TranscriptItem>> getTranscript(String id) async {
+    final response = await clientRequest.get(
+      'app-audio-note/meetings/$id/transcript',
+    );
+
+    final List data = response.data['data'];
+    return data.map((item) => TranscriptItem.fromJson(item)).toList();
   }
 }

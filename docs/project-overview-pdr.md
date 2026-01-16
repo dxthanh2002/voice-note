@@ -1,94 +1,73 @@
 # Project Overview and Product Development Requirements (PDR)
 
 ## 1. Project Information
-- **Project Name**: RecapIt - Meeting Recorder App
-- **Description**: A Flutter mobile application designed for recording meetings, lectures, and conversations, providing tools for playback, organization, and AI-powered analysis (e.g., summarization, transcription). It focuses on user-friendly recording management and insights extraction.
+- **Project Name**: RecapIt - AI Meeting Recorder
+- **Description**: A Flutter mobile application designed for recording meetings, lectures, and conversations. It provides real-time transcription, AI-powered summarization, and an interactive AI chat to query recording content.
 - **Version**: 1.0.0+1
-- **Target Platforms**: Mobile (iOS, Android - inferred from Flutter project type)
+- **Target Platforms**: Mobile (iOS 13.0+, Android API 33+)
 
 ## 2. Core Features and User Stories
 
 ### 2.1. User Onboarding & Authentication
-- **User Story**: As a new user, I want to be able to easily sign up and log in to the app securely so I can access my recordings and personalized features.
+- **User Story**: As a user, I want a seamless entry into the app and secure access to my recordings.
 - **Features**:
-    - Onboarding flow (onboarding_screen.dart)
-    - User registration/login via social accounts (Google, Apple - login_screen.dart)
-    - Secure session management
+    - Multi-step onboarding flow explaining core value propositions.
+    - Social authentication (Google, Apple) via social login screen.
+    - Persistent session management via local storage.
 
-### 2.2. Recording Management
-- **User Story**: As a user, I want to effortlessly record new meetings, schedule future recordings, or import existing audio files so I can capture all important conversations.
+### 2.2. Intelligent Recording
+- **User Story**: As a user, I want to capture high-quality audio of my meetings with full control over the process.
 - **Features**:
-    - Real-time audio recording with pause/resume functionality (active_record_screen.dart)
-    - Ability to schedule recordings (create_record_sheet.dart)
-    - Option to import external audio files (create_record_sheet.dart)
-    - Display of a list of all recordings (recordings_tab.dart)
+    - Real-time audio recording (M4A/AAC format).
+    - Pause/Resume functionality to skip unwanted segments.
+    - Permission-aware recording (Microphone, Storage permissions).
+    - Public directory storage on Android (`/Recordings/Recapit/`) for easy file access.
 
-### 2.3. Recording Playback & Detail
-- **User Story**: As a user, I want to play back my recorded meetings and view their details and summaries so I can quickly recall key information.
+### 2.3. Recording Detail & AI Analysis
+- **User Story**: As a user, I want to review my recordings and get instant AI-powered insights.
 - **Features**:
-    - Audio playback for recordings (record_detail_screen.dart)
-    - Display of recording metadata (title, date, duration, etc.)
-    - Placeholder for AI-generated summary (record_detail_screen.dart)
+    - **Transcription**: Automatic speech-to-text conversion.
+    - **AI Summary**: Concise summaries highlighting key takeaways and action items.
+    - **AI Chat**: Interactive tab to ask questions about the recording content (e.g., "What was the decision on the budget?").
+    - **Recording Metadata**: Display of title, duration, date, and file size.
 
-### 2.4. AI Analysis & Summarization (Future)
-- **User Story**: As a user, I want AI to automatically transcribe and summarize my recordings so I can save time reviewing long conversations.
+### 2.4. Management & Navigation
+- **User Story**: As a user, I want to easily organize and find my past recordings.
 - **Features**:
-    - AI-powered transcription service integration
-    - Automatic summarization of recording content
-    - Keyword extraction and topic identification
-
-### 2.5. User Settings
-- **User Story**: As a user, I want to customize app settings related to recording quality, notification preferences, and account management so I can tailor the app to my needs.
-- **Features**:
-    - Manage recording settings (settings_tab.dart)
-    - Configure notification preferences
-    - Account management options
-
-### 2.6. General App Functionality
-- **User Story**: As a user, I want a smooth, performant, and intuitive application experience for managing my recordings.
-- **Features**:
-    - Consistent dark theme UI/UX
-    - Clear navigation between main sections (main_tabs_screen.dart)
-    - Device ID retrieval for analytics/identification (utils/device.dart)
+    - Recording list with status indicators and search capability.
+    - Tab-based navigation (Recordings, Settings).
+    - Sleek dark theme UI for reduced eye strain.
 
 ## 3. Technical Requirements
 
-### 3.1. Performance
-- **Responsiveness**: Application should be highly responsive with smooth animations and transitions, especially during recording and playback.
-- **Load Times**: Fast loading times for screens and recording lists.
-- **Efficiency**: Optimized resource usage for battery (during recording) and memory.
+### 3.1. Performance & Reliability
+- **Audio Integrity**: Ensure no data loss during recording, even if the app goes to background.
+- **UI Responsiveness**: Smooth transitions and real-time duration updates during recording.
+- **Fast Boot**: Rapid app initialization (< 1s) with `Bootstrap.init()`.
 
-### 3.2. Scalability
-- **API Handling**: Robust API client (api_client.dart) capable of handling various response types, including future integrations for AI services.
-- **Data Storage**: Scalable local storage (storage.dart) for user preferences and recording metadata.
-- **Cloud Integration**: Future-proof design for potential cloud storage and synchronization of recordings.
+### 3.2. Architecture & Tech Stack
+- **Framework**: Flutter 3.9.2
+- **State Management**: Provider with `ChangeNotifier` (AppState, MeetingService).
+- **Networking**: Dio for robust API communication.
+- **Audio Engine**: `record` package for capture, `just_audio` for playback.
+- **Persistence**: `shared_preferences` for settings and metadata.
 
-### 3.3. Security
-- **API Security**: Secure communication with backend APIs (e.g., HTTPS) for authentication and data transfer.
-- **Data Protection**: Protection of sensitive user data and recording content, both in transit and at rest.
-- **Authentication**: Secure user authentication and authorization mechanisms, particularly for social logins.
-- **Permissions**: Proper handling of microphone and storage permissions (permission_handler).
+### 3.3. Security & Privacy
+- **Permissions**: Granular permission handling via `permission_handler`.
+- **Data Safety**: Recordings stored locally and accessed via secure repository patterns.
 
-### 3.4. Maintainability
-- **Code Quality**: Adherence to Dart/Flutter best practices and coding standards.
-- **Modularity**: Modular architecture with clear separation of concerns (services, contexts, screens) to facilitate easy feature development and maintenance.
-- **Testability**: Code designed for easy unit and widget testing to ensure robustness.
+## 4. Known Limitations & Constraints
 
-### 3.5. User Experience
-- **Intuitive UI**: Clean, intuitive, and consistent user interface designed for ease of recording and playback.
-- **Accessibility**: Consideration for accessibility standards to ensure usability for all users.
-- **Theming**: Consistent dark theme implementation (app_theme.dart, colors.dart, typography.dart, spacing.dart).
+### 4.1. Advertising SDK
+- **Status**: TopOn SDK is currently **disabled**.
+- **Reason**: Incompatibility with the current Flutter environment/embedding causing crashes (NoClassDefFoundError).
+- **Impact**: No advertisements are displayed in the current version.
 
-### 3.6. Technology Stack
-- **Framework**: Flutter
-- **Language**: Dart
-- **State Management**: Provider with ChangeNotifierProvider
-- **Networking**: Dio for HTTP requests
-- **Local Storage**: shared_preferences
-- **Permissions**: permission_handler
-- **Device Info**: device_info_plus
+### 4.2. File Management
+- **Storage**: External storage permissions are required on older Android versions; Android 13+ uses scoped/media access.
 
-### 3.7. Error Handling
-- Comprehensive error handling for API calls, local storage operations, and UI interactions (e.g., microphone access failures).
-- User-friendly error messages and recovery mechanisms.
+## 5. Success Metrics
+- Recording success rate > 99%.
+- AI Analysis completion time < 30s for 1-hour meetings.
+- High user retention through intuitive onboarding.
 
