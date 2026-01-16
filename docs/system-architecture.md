@@ -1,93 +1,71 @@
 # System Architecture
 
-This document describes the high-level system architecture of the `RecapIt` mobile application, detailing its main components, their relationships, data flow, and API integration patterns.
+## 1. High-Level Architecture
 
-## 1. High-Level Architecture Diagram (Text-based)
+The application follows a **Service-Oriented Clean Architecture** pattern, optimized for Flutter's reactive framework.
 
-```
-+-------------------+      +-------------------+      +-------------------+
-|                   |      |                   |      |                   |
-|   User Interface  | <--> |   State Management| <--> |   Business Logic  |
-|  (Screens/Widgets)|      |   (Provider/AppS) |      |   (Services)      |
-|                   |      |                   |      |                   |
-+-------------------+      +-------------------+      +-------------------+
-        ^                          ^     ^                          ^
-        |                          |     |                          |
-        |                          V     V                          |
-        |                  +-------------------+                  |
-        |                  |                   |                  |
-        |                  | Local Data Storage|                  |
-        |                  |  (SharedPreferences)|                 |
-        |                  |                   |                  |
-        |                  +-------------------+                  |
-        |                                                         |
-        |                                                         |
-        +---------------------------------------------------------+
-                                    |
-                                    V
-                          +-------------------+
-                          |                   |
-                          |    API Client     |
-                          |    (Dio)          |
-                          |                   |
-                          +-------------------+
-                                    |
-                                    V
-                          +-------------------+
-                          |                   |
-                          |    Backend API    |
-                          | (External Service)|
-                          |                   |
-                          +-------------------+
+```text
+[ UI LAYER (Widgets / Screens) ]
+      ↑ ↓ (Streams / ChangeNotifier)
+[ PROVIDER LAYER (AppState / MeetingService) ]
+      ↑ ↓ (Async Data / Models)
+[ SERVICE LAYER (Audio / Repository / Storage) ]
+      ↑ ↓ (HTTP / Platform Channels / Filesystem)
+[ EXTERNAL (API / Audio HW / SharedPrefs) ]
 ```
 
-## 2. Component Relationships
+## 2. Layer Responsibilities
 
-The `RecapIt` application employs a layered architecture to ensure separation of concerns and maintainability.
+### 2.1. UI Layer (`lib/screens/`, `lib/widgets/`)
+- **Screens**: Large feature components (e.g., `RecordDetailScreen`).
+- **Widgets/Components**: Atomic, reusable UI elements (e.g., `AppButton`).
+- **Theme**: Centralized visual identity in `lib/theme/`.
 
--   **User Interface (UI Layer)**:
-    -   **Screens (`lib/screens/`)**: Full-page UI components that users interact with, categorized by feature (e.g., `auth/`, `main/`, `onboarding/`, `recording/`).
-    -   **Widgets (`lib/widgets/`, `lib/components/`)**: Reusable UI building blocks used across screens.
-    -   **Theme (`lib/theme/`)**: Provides consistent styling (colors, typography, spacing) for the entire UI.
+### 2.2. Provider Layer (`lib/contexts/`, `lib/services/meeting.dart`)
+- Acts as a bridge between the raw services and the UI.
+- Maintains reactive state using `ChangeNotifier`.
+- Handles side effects (e.g., loading data when a screen initializes).
 
--   **State Management Layer**:
-    -   **AppState (`lib/contexts/app_context.dart`)**: A central `ChangeNotifier` that holds the global application state (e.g., `booted`, `onboarded` status). Screens and widgets consume this state via `Provider`. It orchestrates data fetching and updates by interacting with the Business Logic layer.
+### 2.3. Service Layer (`lib/services/`)
+- **AudioService**: High-level API for the `record` package. Handles permissions, file paths, and timer logic.
+- **Repository**: Static methods for API interaction using `Dio`.
+- **StorageService**: Wrapper for `shared_preferences`.
+- **Bootstrap**: One-time app initialization logic.
 
--   **Business Logic Layer**:
-    -   **Services (`lib/services/`)**: Contains application-specific business logic and integrations.
-        -   **App Bootstrap (`lib/services/app_bootstrap.dart`)**: Handles initial application setup, data loading, and service initialization.
-    -   **Models (`lib/models/`)**: Defines the data structures (e.g., `ProfileUser`, `BaseResponse`) and mock recording data (`lib/data/mock_recordings.dart`) used throughout the application, ensuring type safety and consistency.
+### 2.4. Data Layer (`lib/models/`)
+- Strongly typed Dart classes for API responses and internal data structures.
+- Logic for JSON serialization/deserialization.
 
--   **Data Access Layer**:
-    -   **API Client (`lib/services/api_client.dart`)**: Built with `Dio`, this component is responsible for making HTTP requests to the backend API, handling request/response serialization/deserialization, and managing errors related to network communication.
-    -   **Local Data Storage (`lib/services/storage.dart`)**: Utilizes `SharedPreferences` for persistent storage of simple key-value pairs (e.g., user preferences, authentication tokens).
+## 3. Core Data Flows
 
--   **Navigation Layer**:
-    -   **App Navigator (`lib/navigation/app_navigator.dart`)**: Manages the flow between different screens, handling route pushing, popping, and replacement.
-    -   **App Routes (`lib/navigation/app_routes.dart`)**: Defines a centralized list of all named routes used in the application.
+### 3.1. Recording Flow
+1. User taps "Start" in `active_record_screen`.
+2. UI calls `AudioService.startRecording()`.
+3. `AudioService` requests permissions, creates a file in the Android public directory or iOS documents, and starts the timer.
+4. `AudioService` exposes a `durationStream` and `stateStream`.
+5. UI listens to these streams to update the recording timer and waveform visualization.
 
-## 3. Data Flow
+### 3.2. Meeting Retrieval Flow
+1. `MainTabsScreen` (Recordings Tab) initializes.
+2. UI calls `context.read<MeetingService>().loadMeetings()`.
+3. `MeetingService` calls `Repository.getMeetings()`.
+4. `Repository` performs a GET request via `Dio`.
+5. Data is mapped to `List<MeetingResponse>`.
+6. `MeetingService` updates internal list and calls `notifyListeners()`.
+7. UI rebuilds automatically via `Consumer<MeetingService>`.
 
-1.  **User Interaction**: A user interacts with a UI element (e.g., taps a 'Start Recording' button on `CreateRecordSheet`).
-2.  **UI Event to State**: The UI dispatches an action or calls a method on the `AppState` (via `Provider.of<AppState>(context, listen: false)` or `context.read`). For recording specific actions, direct service calls might be made.
-3.  **State to Business Logic**: `AppState` (or relevant UI logic) interacts with various services (e.g., `StorageService` for preferences, `ApiClient` for authentication/user profile).
-4.  **API Interaction**: If remote data is needed (e.g., user login, future recording metadata upload), `API Client` makes an HTTP request to the `Backend API`.
-5.  **Backend Response**: The `Backend API` processes the request and sends a response back to the `API Client`.
-6.  **Data Processing & Model Mapping**: `API Client` receives the raw data, potentially parses it, and maps it to the appropriate data `models/`.
-7.  **Data back to State/UI**: The processed data is returned to `AppState` or directly to the UI, triggering necessary updates.
-8.  **Local Storage/Permissions**: Recording functionality directly interacts with device services like microphone access (via `permission_handler`) and local file storage for audio. Recording metadata is managed within the app's state.
-9.  **State Update & UI Rebuild**: `AppState` updates its internal state and calls `notifyListeners()`. All widgets consuming `AppState` (with `listen: true`) rebuild to reflect the new data.
+## 4. Platform-Specific Implementations
 
-## 4. API Integration Pattern
+### 4.1. Android
+- **File Storage**: Custom logic in `AudioService` to use the public `Recordings/Recapit/` directory on Android 11+ to ensure users can access their files outside the app.
+- **Permissions**: Complex handling for Android 13+ (Media permissions) vs older versions (Storage permissions).
 
-The application integrates with a backend API using the following pattern:
+### 4.2. iOS
+- **File Storage**: Standard `getApplicationDocumentsDirectory()` usage.
+- **Permissions**: Info.plist keys for `NSMicrophoneUsageDescription`.
 
--   **Dedicated API Client**: `lib/services/api_client.dart` uses the `Dio` package to manage all HTTP communications.
-    -   **Base URL & Headers**: Configurable base URL, authentication headers (e.g., Bearer token) are managed by `Dio` interceptors.
-    -   **Request/Response Interceptors**: Used for logging, error handling, adding authentication tokens, and transforming requests/responses.
-    -   **Error Handling**: Centralized error handling within `ApiClient` to convert raw API errors into application-specific exceptions or user-friendly messages.
--   **Service Abstraction**: Direct API calls are typically handled by services (e.g., for authentication). Data for recordings is primarily local initially, with future plans for API integration for storage and AI analysis.
--   **Data Models**: API responses for user profiles and generic responses are deserialized into strongly typed Dart objects defined in `lib/models/`. Recording data is currently managed via a local model in `lib/data/mock_recordings.dart`.
--   **Authentication**: Authentication tokens (e.g., JWTs) are typically stored securely using `SharedPreferences` (`lib/services/storage.dart`) and are automatically attached to outgoing API requests via `Dio` interceptors.
--   **URL Constants**: API endpoints are defined as constants in `lib/constants/urls.dart` to prevent hardcoding and improve maintainability.
+## 5. Error Handling Strategy
 
+- **API Errors**: Caught in `Repository` or `MeetingService`, logged via `debugPrintStack`, and UI updated to show an empty or error state.
+- **Permission Denials**: Handled gracefully in `AudioService` returning `false` on start attempts, allowing the UI to show permission dialogs or settings links.
+- **Bootstrap Failures**: Placeholder in `Bootstrap.init()` to ensure the app doesn't hang on a black screen if a non-critical service fails to load.

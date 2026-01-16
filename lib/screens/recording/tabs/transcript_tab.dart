@@ -2,57 +2,41 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/colors.dart';
 import '../../../services/repository.dart';
+import '../../../models/transcript.dart';
+import '../widgets/transcript_message_bubble.dart';
 
-class TranscriptTab extends StatelessWidget {
+class TranscriptTab extends StatefulWidget {
   const TranscriptTab({super.key, this.id});
 
   final String? id;
 
-  /*  Future<void> getTranscript() async {
-    await Repository.processTranscript(id!);
+  @override
+  State<TranscriptTab> createState() => _TranscriptTabState();
+}
 
-    bool isDone = false;
-    while (!isDone) {
-      await Future.delayed(const Duration(seconds: 5));
-      final transcriptReponse = await Repository.status(id!);
-
-      if (transcriptReponse == 'DONE') {
-        isDone = true;
-      }
-    }
-  } */
-
-  Future<void> getTranscript() async {
-    if (id == null) return;
-
-    try {
-      // Start transcription
-      await Repository.processTranscript(id!);
-
-      // Poll with timeout
-      const timeoutSeconds = 150; // 2.5 minutes
-      const checkInterval = 5; // Check every 5 seconds
-      final maxChecks = timeoutSeconds ~/ checkInterval; // round down
-
-      for (int i = 0; i < maxChecks; i++) {
-        await Future.delayed(const Duration(seconds: checkInterval));
-
-        await Repository.status(id!);
-
-        // Update progress
-        print('Still PROCESSING... (${(i + 1) * checkInterval} seconds)');
-      }
-
-      throw Exception('Transcription timeout');
-    } catch (e) {
-      print('Error in getTranscript: $e'); // Better error logging
-    }
-  }
-
-  // TODO: small screen for sumary and transcript
+class _TranscriptTabState extends State<TranscriptTab> {
+  // State management
+  TranscriptState _state = TranscriptState.empty;
+  List<TranscriptItem> _transcriptItems = [];
+  String _errorMessage = '';
+  double _processingProgress = 0.0;
 
   @override
   Widget build(BuildContext context) {
+    switch (_state) {
+      case TranscriptState.empty:
+        return _buildEmptyState();
+      case TranscriptState.processing:
+        return _buildProcessingState();
+      case TranscriptState.loaded:
+        return _buildTranscriptList();
+      case TranscriptState.error:
+        return _buildErrorState();
+    }
+  }
+
+  // Empty state - show button to start transcription
+  Widget _buildEmptyState() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -127,9 +111,9 @@ class TranscriptTab extends StatelessWidget {
               'Đoạn hội thoại này chưa được xử lý. Nhấn nút bên dưới để tạo bản phiên âm văn bản.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
             ),
           ),
           const SizedBox(height: 24),
@@ -139,7 +123,7 @@ class TranscriptTab extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton.icon(
-                onPressed: getTranscript,
+                onPressed: _startTranscription,
                 icon: const Icon(Icons.transcribe, size: 20),
                 label: const Text('Phiên âm đoạn hội thoại'),
                 style: ElevatedButton.styleFrom(
@@ -160,4 +144,195 @@ class TranscriptTab extends StatelessWidget {
       ),
     );
   }
+
+  // Processing state - show loading with progress
+  Widget _buildProcessingState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Circular progress indicator
+            SizedBox(
+              width: 80,
+              height: 80,
+              child: CircularProgressIndicator(
+                value: _processingProgress,
+                backgroundColor: AppColors.cardDark,
+                color: AppColors.primary,
+                strokeWidth: 6,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Đang phiên âm...',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${(_processingProgress * 100).toInt()}%',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Quá trình này có thể mất vài phút.\nVui lòng chờ...',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textMuted,
+                    height: 1.5,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Loaded state - show transcript messages
+  Widget _buildTranscriptList() {
+    if (_transcriptItems.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            'Không tìm thấy nội dung phiên âm',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textMuted,
+                ),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 16, bottom: 24),
+      itemCount: _transcriptItems.length,
+      itemBuilder: (context, index) {
+        final item = _transcriptItems[index];
+        // Check if previous message is from same speaker
+        final showAvatar = index == 0 ||
+            _transcriptItems[index - 1].speaker != item.speaker;
+
+        return TranscriptMessageBubble(
+          item: item,
+          showAvatar: showAvatar,
+        );
+      },
+    );
+  }
+
+  // Error state - show error message with retry button
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: AppColors.error.withValues(alpha: 0.8),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Có lỗi xảy ra',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _startTranscription,
+              icon: const Icon(Icons.refresh, size: 20),
+              label: const Text('Thử lại'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Start transcription process
+  Future<void> _startTranscription() async {
+    if (widget.id == null) return;
+
+    setState(() {
+      _state = TranscriptState.processing;
+      _processingProgress = 0.0;
+    });
+
+    try {
+      // Step 1: Start transcription
+      await Repository.processTranscript(widget.id!);
+
+      // Step 2: Poll status with progress tracking
+      const maxChecks = 30; // 30 checks * 5s = 2.5 minutes max
+      const checkInterval = Duration(seconds: 5);
+
+      for (int i = 0; i < maxChecks; i++) {
+        await Future.delayed(checkInterval);
+
+        // Update progress
+        setState(() {
+          _processingProgress = (i + 1) / maxChecks;
+        });
+
+        final status = await Repository.status(widget.id!);
+        debugPrint('Transcription status: $status (${(i + 1) * 5}s)');
+
+        if (status == 'DONE') {
+          // Step 3: Fetch transcript items
+          final items = await Repository.getTranscript(widget.id!);
+
+          setState(() {
+            _transcriptItems = items;
+            _state = TranscriptState.loaded;
+          });
+          return;
+        } else if (status == 'FAILED') {
+          throw Exception('Transcription failed');
+        }
+      }
+
+      // Timeout
+      throw Exception('Transcription timeout after 2.5 minutes');
+    } catch (e) {
+      setState(() {
+        _state = TranscriptState.error;
+        _errorMessage = 'Không thể tạo bản phiên âm.\n${e.toString()}';
+      });
+      debugPrint('Error in transcription: $e');
+    }
+  }
+}
+
+// State enum for transcript tab
+enum TranscriptState {
+  empty, // No transcript, show button
+  processing, // Transcription in progress
+  loaded, // Transcript loaded successfully
+  error, // Error occurred
 }
