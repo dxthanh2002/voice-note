@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 
 String formatDate(DateTime date) {
-  return DateFormat('dd/MM/yyyy').format(date);
+  return DateFormat('MMMM d, yyyy').format(date);
 }
 
 String formatDuration(Duration? duration) {
