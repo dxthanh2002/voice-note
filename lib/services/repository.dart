@@ -46,14 +46,14 @@ class Repository {
   static Future<AudioPresignedResponse> getPresignedUrl(
     String meetingId,
     String title,
-    int fileSize,
+    int duration,
   ) async {
     final response = await clientRequest.post(
       'app-audio-note/meetings/$meetingId/audio/upload-url',
       data: {
         "fileName": title,
         "contentType": "audio/mp4",
-        "fileSize": fileSize,
+        "duration": duration,
       },
     );
 
@@ -130,5 +130,13 @@ class Repository {
     debugPrint(response.toString());
 
     return response.data['data']['status'];
+  }
+
+  static Future<SummaryTranscriptionResponse> getSummary(String id) async {
+    final response = await clientRequest.get(
+      'app-audio-note/meetings/$id/summary',
+    );
+
+    return SummaryTranscriptionResponse.fromJson(response.data['data']);
   }
 }

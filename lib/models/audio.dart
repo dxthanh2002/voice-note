@@ -101,10 +101,24 @@ class AudioUploadResponse {
 class AudioInfo {
   final String id;
   final String playUrl;
+  final int size;
+  final int duration;
 
-  const AudioInfo({required this.id, required this.playUrl});
+  const AudioInfo({
+    required this.id,
+    required this.playUrl,
+    required this.size,
+    required this.duration,
+  });
 
   factory AudioInfo.fromJson(Map<String, dynamic> json) {
-    return AudioInfo(id: json['id'] ?? '', playUrl: json['playUrl'] ?? '');
+    return AudioInfo(
+      id: json['id'] ?? '',
+      playUrl: json['playUrl'] ?? '',
+      size: json['size'] ?? 0,
+      duration: json['duration'] ?? 0,
+    );
   }
+
+  Duration get durationObj => Duration(microseconds: duration);
 }

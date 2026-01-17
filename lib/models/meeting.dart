@@ -68,7 +68,7 @@ class MeetingDetail {
   factory MeetingDetail.fromJson(Map<String, dynamic> json) {
     return MeetingDetail(
       meeting: MeetingResponse.fromJson(json['meeting']),
-      // Handle null audio field
+      // Use the SEPARATE audio object (not the one inside meeting)
       audio: json['audio'] != null ? AudioInfo.fromJson(json['audio']!) : null,
       transcripts:
           (json['transcripts'] as List?)
