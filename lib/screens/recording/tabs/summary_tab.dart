@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
 
 import '../../../theme/colors.dart';
 import '../../../services/repository.dart';
-import '../../../models/meeting.dart'; // Assuming you have this import
+
 
 class SummaryTab extends StatefulWidget {
   const SummaryTab({super.key, this.id});
