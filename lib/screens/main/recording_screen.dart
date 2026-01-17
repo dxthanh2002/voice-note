@@ -20,6 +20,7 @@ class RecordingsTab extends StatefulWidget {
 }
 
 class _RecordingsTabState extends State<RecordingsTab> {
+  final TextEditingController _searchController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -44,43 +45,57 @@ class _RecordingsTabState extends State<RecordingsTab> {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Recordings',
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${meetings.length} recent recordings',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.cardDark,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      onPressed: () =>
-                        // TODO: Search
-                        _showSearchDialog(context),
-                      icon: const Icon(Icons.search, size: 22),
-                      color: AppColors.textSecondary,
-                      padding: EdgeInsets.zero,
-                    ),
-                  ),
-                ],
-              ),
+  children: [
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Recordings',
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(fontWeight: FontWeight.bold),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '${meetings.length} recent recordings',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textMuted,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    ),
+    const SizedBox(width: 12),
+    SizedBox(
+      width: 160, // slightly smaller = safer
+      child: TextField(
+        controller: _searchController,
+        onChanged: (value) {
+          context.read<MeetingService>().searchByTitleLive(value);
+        },
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: 'Search...',
+          prefixIcon: Icon(Icons.search, color: AppColors.textMuted),
+          filled: true,
+          fillColor: AppColors.cardDark,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide.none,
+          ),
+          isDense: true,
+        ),
+      ),
+    ),
+  ],
+),
+
             ),
             // Section header
             Padding(
@@ -233,40 +248,6 @@ class _RecordingsTabState extends State<RecordingsTab> {
       builder: (_) => const CreateRecordSheet(),
     );
   }
-  void _showSearchDialog(BuildContext context) {
-  final controller = TextEditingController(
-    text: context.read<MeetingService>().searchTitle,
-  );
-
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('Search recordings'),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        decoration: const InputDecoration(
-          hintText: 'Enter meeting title',
-        ),
-          onChanged: (value) {
-    context.read<MeetingService>().searchByTitleLive(value);
-  },
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            context.read<MeetingService>().clearSearch();
-            Navigator.pop(context);
-          },
-          child: const Text('Clear'),
-        ),
-      ],
-    ),
-  );
-}
-
-
-
 }
 
 class _MeetingCard extends StatelessWidget {
@@ -534,7 +515,7 @@ class _StatusBadge extends StatelessWidget {
     if (meeting.transcriptStatus == 'DONE' && meeting.hasSummary) {
       color = AppColors.success;
       bgColor = AppColors.success.withValues(alpha: 0.1);
-      text = 'Completed';
+      text = 'Ready';
       icon = Icons.check_circle;
     } else if (meeting.transcriptStatus == 'PROCESSING') {
       color = AppColors.warning;
@@ -549,7 +530,7 @@ class _StatusBadge extends StatelessWidget {
     } else {
       color = AppColors.textMuted;
       bgColor = AppColors.textMuted.withValues(alpha: 0.1);
-      text = 'Not processed';
+      text = 'Raw Audio';
       icon = Icons.hourglass_empty;
     }
 
