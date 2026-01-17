@@ -1,8 +1,10 @@
-import 'package:aimateflutter/models/meeting.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../components/bouncing_button.dart';
 import '../../components/button.dart';
+import '../../components/shimmer_loading.dart';
+import '../../models/meeting.dart';
 import '../../services/meeting.dart';
 import '../../navigation/app_routes.dart';
 import '../../theme/colors.dart';
@@ -48,13 +50,13 @@ class _RecordingsTabState extends State<RecordingsTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Ghi âm',
+                        'Recordings',
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${meetings.length} bản ghi gần đây',
+                        '${meetings.length} recent recordings',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textMuted,
                         ),
@@ -87,7 +89,7 @@ class _RecordingsTabState extends State<RecordingsTab> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'DANH SÁCH',
+                    'LIST',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: AppColors.textMuted,
                       fontWeight: FontWeight.w600,
@@ -118,7 +120,7 @@ class _RecordingsTabState extends State<RecordingsTab> {
             // List
             Expanded(
               child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const RecordingListShimmer()
                   : RefreshIndicator(
                       onRefresh: () => meetingService.loadMeetings(),
                       child: meetings.isEmpty
@@ -129,25 +131,23 @@ class _RecordingsTabState extends State<RecordingsTab> {
           ],
         ),
       ),
-      floatingActionButton: Container(
-        width: 64,
-        height: 64,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.3),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: () => _showCreateRecordSheet(context),
-          shape: RoundedRectangleBorder(
+      floatingActionButton: BouncingButton(
+        onPressed: () => _showCreateRecordSheet(context),
+        child: Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: AppColors.primary,
             borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: const Icon(Icons.mic, size: 32),
+          child: const Icon(Icons.mic, size: 32, color: Colors.white),
         ),
       ),
     );
@@ -181,12 +181,12 @@ class _RecordingsTabState extends State<RecordingsTab> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Chưa có bản ghi nào',
+                    'No recordings yet',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Nhấn nút mic để bắt đầu ghi âm cuộc họp đầu tiên.',
+                    'Tap the mic button to start recording your first meeting.',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
@@ -194,7 +194,7 @@ class _RecordingsTabState extends State<RecordingsTab> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Kéo xuống để làm mới',
+                    'Pull down to refresh',
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
@@ -242,190 +242,198 @@ class _MeetingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.cardDark,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: () {
-          Navigator.pushNamed(
-            context,
-            AppRoutes.recordDetail,
-            arguments: meeting.id,
-          );
-        },
+    return Hero(
+      tag: 'meeting_card_${meeting.id}',
+      child: Material(
+        color: AppColors.cardDark,
         borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title row
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          meeting.title,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              formatDate(meeting.startedAt),
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppColors.textMuted),
-                            ),
-                            Container(
-                              width: 4,
-                              height: 4,
-                              margin: const EdgeInsets.symmetric(horizontal: 8),
-                              decoration: BoxDecoration(
-                                color: AppColors.textMuted.withValues(
-                                  alpha: 0.5,
-                                ),
-                                shape: BoxShape.circle,
+        child: InkWell(
+          onTap: () {
+            Navigator.pushNamed(
+              context,
+              AppRoutes.recordDetail,
+              arguments: meeting.id,
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title row
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            meeting.title,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Text(
+                                formatDate(meeting.startedAt),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.textMuted),
                               ),
-                            ),
-                            Text(
-                              formatDuration(meeting.duration),
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppColors.textSecondary),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    onSelected: (value) async {
-                      if (value == 'delete') {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Xóa bản ghi?'),
-                            content: Text(
-                              'Bạn có chắc muốn xóa "${meeting.title}"?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Hủy'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text(
-                                  'Xóa',
-                                  style: TextStyle(color: Colors.red),
+                              Container(
+                                width: 4,
+                                height: 4,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 8,
                                 ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.textMuted.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              Text(
+                                formatDuration(meeting.duration),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.textSecondary),
                               ),
                             ],
                           ),
-                        );
-
-                        if (confirmed == true) {
-                          try {
-                            await Repository.delete(meeting.id);
-                            context.read<MeetingService>().loadMeetings();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Đã xóa "${meeting.title}"'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      onSelected: (value) async {
+                        if (value == 'delete') {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Delete recording?'),
+                              content: Text(
+                                'Are you sure you want to delete "${meeting.title}"?',
                               ),
-                            );
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Lỗi: ${e.toString()}')),
-                            );
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirmed == true) {
+                            try {
+                              await Repository.delete(meeting.id);
+                              if (!context.mounted) return;
+                              context.read<MeetingService>().loadMeetings();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Deleted "${meeting.title}"'),
+                                ),
+                              );
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error: ${e.toString()}')),
+                              );
+                            }
                           }
+                        } else if (value == 'rename') {
+                          _showRenameDialog(context, meeting);
                         }
-                      } else if (value == 'rename') {
-                        _showRenameDialog(context, meeting);
-                      }
-                    },
-                    icon: Icon(
-                      Icons.more_vert,
-                      size: 20,
-                      color: AppColors.textMuted,
+                      },
+                      icon: Icon(
+                        Icons.more_vert,
+                        size: 20,
+                        color: AppColors.textMuted,
+                      ),
+                      color: AppColors.cardDark,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'share',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.share,
+                                size: 20,
+                                color: AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: 12),
+                              const Text('Share'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'rename',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.edit,
+                                size: 20,
+                                color: AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: 12),
+                              const Text('Rename'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuDivider(),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete,
+                                size: 20,
+                                color: AppColors.error,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Delete',
+                                style: TextStyle(color: AppColors.error),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    color: AppColors.cardDark,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Status & Play row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _StatusBadge(meeting: meeting),
+                    PlayButton(
+                      onPressed: () {
+                        // TODO: Quick play
+                      },
                     ),
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'share',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.share,
-                              size: 20,
-                              color: AppColors.textSecondary,
-                            ),
-                            const SizedBox(width: 12),
-                            const Text('Chia sẻ'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'rename',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.edit,
-                              size: 20,
-                              color: AppColors.textSecondary,
-                            ),
-                            const SizedBox(width: 12),
-                            const Text('Đổi tên'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuDivider(),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.delete,
-                              size: 20,
-                              color: AppColors.error,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Xóa',
-                              style: TextStyle(color: AppColors.error),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              // Status & Play row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _StatusBadge(meeting: meeting),
-                  PlayButton(
-                    onPressed: () {
-                      // TODO: Quick play
-                    },
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -439,16 +447,16 @@ void _showRenameDialog(BuildContext context, MeetingResponse meeting) {
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Đổi tên'),
+      title: const Text('Rename'),
       content: TextField(
         controller: controller,
         autofocus: true,
-        decoration: const InputDecoration(hintText: 'Nhập tên mới'),
+        decoration: const InputDecoration(hintText: 'Enter new name'),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Hủy'),
+          child: const Text('Cancel'),
         ),
         TextButton(
           onPressed: () async {
@@ -456,19 +464,21 @@ void _showRenameDialog(BuildContext context, MeetingResponse meeting) {
             if (newName.isNotEmpty && newName != meeting.title) {
               try {
                 await Repository.rename(meeting.id, newName);
+                if (!context.mounted) return;
                 context.read<MeetingService>().loadMeetings();
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Đã đổi tên thành "$newName"')),
+                  SnackBar(content: Text('Renamed to "$newName"')),
                 );
               } catch (e) {
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(
                   context,
-                ).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}')));
+                ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
               }
             }
           },
-          child: const Text('Lưu'),
+          child: const Text('Save'),
         ),
       ],
     ),
@@ -490,22 +500,22 @@ class _StatusBadge extends StatelessWidget {
     if (meeting.transcriptStatus == 'DONE' && meeting.hasSummary) {
       color = AppColors.success;
       bgColor = AppColors.success.withValues(alpha: 0.1);
-      text = 'Hoàn thành';
+      text = 'Completed';
       icon = Icons.check_circle;
     } else if (meeting.transcriptStatus == 'PROCESSING') {
       color = AppColors.warning;
       bgColor = AppColors.warning.withValues(alpha: 0.1);
-      text = 'Đang xử lý';
+      text = 'Processing';
       icon = Icons.schedule;
     } else if (meeting.transcriptStatus == 'FAILED') {
       color = AppColors.error;
       bgColor = AppColors.error.withValues(alpha: 0.1);
-      text = 'Lỗi';
+      text = 'Error';
       icon = Icons.error;
     } else {
       color = AppColors.textMuted;
       bgColor = AppColors.textMuted.withValues(alpha: 0.1);
-      text = 'Chưa xử lý';
+      text = 'Not processed';
       icon = Icons.hourglass_empty;
     }
 

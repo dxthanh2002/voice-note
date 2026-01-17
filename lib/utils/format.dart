@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 
@@ -24,5 +25,5 @@ String formatDuration(Duration? duration) {
 void printFormatted(dynamic data) {
   const encoder = JsonEncoder.withIndent('  ');
   final formatted = encoder.convert(data);
-  print(formatted);
+  debugPrint(formatted);
 }

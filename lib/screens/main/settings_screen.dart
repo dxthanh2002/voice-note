@@ -102,8 +102,8 @@ class _SettingsTabState extends State<SettingsTab> {
                 items: [
                   _SettingsItem(
                     icon: Icons.workspace_premium,
-                    title: 'Nâng cấp Pro',
-                    subtitle: 'Ghi âm & tóm tắt không giới hạn',
+                    title: 'Upgrade to Pro',
+                    subtitle: 'Unlimited recording & summary',
                     onTap: () {
                       Navigator.pushNamed(context, AppRoutes.upgrade);
                     },

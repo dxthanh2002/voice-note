@@ -60,7 +60,7 @@ class ChatAITab extends StatelessWidget {
           const SizedBox(height: 28),
           // Title
           Text(
-            'Tính năng Pro',
+            'Pro Feature',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -70,7 +70,7 @@ class ChatAITab extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
-              'Nâng cấp lên gói Pro để mở khóa tính năng Chat AI và nhiều tính năng cao cấp khác.',
+              'Upgrade to Pro to unlock the AI Chat feature and many other premium features.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textSecondary,
@@ -99,7 +99,7 @@ class ChatAITab extends StatelessWidget {
                   shadowColor: const Color(0xFF6366F1).withValues(alpha: 0.4),
                 ),
                 child: const Text(
-                  'Nâng cấp lên Pro',
+                  'Upgrade to Pro',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

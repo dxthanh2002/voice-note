@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../theme/colors.dart';
-import '../../../components/app_button.dart';
 
 class RecordingControlsBar extends StatelessWidget {
   const RecordingControlsBar({
@@ -62,26 +61,25 @@ class RecordingControlsBar extends StatelessWidget {
               children: [
                 // Pause button
                 Expanded(
-                  child: AppButton(
+                  child: _BouncingButton(
                     onPressed: onPause,
-                    icon: isPaused ? Icons.play_arrow : Icons.pause,
-                    label: isPaused ? 'Tiếp tục' : 'Tạm dừng',
-                    size: AppButtonSize.large,
-                    variant: AppButtonVariant.secondary,
-                    fullWidth: true,
+                    child: _ControlButton(
+                      icon: isPaused ? Icons.play_arrow : Icons.pause,
+                      label: isPaused ? 'Resume' : 'Pause',
+                      isPrimary: false,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 // Stop button
                 Expanded(
-                  child: AppButton(
+                  child: _BouncingButton(
                     onPressed: onStop,
-                    icon: Icons.stop,
-                    label: 'Dừng',
-                    size: AppButtonSize.large,
-                    variant: AppButtonVariant.primary,
-                    isDestructive: true,
-                    fullWidth: true,
+                    child: const _ControlButton(
+                      icon: Icons.stop,
+                      label: 'Stop',
+                      isPrimary: true,
+                    ),
                   ),
                 ),
               ],
@@ -148,7 +146,7 @@ class _RecordingBadgeState extends State<_RecordingBadge>
   @override
   Widget build(BuildContext context) {
     final color = widget.isPaused ? AppColors.warning : Colors.red;
-    final text = widget.isPaused ? 'ĐÃ TẠM DỪNG' : 'ĐANG GHI ÂM';
+    final text = widget.isPaused ? 'PAUSED' : 'RECORDING';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -232,6 +230,150 @@ class _WaveformVisualization extends StatelessWidget {
             ),
           );
         }),
+      ),
+    );
+  }
+}
+
+class _ControlButton extends StatelessWidget {
+  const _ControlButton({
+    required this.icon,
+    required this.label,
+    required this.isPrimary,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isPrimary;
+
+  @override
+  Widget build(BuildContext context) {
+    final backgroundColor = isPrimary ? AppColors.error : AppColors.cardDark;
+    final textColor = isPrimary ? Colors.white : AppColors.textPrimary;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        border: isPrimary
+            ? null
+            : Border.all(color: AppColors.dividerDark, width: 1),
+        boxShadow: isPrimary
+            ? [
+                BoxShadow(
+                  color: AppColors.error.withValues(alpha: 0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: textColor, size: 24),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BouncingButton extends StatefulWidget {
+  const _BouncingButton({
+    required this.onPressed,
+    required this.child,
+  });
+
+  final VoidCallback onPressed;
+  final Widget child;
+
+  @override
+  State<_BouncingButton> createState() => _BouncingButtonState();
+}
+
+class _BouncingButtonState extends State<_BouncingButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.08)
+            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 35,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.08, end: 0.97)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 30,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.97, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 35,
+      ),
+    ]).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    setState(() => _isPressed = true);
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    setState(() => _isPressed = false);
+    _controller.forward(from: 0);
+    widget.onPressed();
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.88 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _controller.isAnimating ? _scaleAnimation.value : 1.0,
+              child: child,
+            );
+          },
+          child: widget.child,
+        ),
       ),
     );
   }

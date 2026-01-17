@@ -34,7 +34,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
   bool _isPlaying = false;
   bool _loading = true;
 
-  final List<String> _tabs = ['Phiên âm', 'Tóm tắt', 'Chat AI'];
+  final List<String> _tabs = ['Transcript', 'Summary', 'Chat AI'];
 
   @override
   void initState() {
@@ -109,19 +109,22 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
 
     final meeting = _detail!.meeting;
 
-    return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // App Bar
-            _buildAppBar(context),
-            // Content
-            Expanded(child: _buildContent(meeting)),
-            // Bottom bar - Audio player
-            _buildBottomBar(),
-          ],
+    return Hero(
+      tag: 'meeting_card_${widget.id}',
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundDark,
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              // App Bar
+              _buildAppBar(context),
+              // Content
+              Expanded(child: _buildContent(meeting)),
+              // Bottom bar - Audio player
+              _buildBottomBar(),
+            ],
+          ),
         ),
       ),
     );
@@ -186,7 +189,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
               // ),
               // const SizedBox(height: 4),
               Text(
-                'Đã ghi vào ${formatDate(meeting.startedAt)}',
+                'Recorded on ${formatDate(meeting.startedAt)}',
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
@@ -264,12 +267,5 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
         // TODO: Share
       },
     );
-  }
-
-  String _getFileName(String title) {
-    // Convert title to filename format
-    return title
-        .replaceAll(' ', '_')
-        .replaceAll(RegExp(r'[^a-zA-Z0-9_\u00C0-\u024F]'), '');
   }
 }

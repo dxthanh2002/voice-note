@@ -38,11 +38,11 @@ class AudioPresignedResponse {
   // Get formatted expiration time
   String get expiresInFormatted {
     if (expiresIn < 60) {
-      return '$expiresIn giây';
+      return '$expiresIn seconds';
     } else if (expiresIn < 3600) {
-      return '${(expiresIn / 60).round()} phút';
+      return '${(expiresIn / 60).round()} minutes';
     } else {
-      return '${(expiresIn / 3600).round()} giờ';
+      return '${(expiresIn / 3600).round()} hours';
     }
   }
 }

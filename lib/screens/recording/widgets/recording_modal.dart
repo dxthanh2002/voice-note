@@ -30,7 +30,7 @@ class RecordingModal extends StatefulWidget {
 }
 
 class _RecordingModalState extends State<RecordingModal>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   RecordingModalState _state = RecordingModalState.initial;
   AudioService? _audioService;
 
@@ -38,6 +38,11 @@ class _RecordingModalState extends State<RecordingModal>
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+
+  late AnimationController _appearController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
@@ -51,11 +56,35 @@ class _RecordingModalState extends State<RecordingModal>
     _pulseAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+
+    _appearController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _appearController, curve: Curves.easeOutBack),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _appearController, curve: Curves.easeOut),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _appearController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+
+    _appearController.forward();
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
+    _appearController.dispose();
     _audioService?.dispose();
     super.dispose();
   }
@@ -83,7 +112,7 @@ class _RecordingModalState extends State<RecordingModal>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền truy cập.',
+            'Unable to start recording. Please check permissions.',
           ),
           backgroundColor: AppColors.error,
         ),
@@ -129,9 +158,10 @@ class _RecordingModalState extends State<RecordingModal>
         );
 
         final code = await Repository.uploadAudio(presigned.url, filePath);
-        print("CODE: $code");
+        debugPrint("CODE: $code");
 
         final responseConfirm = await Repository.confirm(presigned.audioId);
+        if (!mounted) return;
 
         final meetingService = context.read<MeetingService>();
         await meetingService.loadMeetings();
@@ -142,7 +172,7 @@ class _RecordingModalState extends State<RecordingModal>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Lỗi khi tải lên: $e'),
+              content: Text('Upload error: $e'),
               backgroundColor: AppColors.error,
             ),
           );
@@ -154,7 +184,7 @@ class _RecordingModalState extends State<RecordingModal>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi khi dừng ghi âm: $e'),
+            content: Text('Error stopping recording: $e'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -179,25 +209,34 @@ class _RecordingModalState extends State<RecordingModal>
         child: Material(
           color: Colors.transparent,
           child: Center(
-            child: GestureDetector(
-              onTap: () {}, // Prevent tap from propagating to parent
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 32),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.cardDark,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 32),
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardDark,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: _state == RecordingModalState.initial
+                          ? _buildInitialState()
+                          : _buildRecordingState(),
                     ),
-                  ],
+                  ),
                 ),
-                child: _state == RecordingModalState.initial
-                    ? _buildInitialState()
-                    : _buildRecordingState(),
               ),
             ),
           ),
@@ -222,7 +261,7 @@ class _RecordingModalState extends State<RecordingModal>
         ),
         const SizedBox(height: 20),
         const Text(
-          'Sẵn sàng ghi âm',
+          'Ready to record',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -231,33 +270,41 @@ class _RecordingModalState extends State<RecordingModal>
         ),
         const SizedBox(height: 8),
         Text(
-          'Nhấn nút bên dưới để bắt đầu',
+          'Tap the button below to start',
           style: TextStyle(fontSize: 14, color: AppColors.textMuted),
         ),
         const SizedBox(height: 24),
-        // Start button
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _startRecording,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+        _BouncingButton(
+          onPressed: _startRecording,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: const Text(
-              'Bắt đầu ghi âm',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              'Start recording',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
         const SizedBox(height: 12),
         // Cancel hint
         Text(
-          'Chạm bên ngoài để hủy',
+          'Tap outside to cancel',
           style: TextStyle(
             fontSize: 12,
             color: AppColors.textMuted.withValues(alpha: 0.7),
@@ -303,7 +350,7 @@ class _RecordingModalState extends State<RecordingModal>
               ),
             if (isRecording) const SizedBox(width: 8),
             Text(
-              isPaused ? 'Đã tạm dừng' : 'Đang ghi âm...',
+              isPaused ? 'Paused' : 'Recording...',
               style: TextStyle(
                 color: isPaused ? AppColors.warning : AppColors.error,
                 fontSize: 14,
@@ -360,7 +407,7 @@ class _RecordingModalState extends State<RecordingModal>
             // Pause/Resume button
             _ModalControlButton(
               icon: isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-              label: isPaused ? 'Tiếp tục' : 'Tạm dừng',
+              label: isPaused ? 'Resume' : 'Pause',
               backgroundColor: isPaused ? AppColors.success : AppColors.primary,
               onTap: _togglePause,
             ),
@@ -368,7 +415,7 @@ class _RecordingModalState extends State<RecordingModal>
             // Stop button
             _ModalControlButton(
               icon: Icons.stop_rounded,
-              label: 'Dừng',
+              label: 'Stop',
               backgroundColor: AppColors.error,
               onTap: _stopRecording,
             ),
@@ -426,6 +473,100 @@ class _ModalControlButton extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _BouncingButton extends StatefulWidget {
+  const _BouncingButton({required this.onPressed, required this.child});
+
+  final VoidCallback onPressed;
+  final Widget child;
+
+  @override
+  State<_BouncingButton> createState() => _BouncingButtonState();
+}
+
+class _BouncingButtonState extends State<_BouncingButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(
+          begin: 1.0,
+          end: 1.08,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 35,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(
+          begin: 1.08,
+          end: 0.97,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 30,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(
+          begin: 0.97,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 35,
+      ),
+    ]).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    setState(() => _isPressed = true);
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    setState(() => _isPressed = false);
+    _controller.forward(from: 0);
+    widget.onPressed();
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.88 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _controller.isAnimating ? _scaleAnimation.value : 1.0,
+              child: child,
+            );
+          },
+          child: widget.child,
+        ),
+      ),
     );
   }
 }

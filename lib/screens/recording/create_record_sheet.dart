@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../components/bouncing_button.dart';
 import '../../navigation/app_routes.dart';
 import '../../theme/colors.dart';
 import 'widgets/recording_modal.dart';
@@ -43,7 +44,7 @@ class CreateRecordSheet extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Bản ghi mới',
+                    'New recording',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -71,8 +72,7 @@ class CreateRecordSheet extends StatelessWidget {
                 onTap: () async {
                   final meetingId = await RecordingModal.show(context);
 
-                  print("haha");
-
+                  if (!context.mounted) return;
                   if (meetingId != null && meetingId.isNotEmpty) {
                     Navigator.pushNamed(
                       context,
@@ -134,126 +134,55 @@ class _PrimaryRecordButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.primary,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Icon container
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.mic, color: Colors.white, size: 24),
-              ),
-              const SizedBox(width: 16),
-
-              // Text
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Bắt đầu ghi âm ngay',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Chạm để bắt đầu',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Arrow icon
-              Icon(
-                Icons.arrow_forward,
-                color: Colors.white.withValues(alpha: 0.7),
-                size: 24,
-              ),
-            ],
-          ),
+    return BouncingButton(
+      onPressed: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(16),
         ),
-      ),
-    );
-  }
-}
-
-/// Secondary option card for Schedule and Import
-class _SecondaryOptionCard extends StatelessWidget {
-  const _SecondaryOptionCard({
-    required this.icon,
-    required this.iconBackgroundColor,
-    required this.iconColor,
-    required this.title,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final Color iconBackgroundColor;
-  final Color iconColor;
-  final String title;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.backgroundDark.withValues(alpha: 0.5),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AppColors.dividerDark.withValues(alpha: 0.5),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.mic, color: Colors.white, size: 24),
             ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icon container
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: iconBackgroundColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: iconColor, size: 22),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Start recording now',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Tap to begin',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-
-              // Title
-              Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+            ),
+            Icon(
+              Icons.arrow_forward,
+              color: Colors.white.withValues(alpha: 0.7),
+              size: 24,
+            ),
+          ],
         ),
       ),
     );

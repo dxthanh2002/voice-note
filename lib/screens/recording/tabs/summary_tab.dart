@@ -68,7 +68,7 @@ class SummaryTab extends StatelessWidget {
           const SizedBox(height: 24),
           // Title
           Text(
-            'Chưa có bản tóm tắt',
+            'No summary yet',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -78,7 +78,7 @@ class SummaryTab extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
-              'Đoạn hội thoại này chưa được xử lý. Nhấn nút bên dưới để tạo bản tóm tắt bằng AI.',
+              'This conversation has not been processed. Tap the button below to create an AI summary.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textSecondary,
@@ -97,7 +97,7 @@ class SummaryTab extends StatelessWidget {
                   // TODO: Start summarization
                 },
                 icon: const Icon(Icons.auto_awesome, size: 20),
-                label: const Text('Tóm tắt bằng AI'),
+                label: const Text('Summarize with AI'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,

@@ -73,7 +73,7 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền truy cập.',
+            'Unable to start recording. Please check permissions.',
           ),
           backgroundColor: AppColors.error,
         ),
@@ -92,7 +92,7 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Đã lưu ghi âm: ${p.basename(filePath)}'),
+          content: Text('Recording saved: ${p.basename(filePath)}'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -108,17 +108,17 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardDark,
-        title: const Text('Hủy ghi âm?'),
-        content: const Text('Bản ghi âm này sẽ bị xóa và không thể khôi phục.'),
+        title: const Text('Cancel recording?'),
+        content: const Text('This recording will be deleted and cannot be recovered.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Tiếp tục ghi'),
+            child: const Text('Continue recording'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Hủy ghi âm'),
+            child: const Text('Cancel recording'),
           ),
         ],
       ),
@@ -145,7 +145,7 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
           onPressed: _cancelRecording,
           icon: const Icon(Icons.close),
         ),
-        title: const Text('Ghi âm mới'),
+        title: const Text('New recording'),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -182,7 +182,7 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
                   const SizedBox(width: 8),
                 ],
                 Text(
-                  isPaused ? 'Đã tạm dừng' : 'Đang ghi âm...',
+                  isPaused ? 'Paused' : 'Recording...',
                   style: TextStyle(
                     color: isPaused ? AppColors.warning : AppColors.error,
                     fontSize: 16,
@@ -206,8 +206,8 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
             // Subtitle
             Text(
               isPaused
-                  ? 'Nhấn nút phát để tiếp tục'
-                  : 'Đang thu âm từ microphone',
+                  ? 'Tap play to resume'
+                  : 'Recording from microphone',
               style: TextStyle(color: AppColors.textMuted, fontSize: 14),
             ),
             const SizedBox(height: 32),
@@ -258,7 +258,7 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
                   // Stop button
                   _ControlButton(
                     icon: Icons.stop_rounded,
-                    label: 'Dừng',
+                    label: 'Stop',
                     backgroundColor: AppColors.cardDark,
                     iconColor: AppColors.textPrimary,
                     size: 72,
@@ -270,7 +270,7 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
                     icon: isPaused
                         ? Icons.play_arrow_rounded
                         : Icons.pause_rounded,
-                    label: isPaused ? 'Tiếp tục' : 'Tạm dừng',
+                    label: isPaused ? 'Resume' : 'Pause',
                     backgroundColor: isPaused
                         ? AppColors.success
                         : AppColors.primary,

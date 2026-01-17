@@ -30,7 +30,7 @@ class RecordingPlaceholderTab extends StatelessWidget {
             const SizedBox(height: 24),
             // Message
             Text(
-              'Đang ghi âm, nội dung sẽ hiển thị sau',
+              'Recording in progress, content will appear later',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: AppColors.textMuted,

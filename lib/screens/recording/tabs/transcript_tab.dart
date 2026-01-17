@@ -95,7 +95,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
     } catch (e) {
       setState(() {
         _state = TranscriptState.failed;
-        _errorMessage = 'Không thể tạo bản phiên âm.\n${e.toString()}';
+        _errorMessage = 'Unable to create transcript.\n${e.toString()}';
         _isPolling = false;
       });
       debugPrint('Error in transcription: $e');
@@ -162,7 +162,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Đang kiểm tra...',
+                'Checking...',
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -248,7 +248,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
           const SizedBox(height: 24),
           // Title
           Text(
-            'Chưa có bản phiên âm',
+            'No transcript yet',
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -258,7 +258,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
-              'Đoạn hội thoại này chưa được xử lý. Nhấn nút bên dưới để tạo bản phiên âm văn bản.',
+              'This conversation has not been processed. Tap the button below to create a transcript.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
@@ -275,7 +275,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
               child: ElevatedButton.icon(
                 onPressed: _getTranscription,
                 icon: const Icon(Icons.transcribe, size: 20),
-                label: const Text('Phiên âm đoạn hội thoại'),
+                label: const Text('Transcribe conversation'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -315,14 +315,14 @@ class _TranscriptTabState extends State<TranscriptTab> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Đang phiên âm...',
+              'Transcribing...',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Text(
-              'Quá trình này có thể mất vài phút.\nVui lòng chờ...',
+              'This may take a few minutes.\nPlease wait...',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.textMuted,
@@ -342,7 +342,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Text(
-            'Không tìm thấy nội dung phiên âm',
+            'No transcript content found',
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
@@ -380,7 +380,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Có lỗi xảy ra',
+              'An error occurred',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -397,7 +397,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
             ElevatedButton.icon(
               onPressed: _getTranscription,
               icon: const Icon(Icons.refresh, size: 20),
-              label: const Text('Thử lại'),
+              label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
