@@ -37,8 +37,8 @@ dependencies:
   shared_preferences: ^2.3.2
 
   # Audio recording & playback
-  record: ^6.1.2
   just_audio: ^0.9.40
+  audio_waveforms: ^2.0.2
 
   # File & permissions
   path: ^1.9.0

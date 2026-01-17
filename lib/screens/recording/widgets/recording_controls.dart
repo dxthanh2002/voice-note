@@ -1,16 +1,20 @@
+import 'dart:ui' as ui;
+import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
-
+// dead code
 import '../../../theme/colors.dart';
 
 class RecordingControlsBar extends StatelessWidget {
   const RecordingControlsBar({
     super.key,
+    required this.controller,
     required this.duration,
     required this.isPaused,
     required this.onPause,
     required this.onStop,
   });
 
+  final RecorderController controller;
   final Duration duration;
   final bool isPaused;
   final VoidCallback onPause;
@@ -22,9 +26,7 @@ class RecordingControlsBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
       decoration: BoxDecoration(
         color: AppColors.backgroundDark,
-        border: Border(
-          top: BorderSide(color: AppColors.dividerDark),
-        ),
+        border: Border(top: BorderSide(color: AppColors.dividerDark)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -54,7 +56,27 @@ class RecordingControlsBar extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             // Waveform
-            _WaveformVisualization(isActive: !isPaused),
+            AudioWaveforms(
+              size: const Size(double.infinity, 40),
+              recorderController: controller,
+              enableGesture: false,
+              waveStyle: WaveStyle(
+                waveColor: AppColors.primary,
+                showDurationLabel: false,
+                spacing: 6.0,
+                showBottom: true,
+                extendWaveform: true,
+                showMiddleLine: false,
+                gradient: ui.Gradient.linear(
+                  const Offset(70, 50),
+                  const Offset(double.infinity, 0),
+                  [AppColors.primary.withValues(alpha: 0.5), AppColors.primary],
+                ),
+                scaleFactor: 100, // Make waves more visible
+                waveThickness: 3.0,
+                backgroundColor: Colors.transparent,
+              ),
+            ),
             const SizedBox(height: 24),
             // Control buttons
             Row(
@@ -119,9 +141,10 @@ class _RecordingBadgeState extends State<_RecordingBadge>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    _animation = Tween<double>(begin: 0.4, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 0.4,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     if (!widget.isPaused) {
       _controller.repeat(reverse: true);
     }
@@ -198,43 +221,6 @@ class _RecordingBadgeState extends State<_RecordingBadge>
   }
 }
 
-class _WaveformVisualization extends StatelessWidget {
-  const _WaveformVisualization({required this.isActive});
-
-  final bool isActive;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(7, (index) {
-          // Create varied heights for visual interest
-          final heights = [12.0, 20.0, 32.0, 40.0, 24.0, 16.0, 8.0];
-          final activeHeight = heights[index];
-          final inactiveHeight = 8.0;
-
-          return AnimatedContainer(
-            duration: Duration(milliseconds: 200 + index * 50),
-            width: 6,
-            height: isActive ? activeHeight : inactiveHeight,
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? (index == 3
-                      ? AppColors.primary
-                      : AppColors.primary.withValues(alpha: 0.4 + index * 0.1))
-                  : AppColors.textMuted.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(3),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
-
 class _ControlButton extends StatelessWidget {
   const _ControlButton({
     required this.icon,
@@ -289,10 +275,7 @@ class _ControlButton extends StatelessWidget {
 }
 
 class _BouncingButton extends StatefulWidget {
-  const _BouncingButton({
-    required this.onPressed,
-    required this.child,
-  });
+  const _BouncingButton({required this.onPressed, required this.child});
 
   final VoidCallback onPressed;
   final Widget child;
@@ -317,18 +300,24 @@ class _BouncingButtonState extends State<_BouncingButton>
 
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.08)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        tween: Tween<double>(
+          begin: 1.0,
+          end: 1.08,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 35,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.08, end: 0.97)
-            .chain(CurveTween(curve: Curves.easeInOut)),
+        tween: Tween<double>(
+          begin: 1.08,
+          end: 0.97,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 30,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.97, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween<double>(
+          begin: 0.97,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 35,
       ),
     ]).animate(_controller);

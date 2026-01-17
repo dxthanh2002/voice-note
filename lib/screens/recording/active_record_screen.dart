@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:path/path.dart' as p;
 
 import '../../services/audio.dart';
@@ -72,9 +74,7 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Unable to start recording. Please check permissions.',
-          ),
+          content: Text('Unable to start recording. Please check permissions.'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -109,7 +109,9 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardDark,
         title: const Text('Cancel recording?'),
-        content: const Text('This recording will be deleted and cannot be recovered.'),
+        content: const Text(
+          'This recording will be deleted and cannot be recovered.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -205,55 +207,43 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
             const SizedBox(height: 8),
             // Subtitle
             Text(
-              isPaused
-                  ? 'Tap play to resume'
-                  : 'Recording from microphone',
+              isPaused ? 'Tap play to resume' : 'Recording from microphone',
               style: TextStyle(color: AppColors.textMuted, fontSize: 14),
             ),
             const SizedBox(height: 32),
-            // Waveform placeholder
+            // Waveform visualization
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 32),
-              height: 96,
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.cardDark,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: (isRecording ? AppColors.primary : AppColors.textMuted)
-                      .withValues(alpha: 0.3),
+                  color: isRecording
+                      ? AppColors.primary.withValues(alpha: 0.3)
+                      : AppColors.dividerDark,
                 ),
               ),
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(20, (index) {
-                    final height = isRecording
-                        ? 20.0 + (index % 5) * 10.0
-                        : 8.0;
-                    return AnimatedContainer(
-                      duration: Duration(milliseconds: 200 + index * 20),
-                      width: 4,
-                      height: height,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      decoration: BoxDecoration(
-                        color:
-                            (isRecording
-                                    ? AppColors.primary
-                                    : AppColors.textMuted)
-                                .withValues(alpha: isRecording ? 0.8 : 0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    );
-                  }),
+              child: AudioWaveforms(
+                recorderController: _recorderService.recorderController,
+                size: Size(MediaQuery.of(context).size.width - 96, 64),
+                waveStyle: WaveStyle(
+                  waveColor: AppColors.primary,
+                  extendWaveform: true,
+                  showMiddleLine: false,
+                  spacing: 5.0,
+                  waveThickness: 3.0,
+                  showBottom: true,
+                  waveCap: StrokeCap.round,
                 ),
               ),
             ),
             const Spacer(),
             // Controls
             Padding(
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Stop button
                   _ControlButton(
@@ -264,7 +254,6 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
                     size: 72,
                     onTap: _stopRecording,
                   ),
-                  const SizedBox(width: 32),
                   // Pause/Resume button
                   _ControlButton(
                     icon: isPaused
@@ -279,9 +268,6 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
                     isMain: true,
                     onTap: _togglePause,
                   ),
-                  const SizedBox(width: 32),
-                  // Placeholder for alignment
-                  const SizedBox(width: 72),
                 ],
               ),
             ),
@@ -300,7 +286,7 @@ class _ActiveRecordScreenState extends State<ActiveRecordScreen>
   }
 }
 
-class _ControlButton extends StatelessWidget {
+class _ControlButton extends StatefulWidget {
   const _ControlButton({
     required this.icon,
     required this.label,
@@ -320,33 +306,64 @@ class _ControlButton extends StatelessWidget {
   final bool isMain;
 
   @override
+  State<_ControlButton> createState() => _ControlButtonState();
+}
+
+class _ControlButtonState extends State<_ControlButton> {
+  double _scale = 1.0;
+
+  void _onTapDown(TapDownDetails details) {
+    setState(() => _scale = 0.85);
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    setState(() => _scale = 1.0);
+    Future.delayed(const Duration(milliseconds: 100), () {
+      widget.onTap();
+    });
+  }
+
+  void _onTapCancel() {
+    setState(() => _scale = 1.0);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              shape: isMain ? BoxShape.circle : BoxShape.rectangle,
-              borderRadius: isMain ? null : BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: backgroundColor.withValues(alpha: 0.3),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
+          onTapDown: _onTapDown,
+          onTapUp: _onTapUp,
+          onTapCancel: _onTapCancel,
+          child: AnimatedScale(
+            scale: _scale,
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOutBack,
+            child: Material(
+              color: widget.backgroundColor,
+              shape: widget.isMain
+                  ? const CircleBorder()
+                  : RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+              elevation: 4,
+              shadowColor: widget.backgroundColor.withValues(alpha: 0.3),
+              child: SizedBox(
+                width: widget.size,
+                height: widget.size,
+                child: Icon(
+                  widget.icon,
+                  size: widget.size * 0.5,
+                  color: widget.iconColor,
                 ),
-              ],
+              ),
             ),
-            child: Icon(icon, size: size * 0.5, color: iconColor),
           ),
         ),
         const SizedBox(height: 8),
         Text(
-          label,
+          widget.label,
           style: TextStyle(
             color: AppColors.textMuted,
             fontSize: 12,

@@ -3,6 +3,7 @@ import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 
 import 'package:aimateflutter/services/repository.dart';
+import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:provider/provider.dart';
 
 import '../../../services/audio.dart';
@@ -373,38 +374,31 @@ class _RecordingModalState extends State<RecordingModal>
           ),
         ),
         const SizedBox(height: 16),
-        // Waveform
+        // Waveform visualization
         Container(
-          height: 48,
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: AppColors.backgroundDark,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(15, (index) {
-                final height = isRecording ? 12.0 + (index % 4) * 6.0 : 6.0;
-                return AnimatedContainer(
-                  duration: Duration(milliseconds: 150 + index * 15),
-                  width: 3,
-                  height: height,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  decoration: BoxDecoration(
-                    color:
-                        (isRecording ? AppColors.primary : AppColors.textMuted)
-                            .withValues(alpha: isRecording ? 0.8 : 0.3),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                );
-              }),
+          child: AudioWaveforms(
+            recorderController: _audioService!.recorderController,
+            size: Size(MediaQuery.of(context).size.width - 120, 48),
+            waveStyle: WaveStyle(
+              waveColor: AppColors.primary,
+              extendWaveform: true,
+              showMiddleLine: false,
+              spacing: 4.0,
+              waveThickness: 3.0,
+              showBottom: true,
+              waveCap: StrokeCap.round,
             ),
           ),
         ),
         const SizedBox(height: 24),
         // Controls
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // Pause/Resume button
             _ModalControlButton(
@@ -413,7 +407,6 @@ class _RecordingModalState extends State<RecordingModal>
               backgroundColor: isPaused ? AppColors.success : AppColors.primary,
               onTap: _togglePause,
             ),
-            const SizedBox(width: 24),
             // Stop button
             _ModalControlButton(
               icon: Icons.stop_rounded,
@@ -428,7 +421,7 @@ class _RecordingModalState extends State<RecordingModal>
   }
 }
 
-class _ModalControlButton extends StatelessWidget {
+class _ModalControlButton extends StatefulWidget {
   const _ModalControlButton({
     required this.icon,
     required this.label,
@@ -442,32 +435,61 @@ class _ModalControlButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_ModalControlButton> createState() => _ModalControlButtonState();
+}
+
+class _ModalControlButtonState extends State<_ModalControlButton> {
+  double _scale = 1.0;
+
+  void _onTapDown(TapDownDetails details) {
+    setState(() => _scale = 0.85);
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    setState(() => _scale = 1.0);
+    Future.delayed(const Duration(milliseconds: 100), () {
+      widget.onTap();
+    });
+  }
+
+  void _onTapCancel() {
+    setState(() => _scale = 1.0);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: backgroundColor.withValues(alpha: 0.4),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+          onTapDown: _onTapDown,
+          onTapUp: _onTapUp,
+          onTapCancel: _onTapCancel,
+          child: AnimatedScale(
+            scale: _scale,
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOutBack,
+            child: Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: widget.backgroundColor,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.backgroundColor.withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(widget.icon, size: 32, color: Colors.white),
             ),
-            child: Icon(icon, size: 32, color: Colors.white),
           ),
         ),
         const SizedBox(height: 8),
         Text(
-          label,
+          widget.label,
           style: TextStyle(
             color: AppColors.textMuted,
             fontSize: 12,
