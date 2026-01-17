@@ -6,7 +6,7 @@ import 'client_request.dart';
 import '../models/login.dart';
 import '../models/audio.dart';
 import '../models/meeting.dart';
-
+import '../models/transcript.dart';
 class Repository {
   static Future<LoginResponse> login(String deviceId, String platform) async {
     final response = await clientRequest.post(
@@ -137,6 +137,6 @@ class Repository {
       'app-audio-note/meetings/$id/summary',
     );
 
-    return SummaryTranscriptionResponse.fromJson(response.data['data']);
-  }
+  return SummaryTranscriptionResponse.fromJson(response.data['data']);
+}
 }
