@@ -27,11 +27,14 @@ class Repository {
     return MeetingResponse.fromJson(response.data['data']);
   }
 
-  static Future<List<MeetingResponse>> getMeetings() async {
-    final response = await clientRequest.get('app-audio-note/meetings');
+  static Future<List<MeetingResponse>> getMeetings(String? title) async {
+      final query = (title != null && title.trim().isNotEmpty)
+      ? '?title=${Uri.encodeQueryComponent(title)}'
+      : '';
+    final response = await clientRequest.get('app-audio-note/meetings$query');
     final List data = response.data['data'];
     return data.map((item) => MeetingResponse.fromJson(item)).toList();
-  }
+  } 
 
   static Future<MeetingDetail> getMeetingDetail(String meetingId) async {
     final response = await clientRequest.get(
