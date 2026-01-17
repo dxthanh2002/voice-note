@@ -8,7 +8,6 @@ class AppRoutes {
   static const String home = '/';
 
   // Recording flow
-  static const String activeRecord = '/record/active';
   static const String recordDetail = '/record/detail';
 
   // Subscription
