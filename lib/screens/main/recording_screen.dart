@@ -71,9 +71,9 @@ class _RecordingsTabState extends State<RecordingsTab> {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      onPressed: () {
+                      onPressed: () =>
                         // TODO: Search
-                      },
+                        _showSearchDialog(context),
                       icon: const Icon(Icons.search, size: 22),
                       color: AppColors.textSecondary,
                       padding: EdgeInsets.zero,
@@ -233,6 +233,40 @@ class _RecordingsTabState extends State<RecordingsTab> {
       builder: (_) => const CreateRecordSheet(),
     );
   }
+  void _showSearchDialog(BuildContext context) {
+  final controller = TextEditingController(
+    text: context.read<MeetingService>().searchTitle,
+  );
+
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Search recordings'),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        decoration: const InputDecoration(
+          hintText: 'Enter meeting title',
+        ),
+          onChanged: (value) {
+    context.read<MeetingService>().searchByTitleLive(value);
+  },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            context.read<MeetingService>().clearSearch();
+            Navigator.pop(context);
+          },
+          child: const Text('Clear'),
+        ),
+      ],
+    ),
+  );
+}
+
+
+
 }
 
 class _MeetingCard extends StatelessWidget {
