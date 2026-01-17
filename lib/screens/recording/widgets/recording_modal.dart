@@ -138,10 +138,12 @@ class _RecordingModalState extends State<RecordingModal>
       }
 
       // Get file size
-      final fileSize = await _audioService!.getFileSize(filePath);
+      // final fileSize = await _audioService!.getFileSize(filePath);
       final fileName = path.basename(filePath);
+      final duration = _audioService!.recordedDuration;
       debugPrint('Recording saved: $filePath');
-      debugPrint('Duration: ${_audioService!.recordedDuration}');
+      debugPrint('Duration: $duration');
+      debugPrint('Seconds: ${duration.inSeconds}}');
 
       // Get presigned URL and upload to S3
       debugPrint('Meeting title: $fileName');
@@ -154,7 +156,7 @@ class _RecordingModalState extends State<RecordingModal>
         final presigned = await Repository.getPresignedUrl(
           newMeeting.id,
           fileName,
-          fileSize,
+          duration.inSeconds,
         );
 
         final code = await Repository.uploadAudio(presigned.url, filePath);

@@ -213,7 +213,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
       case 0:
         return TranscriptTab(id: id);
       case 1:
-        return const SummaryTab();
+        return SummaryTab(id: id);
       case 2:
         return const ChatAITab();
       default:

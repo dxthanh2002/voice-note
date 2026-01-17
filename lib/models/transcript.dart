@@ -54,3 +54,39 @@ class TranscriptItem {
     return '$minutes:$seconds';
   }
 }
+
+// models/summary.dart
+class SummaryTranscriptionResponse {
+  final String id;
+  final String meetingId;
+  final String transcriptId;
+  final String content;
+  final String type; // "bullets", "paragraph", etc.
+  final String model; // "assemblyai", "gpt", etc.
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  const SummaryTranscriptionResponse({
+    required this.id,
+    required this.meetingId,
+    required this.transcriptId,
+    required this.content,
+    required this.type,
+    required this.model,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory SummaryTranscriptionResponse.fromJson(Map<String, dynamic> json) {
+    return SummaryTranscriptionResponse(
+      id: json['_id'] ?? '',
+      meetingId: json['meetingId'] ?? '',
+      transcriptId: json['transcriptId'] ?? '',
+      content: json['content'] ?? '',
+      type: json['type'] ?? 'bullets',
+      model: json['model'] ?? 'assemblyai',
+      createdAt: DateTime.parse(json['createdAt']),
+      updatedAt: DateTime.parse(json['updatedAt']),
+    );
+  }
+}
