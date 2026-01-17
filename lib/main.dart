@@ -55,7 +55,7 @@ class AppRoot extends StatelessWidget {
           return const OnboardingScreen();
         }
         // TODO: Check and extend token here
-        print("HIHI");
+
         return const MainTabsScreen();
       },
     );

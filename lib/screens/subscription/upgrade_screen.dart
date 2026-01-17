@@ -40,7 +40,7 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
                     children: [
                       // Headline
                       Text(
-                        'Ghi âm & Tóm tắt không giới hạn với Pro',
+                        'Unlimited Recording & Summary with Pro',
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -49,7 +49,7 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
                       const SizedBox(height: 12),
                       // Subtitle
                       Text(
-                        'Nâng cao hiệu suất cuộc họp của bạn, không bỏ lỡ bất kỳ chi tiết quan trọng nào.',
+                        'Boost your meeting productivity, never miss any important details.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -59,38 +59,38 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
                       // Benefits list
                       _buildBenefit(
                         icon: Icons.timer,
-                        text: 'Ghi âm không giới hạn thời gian',
+                        text: 'Unlimited recording time',
                       ),
                       _buildBenefit(
                         icon: Icons.auto_awesome,
-                        text: 'Tóm tắt AI nâng cao & chính xác hơn',
+                        text: 'Advanced & more accurate AI summary',
                       ),
                       _buildBenefit(
                         icon: Icons.cloud_upload,
-                        text: 'Lưu trữ trên cloud không giới hạn',
+                        text: 'Unlimited cloud storage',
                       ),
                       _buildBenefit(
                         icon: Icons.description,
-                        text: 'Xuất file với nhiều định dạng',
+                        text: 'Export in multiple formats',
                       ),
                       _buildBenefit(
                         icon: Icons.support_agent,
-                        text: 'Hỗ trợ ưu tiên',
+                        text: 'Priority support',
                       ),
                       const SizedBox(height: 32),
                       // Pricing cards
                       _buildPricingCard(
-                        title: 'Gói Tháng',
-                        price: '129.000đ/tháng',
+                        title: 'Monthly',
+                        price: '\$4.99/month',
                         isSelected: !_isYearlySelected,
                         onTap: () => setState(() => _isYearlySelected = false),
                       ),
                       const SizedBox(height: 12),
                       _buildPricingCard(
-                        title: 'Gói Năm',
-                        price: '1.099.000đ/năm',
-                        subtitle: 'Chỉ 91.500đ/tháng',
-                        badge: 'TIẾT KIỆM 30%',
+                        title: 'Yearly',
+                        price: '\$39.99/year',
+                        subtitle: 'Only \$3.33/month',
+                        badge: 'SAVE 30%',
                         isSelected: _isYearlySelected,
                         onTap: () => setState(() => _isYearlySelected = true),
                       ),
@@ -133,7 +133,7 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
                         shadowColor: AppColors.primary.withValues(alpha: 0.3),
                       ),
                       child: const Text(
-                        'Nâng cấp ngay',
+                        'Upgrade now',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -144,7 +144,7 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
                   const SizedBox(height: 16),
                   // Payment info text
                   Text(
-                    'Giao dịch sẽ tự động gia hạn. Hủy bất cứ lúc nào.',
+                    'Subscription auto-renews. Cancel anytime.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textMuted,
                         ),
@@ -157,7 +157,7 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
                       // TODO: Implement restore
                     },
                     child: Text(
-                      'Khôi phục giao dịch',
+                      'Restore purchase',
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w500,

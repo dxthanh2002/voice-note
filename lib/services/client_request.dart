@@ -18,13 +18,6 @@ final Dio clientRequest = Dio(
 
 void setAuthToken(String? token) {
   if (token != null && token.isNotEmpty) {
-    print("hi");
     clientRequest.options.headers['Authorization'] = 'Bearer $token';
   }
-
-  print('=== Current Headers ===');
-  clientRequest.options.headers.forEach((key, value) {
-    print('$key: $value');
-  });
-  print('=======================');
 }

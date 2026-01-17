@@ -34,9 +34,7 @@ class AudioPlayerBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
         color: AppColors.backgroundDark,
-        border: Border(
-          top: BorderSide(color: AppColors.dividerDark),
-        ),
+        border: Border(top: BorderSide(color: AppColors.dividerDark)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -49,41 +47,44 @@ class AudioPlayerBar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.edit_note,
-                    label: 'Chỉnh sửa',
-                    onPressed: onEdit,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.ios_share,
-                    label: 'Chia sẻ',
-                    onPressed: onShare,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
+            // TODO: Uncomment when Edit/Share features are developed
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: _ActionButton(
+            //         icon: Icons.edit_note,
+            //         label: 'Chỉnh sửa',
+            //         onPressed: onEdit,
+            //       ),
+            //     ),
+            //     const SizedBox(width: 12),
+            //     Expanded(
+            //       child: _ActionButton(
+            //         icon: Icons.ios_share,
+            //         label: 'Chia sẻ',
+            //         onPressed: onShare,
+            //       ),
+            //     ),
+            //   ],
+            // ),
             // Progress bar
             GestureDetector(
               onHorizontalDragUpdate: (details) {
                 final box = context.findRenderObject() as RenderBox;
                 final localPosition = box.globalToLocal(details.globalPosition);
-                final progress =
-                    (localPosition.dx / box.size.width).clamp(0.0, 1.0);
+                final progress = (localPosition.dx / box.size.width).clamp(
+                  0.0,
+                  1.0,
+                );
                 onSeek(progress);
               },
               onTapDown: (details) {
                 final box = context.findRenderObject() as RenderBox;
                 final localPosition = box.globalToLocal(details.globalPosition);
-                final progress =
-                    (localPosition.dx / box.size.width).clamp(0.0, 1.0);
+                final progress = (localPosition.dx / box.size.width).clamp(
+                  0.0,
+                  1.0,
+                );
                 onSeek(progress);
               },
               child: Stack(
@@ -120,9 +121,9 @@ class AudioPlayerBar extends StatelessWidget {
                   child: Text(
                     currentTime,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textMuted,
-                          fontFamily: 'monospace',
-                        ),
+                      color: AppColors.textMuted,
+                      fontFamily: 'monospace',
+                    ),
                   ),
                 ),
                 // Controls
@@ -153,9 +154,7 @@ class AudioPlayerBar extends StatelessWidget {
                       ),
                       child: IconButton(
                         onPressed: onPlayPause,
-                        icon: Icon(
-                          isPlaying ? Icons.pause : Icons.play_arrow,
-                        ),
+                        icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
                         color: Colors.white,
                         iconSize: 32,
                       ),
@@ -175,65 +174,14 @@ class AudioPlayerBar extends StatelessWidget {
                     totalTime,
                     textAlign: TextAlign.right,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textMuted,
-                          fontFamily: 'monospace',
-                        ),
+                      color: AppColors.textMuted,
+                      fontFamily: 'monospace',
+                    ),
                   ),
                 ),
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.cardDark,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          height: 48,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.dividerDark,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: AppColors.textSecondary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textSecondary,
-                    ),
-              ),
-            ],
-          ),
         ),
       ),
     );

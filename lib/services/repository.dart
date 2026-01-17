@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'dart:io';
 
@@ -5,7 +6,6 @@ import 'client_request.dart';
 import '../models/login.dart';
 import '../models/audio.dart';
 import '../models/meeting.dart';
-import '../models/transcript.dart';
 
 class Repository {
   static Future<LoginResponse> login(String deviceId, String platform) async {
@@ -22,7 +22,7 @@ class Repository {
       'app-audio-note/meetings',
       data: {"title": title},
     );
-    print(response);
+    debugPrint(response.toString());
 
     return MeetingResponse.fromJson(response.data['data']);
   }
@@ -38,7 +38,7 @@ class Repository {
       'app-audio-note/meetings/$meetingId',
     );
 
-    print(response);
+    debugPrint(response.toString());
 
     return MeetingDetail.fromJson(response.data['data']);
   }
@@ -65,7 +65,7 @@ class Repository {
     final file = File(filePath);
 
     if (!await file.exists()) {
-      print('File not found: $filePath');
+      debugPrint('File not found: $filePath');
       return null;
     }
 
@@ -83,7 +83,7 @@ class Repository {
       ),
     );
 
-    print('Upload response: ${response.statusCode}');
+    debugPrint('Upload response: ${response.statusCode}');
     return response.statusCode;
   }
 
@@ -92,14 +92,14 @@ class Repository {
       'app-audio-note/audios/$audioId/confirm',
     );
 
-    print(response);
+    debugPrint(response.toString());
     return AudioUploadResponse.fromJson(response.data['data']);
   }
 
   static Future<bool> delete(String id) async {
     final response = await clientRequest.delete('app-audio-note/meetings/$id');
 
-    print(response.data['success']);
+    debugPrint(response.data['success'].toString());
     return response.data['success'];
   }
 
@@ -109,25 +109,25 @@ class Repository {
       data: {"title": name},
     );
 
-    print(response.data);
+    debugPrint(response.data.toString());
     return MeetingResponse.fromJson(response.data['data']);
   }
 
   static Future<void> processTranscript(String id) async {
-    print("Here is id: $id");
+    debugPrint("Here is id: $id");
     final response = await clientRequest.post(
       'app-audio-note/meetings/$id/transcript',
     );
 
-    print("processTranscript");
-    print(response.data);
+    debugPrint("processTranscript");
+    debugPrint(response.data.toString());
   }
 
   static Future<String> status(String id) async {
     final response = await clientRequest.get(
       'app-audio-note/meetings/$id/status',
     );
-    print(response);
+    debugPrint(response.toString());
 
     return response.data['data']['status'];
   }
