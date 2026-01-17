@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-
 import '../../../theme/colors.dart';
 import '../../../services/repository.dart';
-
 
 class SummaryTab extends StatefulWidget {
   const SummaryTab({super.key, this.id});
@@ -66,9 +64,10 @@ class _SummaryTabState extends State<SummaryTab> {
 
       // In real app, you might want to poll for status
       // For now, show success message and refresh
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Đang tạo bản tóm tắt...'),
+          content: Text('Generating summary...'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -79,7 +78,7 @@ class _SummaryTabState extends State<SummaryTab> {
     } catch (e) {
       setState(() {
         _state = SummaryState.error;
-        _errorMessage = 'Không thể tạo bản tóm tắt.\n${e.toString()}';
+        _errorMessage = 'Could not create summary.\n${e.toString()}';
       });
       debugPrint('Error generating summary: $e');
     }
@@ -119,7 +118,7 @@ class _SummaryTabState extends State<SummaryTab> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Đang kiểm tra...',
+              'Checking...',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -146,11 +145,11 @@ class _SummaryTabState extends State<SummaryTab> {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.2),
+                  color: AppColors.primary.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.2),
+                      color: AppColors.primary.withValues(alpha: 0.2),
                       blurRadius: 40,
                       spreadRadius: 10,
                     ),
@@ -167,14 +166,16 @@ class _SummaryTabState extends State<SummaryTab> {
                     end: Alignment.bottomRight,
                     colors: [
                       AppColors.cardDark,
-                      AppColors.cardDark.withOpacity(0.8),
+                      AppColors.cardDark.withValues(alpha: 0.8),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -192,9 +193,9 @@ class _SummaryTabState extends State<SummaryTab> {
           // Title
           Text(
             'No summary yet',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           // Description
@@ -227,7 +228,7 @@ class _SummaryTabState extends State<SummaryTab> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   elevation: 4,
-                  shadowColor: AppColors.primary.withOpacity(0.3),
+                  shadowColor: AppColors.primary.withValues(alpha: 0.3),
                 ),
               ),
             ),
@@ -257,14 +258,14 @@ class _SummaryTabState extends State<SummaryTab> {
             ),
             const SizedBox(height: 24),
             Text(
-              'AI đang tạo tóm tắt...',
+              'AI is generating summary...',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Text(
-              'Quá trình này có thể mất vài phút.\nVui lòng chờ...',
+              'This may take a few minutes.\nPlease wait...',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.textMuted,
@@ -290,7 +291,9 @@ class _SummaryTabState extends State<SummaryTab> {
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: .1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.2),
+              ),
             ),
             child: Row(
               children: [
@@ -298,7 +301,7 @@ class _SummaryTabState extends State<SummaryTab> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Bản tóm tắt được tạo bởi AI',
+                    'Summary generated by AI',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
@@ -329,7 +332,7 @@ class _SummaryTabState extends State<SummaryTab> {
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Text(
-            'Không tìm thấy nội dung tóm tắt',
+            'No summary content found',
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
@@ -384,13 +387,13 @@ class _SummaryTabState extends State<SummaryTab> {
                   margin: const EdgeInsets.only(right: 12, top: 2),
                   decoration: BoxDecoration(
                     color: isChecked
-                        ? AppColors.success.withOpacity(0.1)
+                        ? AppColors.success.withValues(alpha: 0.1)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
                       color: isChecked
                           ? AppColors.success
-                          : AppColors.textMuted.withOpacity(0.5),
+                          : AppColors.textMuted.withValues(alpha: 0.5),
                     ),
                   ),
                   child: isChecked
@@ -453,16 +456,16 @@ class _SummaryTabState extends State<SummaryTab> {
               // TODO: Copy to clipboard
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Đã sao chép nội dung tóm tắt'),
+                  content: Text('Summary copied to clipboard'),
                   duration: Duration(seconds: 2),
                 ),
               );
             },
             icon: const Icon(Icons.copy, size: 18),
-            label: const Text('Sao chép'),
+            label: const Text('Copy'),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              side: BorderSide(color: AppColors.primary.withOpacity(0.3)),
+              side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
             ),
           ),
         ),
@@ -471,7 +474,7 @@ class _SummaryTabState extends State<SummaryTab> {
           child: ElevatedButton.icon(
             onPressed: _generateSummary,
             icon: const Icon(Icons.refresh, size: 18),
-            label: const Text('Tạo lại'),
+            label: const Text('Regenerate'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
@@ -494,11 +497,11 @@ class _SummaryTabState extends State<SummaryTab> {
             Icon(
               Icons.error_outline,
               size: 64,
-              color: AppColors.error.withOpacity(0.8),
+              color: AppColors.error.withValues(alpha: 0.8),
             ),
             const SizedBox(height: 24),
             Text(
-              'Có lỗi xảy ra',
+              'An error occurred',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -515,7 +518,7 @@ class _SummaryTabState extends State<SummaryTab> {
             ElevatedButton.icon(
               onPressed: _generateSummary,
               icon: const Icon(Icons.refresh, size: 20),
-              label: const Text('Thử lại'),
+              label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
