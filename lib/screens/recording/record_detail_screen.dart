@@ -1,7 +1,9 @@
 import 'package:aimateflutter/models/meeting.dart';
+import 'package:aimateflutter/services/meeting.dart';
 import 'package:aimateflutter/services/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:provider/provider.dart';
 
 import '../../theme/colors.dart';
 import 'tabs/chat_ai_tab.dart';
@@ -161,12 +163,120 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          IconButton(
-            onPressed: () {
-              // TODO: More options
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              if (value == 'delete') {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete recording?'),
+                    content: Text(
+                      'Are you sure you want to delete "${meeting.title}"?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  try {
+                    await Repository.delete(meeting.id);
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Deleted "${meeting.title}"'),
+                      ),
+                    );
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: ${e.toString()}')),
+                    );
+                  }
+                }
+              } else if (value == 'rename') {
+                _showRenameDialog(context, meeting);
+              }
             },
-            icon: const Icon(Icons.more_vert),
-            color: Colors.white,
+            icon: const Icon(
+              Icons.more_vert,
+              size: 20,
+              color: Colors.white,
+            ),
+            color: AppColors.cardDark,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            menuPadding: EdgeInsets.zero,
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                height: 40,
+                value: 'share',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.share,
+                      size: 16,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text('Share', style: TextStyle(fontSize: 13)),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                height: 40,
+                value: 'rename',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.edit,
+                      size: 16,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text('Rename', style: TextStyle(fontSize: 13)),
+                  ],
+                ),
+              ),
+              const PopupMenuDivider(height: 1),
+              PopupMenuItem(
+                height: 40,
+                value: 'delete',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.delete,
+                      size: 16,
+                      color: AppColors.error,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Delete',
+                      style: TextStyle(
+                        color: AppColors.error,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -266,6 +376,51 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
       onShare: () {
         // TODO: Share
       },
+    );
+  }
+
+  void _showRenameDialog(BuildContext context, MeetingResponse meeting) {
+    final controller = TextEditingController(text: meeting.title);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rename'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Enter new name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final newName = controller.text.trim();
+              if (newName.isNotEmpty && newName != meeting.title) {
+                try {
+                  await Repository.rename(meeting.id, newName);
+                  if (!context.mounted) return;
+                  context.read<MeetingService>().loadMeetings();
+                  Navigator.pop(context);
+                  _loadMeeting();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Renamed to "$newName"')),
+                  );
+                } catch (e) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: ${e.toString()}')),
+                  );
+                }
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
     );
   }
 }

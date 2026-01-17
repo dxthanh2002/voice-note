@@ -368,49 +368,59 @@ class _MeetingCard extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      menuPadding: EdgeInsets.zero,
                       itemBuilder: (context) => [
                         PopupMenuItem(
+                          height: 40,
                           value: 'share',
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.share,
-                                size: 20,
+                                size: 16,
                                 color: AppColors.textSecondary,
                               ),
-                              const SizedBox(width: 12),
-                              const Text('Share'),
+                              const SizedBox(width: 8),
+                              Text('Share', style: TextStyle(fontSize: 13)),
                             ],
                           ),
                         ),
                         PopupMenuItem(
+                          height: 40,
                           value: 'rename',
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.edit,
-                                size: 20,
+                                size: 16,
                                 color: AppColors.textSecondary,
                               ),
-                              const SizedBox(width: 12),
-                              const Text('Rename'),
+                              const SizedBox(width: 8),
+                              Text('Rename', style: TextStyle(fontSize: 13)),
                             ],
                           ),
                         ),
-                        const PopupMenuDivider(),
+                        const PopupMenuDivider(height: 1),
                         PopupMenuItem(
+                          height: 40,
                           value: 'delete',
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.delete,
-                                size: 20,
+                                size: 16,
                                 color: AppColors.error,
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 8),
                               Text(
                                 'Delete',
-                                style: TextStyle(color: AppColors.error),
+                                style: TextStyle(
+                                  color: AppColors.error,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 
 enum AppButtonVariant { primary, secondary, outline, ghost }
+
 enum AppButtonSize { small, medium, large }
 
 class AppButton extends StatelessWidget {
@@ -141,13 +142,17 @@ class AppButton extends StatelessWidget {
             height: _iconSize,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(effectiveForegroundColor),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                effectiveForegroundColor,
+              ),
             ),
           ),
-          if (label != null) SizedBox(width: size == AppButtonSize.small ? 4 : 8),
+          if (label != null)
+            SizedBox(width: size == AppButtonSize.small ? 4 : 8),
         ] else if (icon != null) ...[
           Icon(icon, size: _iconSize, color: effectiveForegroundColor),
-          if (label != null) SizedBox(width: size == AppButtonSize.small ? 4 : 8),
+          if (label != null)
+            SizedBox(width: size == AppButtonSize.small ? 4 : 8),
         ],
         if (label != null)
           Text(
@@ -165,13 +170,10 @@ class AppButton extends StatelessWidget {
     // InkWell with custom ripple
     final buttonContent = Material(
       color: effectiveBackgroundColor,
-      borderRadius: BorderRadius.circular(_radius),
-      shape: variant == AppButtonVariant.outline
-          ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(_radius),
-              side: _borderSide,
-            )
-          : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(_radius),
+        side: _borderSide,
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: isLoading ? null : onPressed,
