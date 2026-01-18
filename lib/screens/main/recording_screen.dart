@@ -56,18 +56,18 @@ class _RecordingsTabState extends State<RecordingsTab> {
                         curve: Curves.easeInOut,
                         width: _isSearchExpanded ? MediaQuery.of(context).size.width - 48 : 0,
                         height: _isSearchExpanded ? 40 : 0,
+                        clipBehavior: Clip.hardEdge,
                         decoration: BoxDecoration(
                           color: AppColors.cardDark,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: _isSearchExpanded
-                            ? Row(
+                        child: Row(
                                 children: [
                                   GestureDetector(
                                     onTap: () {
+                                      FocusScope.of(context).unfocus();
                                       setState(() {
                                         _isSearchExpanded = false;
-                                        _searchFocusNode.unfocus();
                                         _searchController.clear();
                                         context.read<MeetingService>().clearSearch();
                                       });
@@ -113,8 +113,7 @@ class _RecordingsTabState extends State<RecordingsTab> {
                                     ),
                                   ),
                                 ],
-                              )
-                            : const SizedBox.shrink(),
+                              ),
                       ),
                     ],
                   ),
