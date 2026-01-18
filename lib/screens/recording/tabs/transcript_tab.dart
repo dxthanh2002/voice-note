@@ -44,6 +44,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
 
     try {
       final detail = await Repository.getMeetingDetail(widget.id!);
+      if (!mounted) return;
       final transcriptStatus = detail.meeting.transcriptStatus;
 
       if (transcriptStatus == 'DONE' && detail.transcripts.isNotEmpty) {
@@ -70,6 +71,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       debugPrint('Error checking transcript status: $e');
       setState(() {
         _state = TranscriptState.failed;
@@ -110,7 +112,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
     while (_isPolling) {
       await Future.delayed(checkInterval);
 
-      if (!_isPolling) break;
+      if (!_isPolling || !mounted) break;
 
       try {
         final statusResponse = await Repository.status(widget.id!);

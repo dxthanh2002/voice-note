@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 
 import '../constants/urls.dart';
+import 'storage.dart';
+import 'device.dart';
+
 
 final Dio clientRequest = Dio(
   BaseOptions(
@@ -10,14 +13,41 @@ final Dio clientRequest = Dio(
     headers: {
       'Content-Type': 'application/json',
       'x-app-code': 'audio_note_1', // add your app code here
-      'Authorization':
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OTVlMmE2NTQ3N2E5ZmU1ZTBjOWNhMzciLCJhcHBJZCI6IjY5NWUxZGFhNGNmY2FhMzMyNjIwY2Q2ZSIsImRldmljZUlkIjoiMTIzMjMiLCJpYXQiOjE3Njg0NjgyNTUsImV4cCI6MTc2OTA3MzA1NX0.x2ZpxMuIRleXUmmqysoB5vIVkCrOkYJwqK9frYLZQxI',
-    },
-  ),
+    }
+  )
+)..interceptors.add(
+  InterceptorsWrapper(
+    onError: (DioException e, handler) async {
+      if (e.response?.statusCode == 401) {
+        try {      
+
+  final response = await DeviceService.login();
+
+
+  await StorageService.set(
+    AppStorageKeys.accessToken,
+    response.accessToken,
+  );
+
+  setAuthToken(response.accessToken);
+          
+
+          // 🔁 retry original request
+          final requestOptions = e.requestOptions;
+          requestOptions.headers['Authorization'] = 'Bearer $response.accessToken';
+
+          final resp = await clientRequest.fetch(requestOptions);
+          return handler.resolve(resp);
+        } catch (_) {
+           await StorageService.remove(AppStorageKeys.accessToken);
+        }
+      }
+    }
+  )
 );
 
-void setAuthToken(String? token) {
-  if (token != null && token.isNotEmpty) {
+
+void setAuthToken(String token) {
     clientRequest.options.headers['Authorization'] = 'Bearer $token';
-  }
 }
+

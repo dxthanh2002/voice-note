@@ -14,6 +14,8 @@ class Repository {
       data: {"deviceId": deviceId, "platform": platform},
     );
 
+    print(response.data);
+
     return LoginResponse.fromJson(response.data['data']);
   }
 

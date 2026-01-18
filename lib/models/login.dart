@@ -11,13 +11,15 @@ class UserInfo {
 
 class LoginResponse {
   final String accessToken;
+  final bool isNewUser;
   final UserInfo user;
 
-  LoginResponse({required this.accessToken, required this.user});
+  LoginResponse({required this.accessToken, required this.isNewUser, required this.user});
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
       accessToken: json['accessToken'] as String,
+      isNewUser: json['isNewUser'] as bool,
       user: UserInfo.fromJson(json['user']),
     );
   }

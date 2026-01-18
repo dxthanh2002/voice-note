@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:aimateflutter/models/login.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'repository.dart';
 
 class DeviceService {
   static final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
@@ -22,5 +24,15 @@ class DeviceService {
     if (Platform.isIOS) return 'ios';
     if (Platform.isAndroid) return 'android';
     return 'unknown';
+  }
+
+  static Future<LoginResponse> login() async {
+    final deviceId = await DeviceService.getDeviceId();
+    final platform = DeviceService.getPlatform();
+
+    final response = await Repository.login(deviceId, platform);
+
+    return response;
+
   }
 }
