@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../components/bouncing_button.dart';
@@ -63,23 +64,27 @@ class _RecordingsTabState extends State<RecordingsTab> {
                         ),
                         child: Row(
                                 children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      FocusScope.of(context).unfocus();
-                                      setState(() {
-                                        _isSearchExpanded = false;
-                                        _searchController.clear();
-                                        context.read<MeetingService>().clearSearch();
-                                      });
-                                    },
-                                    child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      child: Icon(
-                                        Icons.arrow_back,
-                                        color: AppColors.textMuted,
-                                        size: 20,
+                                  Semantics(
+                                    button: true,
+                                    label: 'Close search',
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        FocusScope.of(context).unfocus();
+                                        setState(() {
+                                          _isSearchExpanded = false;
+                                          _searchController.clear();
+                                          context.read<MeetingService>().clearSearch();
+                                        });
+                                      },
+                                      child: Container(
+                                        width: 48,
+                                        height: 48,
+                                        alignment: Alignment.center,
+                                        child: Icon(
+                                          Icons.arrow_back,
+                                          color: AppColors.textMuted,
+                                          size: 20,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -152,27 +157,32 @@ class _RecordingsTabState extends State<RecordingsTab> {
                         ),
                       ),
                       if (!_isSearchExpanded)
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isSearchExpanded = true;
-                            });
-                            Future.delayed(const Duration(milliseconds: 300), () {
-                              _searchFocusNode.requestFocus();
-                            });
-                          },
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: AppColors.cardDark,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            alignment: Alignment.center,
-                            child: Icon(
-                              Icons.search,
-                              color: AppColors.textMuted,
-                              size: 20,
+                        Semantics(
+                          button: true,
+                          label: 'Search recordings',
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              setState(() {
+                                _isSearchExpanded = true;
+                              });
+                              Future.delayed(const Duration(milliseconds: 300), () {
+                                _searchFocusNode.requestFocus();
+                              });
+                            },
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: AppColors.cardDark,
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.search,
+                                color: AppColors.textMuted,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ),
@@ -231,6 +241,7 @@ class _RecordingsTabState extends State<RecordingsTab> {
         ),
       ),
       floatingActionButton: BouncingButton(
+        semanticLabel: 'Create new recording',
         onPressed: () => _showCreateRecordSheet(context),
         child: Container(
           width: 64,
@@ -339,23 +350,38 @@ class _MeetingCard extends StatelessWidget {
 
   final MeetingResponse meeting;
 
+  String _getStatusText() {
+    if (meeting.transcriptStatus == 'DONE' && meeting.hasSummary) {
+      return 'Ready';
+    } else if (meeting.transcriptStatus == 'PROCESSING') {
+      return 'Processing';
+    } else if (meeting.transcriptStatus == 'FAILED') {
+      return 'Error';
+    }
+    return 'Raw Audio';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Hero(
       tag: 'meeting_card_${meeting.id}',
-      child: Material(
-        color: AppColors.cardDark,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: () {
-            Navigator.pushNamed(
-              context,
-              AppRoutes.recordDetail,
-              arguments: meeting.id,
-            );
-          },
+      child: Semantics(
+        button: true,
+        label: '${meeting.title}, recorded on ${formatDate(meeting.startedAt)}, duration ${formatDuration(meeting.duration)}, status ${_getStatusText()}',
+        child: Material(
+          color: AppColors.cardDark,
           borderRadius: BorderRadius.circular(16),
-          child: Container(
+          child: InkWell(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              Navigator.pushNamed(
+                context,
+                AppRoutes.recordDetail,
+                arguments: meeting.id,
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -438,6 +464,7 @@ class _MeetingCard extends StatelessWidget {
                           );
 
                           if (confirmed == true) {
+                            HapticFeedback.heavyImpact();
                             try {
                               await Repository.delete(meeting.id);
                               if (!context.mounted) return;
@@ -545,6 +572,7 @@ class _MeetingCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

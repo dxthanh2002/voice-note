@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../contexts/app_context.dart';
@@ -6,10 +7,6 @@ import '../../theme/colors.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
-
-  void _handleLogin(BuildContext context) async { 
-context.read<AppState>().completeOnboarding();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,17 +19,21 @@ context.read<AppState>().completeOnboarding();
             children: [
               const Spacer(),
               // Logo
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.mic,
-                  size: 48,
-                  color: AppColors.white,
+              Semantics(
+                image: true,
+                label: 'Voice Note app logo',
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.mic,
+                    size: 48,
+                    color: AppColors.white,
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
@@ -57,9 +58,9 @@ context.read<AppState>().completeOnboarding();
               // Continue button
               ElevatedButton(
                 onPressed: () {
-  context.read<AppState>().completeOnboarding();
+                  HapticFeedback.mediumImpact();
+                  context.read<AppState>().completeOnboarding();
                 },
-                  
                 child: const Text('Get Started'),
               ),
               const SizedBox(height: 16),

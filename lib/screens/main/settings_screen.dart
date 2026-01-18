@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../navigation/app_routes.dart';
 import '../../theme/colors.dart';
@@ -53,6 +54,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     trailing: Switch(
                       value: _autoVoiceDetection,
                       onChanged: (value) {
+                        HapticFeedback.selectionClick();
                         setState(() => _autoVoiceDetection = value);
                       },
                     ),
@@ -64,6 +66,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     trailing: Switch(
                       value: _noiseFilter,
                       onChanged: (value) {
+                        HapticFeedback.selectionClick();
                         setState(() => _noiseFilter = value);
                       },
                     ),
@@ -89,6 +92,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     trailing: Switch(
                       value: _autoSummarize,
                       onChanged: (value) {
+                        HapticFeedback.selectionClick();
                         setState(() => _autoSummarize = value);
                       },
                     ),
@@ -151,6 +155,7 @@ class _SettingsTabState extends State<SettingsTab> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
+                      HapticFeedback.mediumImpact();
                       Navigator.pushReplacementNamed(context, '/login');
                     },
                     icon: const Icon(Icons.logout),

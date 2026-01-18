@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class BouncingButton extends StatefulWidget {
   const BouncingButton({
@@ -7,12 +8,14 @@ class BouncingButton extends StatefulWidget {
     required this.onPressed,
     this.scaleFactor = 0.9,
     this.duration = const Duration(milliseconds: 100),
+    this.semanticLabel,
   });
 
   final Widget child;
   final VoidCallback onPressed;
   final double scaleFactor;
   final Duration duration;
+  final String? semanticLabel;
 
   @override
   State<BouncingButton> createState() => _BouncingButtonState();
@@ -50,6 +53,7 @@ class _BouncingButtonState extends State<BouncingButton>
   }
 
   void _onTapUp(TapUpDetails details) {
+    HapticFeedback.lightImpact();
     _controller.reverse().then((_) {
       widget.onPressed();
     });
@@ -61,17 +65,21 @@ class _BouncingButtonState extends State<BouncingButton>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) => Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
+    return Semantics(
+      button: true,
+      label: widget.semanticLabel,
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) => Transform.scale(
+            scale: _scaleAnimation.value,
+            child: child,
+          ),
+          child: widget.child,
         ),
-        child: widget.child,
       ),
     );
   }

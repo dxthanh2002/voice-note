@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/colors.dart';
 
 enum AppButtonVariant { primary, secondary, outline, ghost }
@@ -16,8 +17,9 @@ class AppButton extends StatelessWidget {
     this.isLoading = false,
     this.isDestructive = false,
     this.fullWidth = false,
-    this.backgroundColor, // Override if needed
-    this.foregroundColor, // Override if needed
+    this.backgroundColor,
+    this.foregroundColor,
+    this.semanticLabel,
   });
 
   final VoidCallback? onPressed;
@@ -30,6 +32,7 @@ class AppButton extends StatelessWidget {
   final bool fullWidth;
   final Color? backgroundColor;
   final Color? foregroundColor;
+  final String? semanticLabel;
 
   // Standardization Constants
   static const double _radius = 16.0;
@@ -168,23 +171,31 @@ class AppButton extends StatelessWidget {
     );
 
     // InkWell with custom ripple
-    final buttonContent = Material(
-      color: effectiveBackgroundColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(_radius),
-        side: _borderSide,
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: isLoading ? null : onPressed,
-        borderRadius: BorderRadius.circular(_radius),
-        splashColor: effectiveForegroundColor.withValues(alpha: 0.1),
-        highlightColor: effectiveForegroundColor.withValues(alpha: 0.05),
-        child: Container(
-          height: _height,
-          padding: _padding,
-          alignment: Alignment.center,
-          child: content,
+    final buttonContent = Semantics(
+      button: true,
+      enabled: onPressed != null,
+      label: semanticLabel ?? label,
+      child: Material(
+        color: effectiveBackgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(_radius),
+          side: _borderSide,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: isLoading ? null : () {
+            HapticFeedback.lightImpact();
+            onPressed?.call();
+          },
+          borderRadius: BorderRadius.circular(_radius),
+          splashColor: effectiveForegroundColor.withValues(alpha: 0.1),
+          highlightColor: effectiveForegroundColor.withValues(alpha: 0.05),
+          child: Container(
+            height: _height,
+            padding: _padding,
+            alignment: Alignment.center,
+            child: content,
+          ),
         ),
       ),
     );
