@@ -34,6 +34,9 @@ class _RecordingModalState extends State<RecordingModal>
     with TickerProviderStateMixin {
   RecordingModalState _state = RecordingModalState.initial;
   AudioService? _audioService;
+  bool _isStopping = false;
+  StreamSubscription<Duration>? _durationSubscription;
+  StreamSubscription<RecordingState>? _stateSubscription;
 
   Duration _duration = Duration.zero;
 
@@ -84,6 +87,8 @@ class _RecordingModalState extends State<RecordingModal>
 
   @override
   void dispose() {
+    _durationSubscription?.cancel();
+    _stateSubscription?.cancel();
     _pulseController.dispose();
     _appearController.dispose();
     _audioService?.dispose();
@@ -93,12 +98,12 @@ class _RecordingModalState extends State<RecordingModal>
   Future<void> _startRecording() async {
     _audioService = AudioService();
 
-    _audioService!.durationStream.listen((duration) {
-      if (mounted) setState(() => _duration = duration);
+    _durationSubscription = _audioService!.durationStream.listen((duration) {
+      if (mounted && !_isStopping) setState(() => _duration = duration);
     });
 
-    _audioService!.stateStream.listen((state) {
-      if (!mounted) return;
+    _stateSubscription = _audioService!.stateStream.listen((state) {
+      if (!mounted || _isStopping) return;
       if (state == RecordingState.recording) {
         setState(() => _state = RecordingModalState.recording);
         _pulseController.repeat(reverse: true);
@@ -127,13 +132,35 @@ class _RecordingModalState extends State<RecordingModal>
   }
 
   Future<void> _stopRecording() async {
-    if (_audioService == null) return;
+    if (_audioService == null || _isStopping) return;
+
+    setState(() => _isStopping = true);
+    _pulseController.stop();
+    
+    // Cancel subscriptions to stop timer updates
+    await _durationSubscription?.cancel();
+    await _stateSubscription?.cancel();
+
+    // Timeout after 7 seconds
+    final timeoutTimer = Timer(const Duration(seconds: 7), () {
+      if (mounted && _isStopping) {
+        debugPrint('[STOP] Timeout after 7 seconds, returning to home');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Processing timeout. Please try again.'),
+            backgroundColor: AppColors.warning,
+          ),
+        );
+        Navigator.pop(context, null);
+      }
+    });
 
     try {
       final filePath = await _audioService!.stopRecording();
 
       if (filePath == null) {
         debugPrint('No file path returned from recording');
+        timeoutTimer.cancel();
         if (mounted) Navigator.pop(context, null);
         return;
       }
@@ -152,26 +179,37 @@ class _RecordingModalState extends State<RecordingModal>
       debugPrint('New name: $withoutExtension');
 
       try {
+        debugPrint('[STOP] Step 1: Creating meeting...');
         final newMeeting = await Repository.createMeeting(withoutExtension);
-        // Get presigned URL for S3 upload
+        debugPrint('[STOP] Step 1 done: Meeting created with id=${newMeeting.id}');
+        
+        debugPrint('[STOP] Step 2: Getting presigned URL...');
         final presigned = await Repository.getPresignedUrl(
           newMeeting.id,
           fileName,
           duration.inSeconds,
         );
+        debugPrint('[STOP] Step 2 done: Got presigned URL');
 
+        debugPrint('[STOP] Step 3: Uploading audio...');
         final code = await Repository.uploadAudio(presigned.url, filePath);
-        debugPrint("CODE: $code");
+        debugPrint('[STOP] Step 3 done: Upload code=$code');
 
+        debugPrint('[STOP] Step 4: Confirming...');
         final responseConfirm = await Repository.confirm(presigned.audioId);
+        debugPrint('[STOP] Step 4 done: Confirmed');
         if (!mounted) return;
 
+        debugPrint('[STOP] Step 5: Loading meetings...');
         final meetingService = context.read<MeetingService>();
         await meetingService.loadMeetings();
+        debugPrint('[STOP] Step 5 done: Meetings loaded');
 
+        timeoutTimer.cancel();
         if (mounted) Navigator.pop(context, responseConfirm.meetingId);
       } catch (e) {
         debugPrint('Error getting presigned URL: $e');
+        timeoutTimer.cancel();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -184,6 +222,7 @@ class _RecordingModalState extends State<RecordingModal>
       }
     } catch (e) {
       debugPrint('Error in stopRecording: $e');
+      timeoutTimer.cancel();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -396,26 +435,49 @@ class _RecordingModalState extends State<RecordingModal>
           ),
         ),
         const SizedBox(height: 24),
-        // Controls
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            // Pause/Resume button
-            _ModalControlButton(
-              icon: isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-              label: isPaused ? 'Resume' : 'Pause',
-              backgroundColor: isPaused ? AppColors.success : AppColors.primary,
-              onTap: _togglePause,
-            ),
-            // Stop button
-            _ModalControlButton(
-              icon: Icons.stop_rounded,
-              label: 'Stop',
-              backgroundColor: AppColors.error,
-              onTap: _stopRecording,
-            ),
-          ],
-        ),
+        // Controls or Loading
+        if (_isStopping)
+          Column(
+            children: [
+              const SizedBox(
+                width: 48,
+                height: 48,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Processing...',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          )
+        else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // Pause/Resume button
+              _ModalControlButton(
+                icon: isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                label: isPaused ? 'Resume' : 'Pause',
+                backgroundColor:
+                    isPaused ? AppColors.success : AppColors.primary,
+                onTap: _togglePause,
+              ),
+              // Stop button
+              _ModalControlButton(
+                icon: Icons.stop_rounded,
+                label: 'Stop',
+                backgroundColor: AppColors.error,
+                onTap: _stopRecording,
+              ),
+            ],
+          ),
       ],
     );
   }
