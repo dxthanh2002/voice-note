@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../components/bouncing_button.dart';
 import '../../navigation/app_routes.dart';
@@ -49,17 +50,26 @@ class CreateRecordSheet extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => Navigator.pop(context),
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        child: Icon(
-                          Icons.close,
-                          color: AppColors.textMuted,
-                          size: 24,
+                  Semantics(
+                    button: true,
+                    label: 'Close',
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.pop(context);
+                        },
+                        borderRadius: BorderRadius.circular(24),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.close,
+                            color: AppColors.textMuted,
+                            size: 24,
+                          ),
                         ),
                       ),
                     ),
@@ -136,6 +146,7 @@ class _PrimaryRecordButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BouncingButton(
+      semanticLabel: 'Start recording now, tap to begin',
       onPressed: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),

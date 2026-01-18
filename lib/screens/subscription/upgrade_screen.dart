@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../theme/colors.dart';
 
@@ -83,7 +84,10 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
                         title: 'Monthly',
                         price: '\$4.99/month',
                         isSelected: !_isYearlySelected,
-                        onTap: () => setState(() => _isYearlySelected = false),
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _isYearlySelected = false);
+                        },
                       ),
                       const SizedBox(height: 12),
                       _buildPricingCard(
@@ -92,7 +96,10 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
                         subtitle: 'Only \$3.33/month',
                         badge: 'SAVE 30%',
                         isSelected: _isYearlySelected,
-                        onTap: () => setState(() => _isYearlySelected = true),
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _isYearlySelected = true);
+                        },
                       ),
                       const SizedBox(height: 24),
                     ],
@@ -120,6 +127,7 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
                     height: 52,
                     child: ElevatedButton(
                       onPressed: () {
+                        HapticFeedback.mediumImpact();
                         // TODO: Implement purchase
                         Navigator.pop(context);
                       },
@@ -214,9 +222,14 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
+    final semanticLabel = '$title plan, $price${subtitle != null ? ', $subtitle' : ''}${badge != null ? ', $badge' : ''}';
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: semanticLabel,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
@@ -313,6 +326,7 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
               ),
           ],
         ),
+      ),
       ),
     );
   }

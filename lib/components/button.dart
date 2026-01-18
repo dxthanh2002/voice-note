@@ -12,12 +12,9 @@ class PlayButton extends StatelessWidget {
     return AppButton(
       onPressed: onPressed,
       icon: Icons.play_arrow,
-      size: AppButtonSize.small,
+      size: AppButtonSize.medium,
       variant: AppButtonVariant.secondary,
       backgroundColor: AppColors.cardDark,
-      // Custom border behavior for PlayButton using AppButton might need adjustments
-      // or we accept the standard AppButton look which is cleaner.
-      // Based on standardization, we should stick to standard if possible.
     );
   }
 }

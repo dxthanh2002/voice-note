@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:aimateflutter/services/repository.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
@@ -403,13 +404,17 @@ class _RecordingModalState extends State<RecordingModal>
         ),
         const SizedBox(height: 16),
         // Timer
-        Text(
-          formatDuration(_duration),
-          style: const TextStyle(
-            fontSize: 48,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-            fontFeatures: [FontFeature.tabularFigures()],
+        Semantics(
+          label: 'Recording duration: ${formatDuration(_duration)}',
+          liveRegion: true,
+          child: Text(
+            formatDuration(_duration),
+            style: const TextStyle(
+              fontSize: 48,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -508,6 +513,7 @@ class _ModalControlButtonState extends State<_ModalControlButton> {
   }
 
   void _onTapUp(TapUpDetails details) {
+    HapticFeedback.lightImpact();
     setState(() => _scale = 1.0);
     Future.delayed(const Duration(milliseconds: 100), () {
       widget.onTap();
@@ -520,45 +526,49 @@ class _ModalControlButtonState extends State<_ModalControlButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GestureDetector(
-          onTapDown: _onTapDown,
-          onTapUp: _onTapUp,
-          onTapCancel: _onTapCancel,
-          child: AnimatedScale(
-            scale: _scale,
-            duration: const Duration(milliseconds: 150),
-            curve: Curves.easeOutBack,
-            child: Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: widget.backgroundColor,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: widget.backgroundColor.withValues(alpha: 0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+    return Semantics(
+      button: true,
+      label: widget.label,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTapDown: _onTapDown,
+            onTapUp: _onTapUp,
+            onTapCancel: _onTapCancel,
+            child: AnimatedScale(
+              scale: _scale,
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOutBack,
+              child: Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: widget.backgroundColor,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.backgroundColor.withValues(alpha: 0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(widget.icon, size: 32, color: Colors.white),
               ),
-              child: Icon(widget.icon, size: 32, color: Colors.white),
             ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          widget.label,
-          style: TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+          const SizedBox(height: 8),
+          Text(
+            widget.label,
+            style: TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -623,6 +633,7 @@ class _BouncingButtonState extends State<_BouncingButton>
   }
 
   void _onTapUp(TapUpDetails details) {
+    HapticFeedback.mediumImpact();
     setState(() => _isPressed = false);
     _controller.forward(from: 0);
     widget.onPressed();

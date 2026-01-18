@@ -2,6 +2,7 @@ import 'package:aimateflutter/models/meeting.dart';
 import 'package:aimateflutter/services/meeting.dart';
 import 'package:aimateflutter/services/repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
@@ -146,6 +147,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
+            tooltip: 'Go back',
             icon: const Icon(Icons.arrow_back),
             color: Colors.white,
           ),
@@ -161,6 +163,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
             ),
           ),
           PopupMenuButton<String>(
+            tooltip: 'More options',
             onSelected: (value) async {
               if (value == 'delete') {
                 final confirmed = await showDialog<bool>(
@@ -187,6 +190,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
                 );
 
                 if (confirmed == true) {
+                  HapticFeedback.heavyImpact();
                   try {
                     await Repository.delete(meeting.id);
                     if (!context.mounted) return;

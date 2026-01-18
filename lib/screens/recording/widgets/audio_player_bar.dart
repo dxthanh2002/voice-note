@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../theme/colors.dart';
 
@@ -68,47 +69,62 @@ class AudioPlayerBar extends StatelessWidget {
             //   ],
             // ),
             // Progress bar
-            GestureDetector(
-              onHorizontalDragUpdate: (details) {
-                final box = context.findRenderObject() as RenderBox;
-                final localPosition = box.globalToLocal(details.globalPosition);
-                final progress = (localPosition.dx / box.size.width).clamp(
-                  0.0,
-                  1.0,
-                );
-                onSeek(progress);
-              },
-              onTapDown: (details) {
-                final box = context.findRenderObject() as RenderBox;
-                final localPosition = box.globalToLocal(details.globalPosition);
-                final progress = (localPosition.dx / box.size.width).clamp(
-                  0.0,
-                  1.0,
-                );
-                onSeek(progress);
-              },
-              child: Stack(
-                children: [
-                  // Background track
-                  Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: AppColors.dividerDark,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                  // Progress indicator
-                  FractionallySizedBox(
-                    widthFactor: progress,
-                    child: Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(3),
+            Semantics(
+              label: 'Audio progress: $currentTime of $totalTime',
+              slider: true,
+              value: '${(progress * 100).round()} percent',
+              child: GestureDetector(
+                onHorizontalDragUpdate: (details) {
+                  final box = context.findRenderObject() as RenderBox;
+                  final localPosition = box.globalToLocal(details.globalPosition);
+                  final progress = (localPosition.dx / box.size.width).clamp(
+                    0.0,
+                    1.0,
+                  );
+                  onSeek(progress);
+                },
+                onTapDown: (details) {
+                  final box = context.findRenderObject() as RenderBox;
+                  final localPosition = box.globalToLocal(details.globalPosition);
+                  final progress = (localPosition.dx / box.size.width).clamp(
+                    0.0,
+                    1.0,
+                  );
+                  onSeek(progress);
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  height: 44,
+                  alignment: Alignment.center,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      // Background track
+                      Container(
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: AppColors.dividerDark,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
                       ),
-                    ),
+                      // Progress indicator
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: FractionallySizedBox(
+                          widthFactor: progress,
+                          child: Container(
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -131,37 +147,53 @@ class AudioPlayerBar extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      onPressed: onRewind,
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        onRewind();
+                      },
+                      tooltip: 'Rewind 10 seconds',
                       icon: const Icon(Icons.replay_10),
                       color: AppColors.textMuted,
                       iconSize: 32,
                     ),
                     const SizedBox(width: 8),
                     // Play/Pause button
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        onPressed: onPlayPause,
-                        icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-                        color: Colors.white,
-                        iconSize: 32,
+                    Semantics(
+                      button: true,
+                      label: isPlaying ? 'Pause audio' : 'Play audio',
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            onPlayPause();
+                          },
+                          tooltip: isPlaying ? 'Pause' : 'Play',
+                          icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+                          color: Colors.white,
+                          iconSize: 32,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     IconButton(
-                      onPressed: onForward,
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        onForward();
+                      },
+                      tooltip: 'Forward 10 seconds',
                       icon: const Icon(Icons.forward_10),
                       color: AppColors.textMuted,
                       iconSize: 32,
