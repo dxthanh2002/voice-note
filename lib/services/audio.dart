@@ -235,7 +235,7 @@ class AudioService {
       // If paused, resume first before stopping (audio_waveforms bug workaround)
       if (_state == RecordingState.paused) {
         await _recorderController!.record();
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future.delayed(const Duration(milliseconds: 300));
       }
       
       await _recorderController!.stop();
