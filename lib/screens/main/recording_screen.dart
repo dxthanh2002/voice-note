@@ -78,11 +78,30 @@ class _RecordingsTabState extends State<RecordingsTab> {
         controller: _searchController,
         onChanged: (value) {
           context.read<MeetingService>().searchByTitleLive(value);
+          setState(() {});
         },
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           hintText: 'Search...',
-          prefixIcon: Icon(Icons.search, color: AppColors.textMuted),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 8, right: 0),
+            child: Icon(Icons.search, color: AppColors.textMuted, size: 20),
+          ),
+          prefixIconConstraints: const BoxConstraints(minWidth: 32, minHeight: 0),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? GestureDetector(
+                  onTap: () {
+                    _searchController.clear();
+                    context.read<MeetingService>().clearSearch();
+                    setState(() {});
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Icon(Icons.close, color: AppColors.textMuted, size: 18),
+                  ),
+                )
+              : null,
+          suffixIconConstraints: const BoxConstraints(minWidth: 32, minHeight: 0),
           filled: true,
           fillColor: AppColors.cardDark,
           border: OutlineInputBorder(
@@ -90,6 +109,7 @@ class _RecordingsTabState extends State<RecordingsTab> {
             borderSide: BorderSide.none,
           ),
           isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 10),
         ),
       ),
     ),

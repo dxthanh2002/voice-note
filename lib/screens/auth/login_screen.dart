@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/colors.dart';
-import '../../services/device.dart';
-import '../../services/repository.dart';
-import '../../services/client_request.dart';
-import '../../components/app_button.dart';
+// TODO: Uncomment when login feature is ready
+// import '../../services/device.dart';
+// import '../../services/repository.dart';
+// import '../../services/client_request.dart';
+// import '../../components/app_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,33 +15,34 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool _isLoading = false;
+  // TODO: Uncomment when login feature is ready
+  // bool _isLoading = false;
 
-  Future<void> _handleLogin() async {
-    setState(() => _isLoading = true);
+  // Future<void> _handleLogin() async {
+  //   setState(() => _isLoading = true);
 
-    try {
-      final deviceId = await DeviceService.getDeviceId();
-      final platform = DeviceService.getPlatform();
+  //   try {
+  //     final deviceId = await DeviceService.getDeviceId();
+  //     final platform = DeviceService.getPlatform();
 
-      final response = await Repository.login(deviceId, platform);
+  //     final response = await Repository.login(deviceId, platform);
 
-      debugPrint('New token: ${response.accessToken}');
-      debugPrint('User: ${response.user.id}');
+  //     debugPrint('New token: ${response.accessToken}');
+  //     debugPrint('User: ${response.user.id}');
 
-      setAuthToken(response.accessToken);
+  //     setAuthToken(response.accessToken);
 
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/');
-      }
-    } catch (e) {
-      debugPrint('Login error: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
+  //     if (mounted) {
+  //       Navigator.pushReplacementNamed(context, '/');
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Login error: $e');
+  //   } finally {
+  //     if (mounted) {
+  //       setState(() => _isLoading = false);
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -79,31 +81,32 @@ class _LoginScreenState extends State<LoginScreen> {
                     ).textTheme.headlineMedium?.copyWith(height: 1.2),
                   ),
                   const SizedBox(height: 48),
-                  // Google button
-                  AppButton(
-                    onPressed: _isLoading ? null : _handleLogin,
-                    icon: Icons.g_mobiledata,
-                    label: 'Continue with Google',
-                    isLoading: _isLoading,
-                    fullWidth: true,
-                    // Simulate Google Button Style
-                    variant: AppButtonVariant.outline,
-                    backgroundColor: AppColors.white,
-                    foregroundColor: AppColors.textPrimaryLight,
-                  ),
-                  const SizedBox(height: 12),
-                  // Apple button
-                  AppButton(
-                    onPressed: _isLoading ? null : _handleLogin,
-                    icon: Icons.apple,
-                    label: 'Continue with Apple',
-                    isLoading: _isLoading,
-                    fullWidth: true,
-                    // Simulate Apple Button Style
-                    variant: AppButtonVariant.primary,
-                    backgroundColor: AppColors.black,
-                    foregroundColor: AppColors.white,
-                  ),
+                  // TODO: Enable when login feature is ready
+                  // // Google button
+                  // AppButton(
+                  //   onPressed: _isLoading ? null : _handleLogin,
+                  //   icon: Icons.g_mobiledata,
+                  //   label: 'Continue with Google',
+                  //   isLoading: _isLoading,
+                  //   fullWidth: true,
+                  //   // Simulate Google Button Style
+                  //   variant: AppButtonVariant.outline,
+                  //   backgroundColor: AppColors.white,
+                  //   foregroundColor: AppColors.textPrimaryLight,
+                  // ),
+                  // const SizedBox(height: 12),
+                  // // Apple button
+                  // AppButton(
+                  //   onPressed: _isLoading ? null : _handleLogin,
+                  //   icon: Icons.apple,
+                  //   label: 'Continue with Apple',
+                  //   isLoading: _isLoading,
+                  //   fullWidth: true,
+                  //   // Simulate Apple Button Style
+                  //   variant: AppButtonVariant.primary,
+                  //   backgroundColor: AppColors.black,
+                  //   foregroundColor: AppColors.white,
+                  // ),
                   const SizedBox(height: 32),
                   // Terms
                   Text(
