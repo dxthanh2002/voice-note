@@ -1,5 +1,10 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+class AppStorageKeys {
+  static const String accessToken = 'access_token';
+  static const String isNewUser = 'is_new_user';
+}
+
 class StorageService {
   static Future<String?> get(String key) async {
     final prefs = await SharedPreferences.getInstance();

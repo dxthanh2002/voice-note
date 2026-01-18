@@ -44,20 +44,22 @@ class AppRoot extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, state, _) {
-        if (!state.booted) {
+        if (!state.booted) { // loading
           return Scaffold(
             backgroundColor: AppColors.backgroundDark,
             body: const Center(child: CircularProgressIndicator()),
           );
         }
+        
         // Show onboarding for first time users, otherwise go to main
         if (!state.onboarded) {
           return const OnboardingScreen();
         }
-        // TODO: Check and extend token here
 
         return const MainTabsScreen();
       },
     );
   }
 }
+
+

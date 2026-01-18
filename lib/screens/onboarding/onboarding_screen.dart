@@ -7,6 +7,10 @@ import '../../theme/colors.dart';
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
+  void _handleLogin(BuildContext context) async { 
+context.read<AppState>().completeOnboarding();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,10 +57,9 @@ class OnboardingScreen extends StatelessWidget {
               // Continue button
               ElevatedButton(
                 onPressed: () {
-                  context.read<AppState>().setOnboarded(true);
-                  // TODO: Change back to '/login' when login feature is ready
-                  Navigator.pushReplacementNamed(context, '/');
+  context.read<AppState>().completeOnboarding();
                 },
+                  
                 child: const Text('Get Started'),
               ),
               const SizedBox(height: 16),
