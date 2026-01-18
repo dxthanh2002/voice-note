@@ -21,6 +21,9 @@ class RecordingsTab extends StatefulWidget {
 
 class _RecordingsTabState extends State<RecordingsTab> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  bool _isSearchExpanded = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,78 +47,140 @@ class _RecordingsTabState extends State<RecordingsTab> {
             // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
-              child: Row(
-  children: [
-    Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Recordings',
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            '${meetings.length} recent recordings',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textMuted,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    ),
-    const SizedBox(width: 12),
-    SizedBox(
-      width: 160, // slightly smaller = safer
-      child: TextField(
-        controller: _searchController,
-        onChanged: (value) {
-          context.read<MeetingService>().searchByTitleLive(value);
-          setState(() {});
-        },
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: 'Search...',
-          prefixIcon: Padding(
-            padding: const EdgeInsets.only(left: 8, right: 0),
-            child: Icon(Icons.search, color: AppColors.textMuted, size: 20),
-          ),
-          prefixIconConstraints: const BoxConstraints(minWidth: 32, minHeight: 0),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? GestureDetector(
-                  onTap: () {
-                    _searchController.clear();
-                    context.read<MeetingService>().clearSearch();
-                    setState(() {});
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Icon(Icons.close, color: AppColors.textMuted, size: 18),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        width: _isSearchExpanded ? MediaQuery.of(context).size.width - 48 : 0,
+                        height: _isSearchExpanded ? 40 : 0,
+                        decoration: BoxDecoration(
+                          color: AppColors.cardDark,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: _isSearchExpanded
+                            ? Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _isSearchExpanded = false;
+                                        _searchFocusNode.unfocus();
+                                        _searchController.clear();
+                                        context.read<MeetingService>().clearSearch();
+                                      });
+                                    },
+                                    child: Container(
+                                      width: 40,
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      child: Icon(
+                                        Icons.arrow_back,
+                                        color: AppColors.textMuted,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _searchController,
+                                      focusNode: _searchFocusNode,
+                                      onChanged: (value) {
+                                        context.read<MeetingService>().searchByTitleLive(value);
+                                        setState(() {});
+                                      },
+                                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                                      decoration: InputDecoration(
+                                        hintText: 'Search...',
+                                        hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 14),
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                                        suffixIcon: _searchController.text.isNotEmpty
+                                            ? GestureDetector(
+                                                onTap: () {
+                                                  _searchController.clear();
+                                                  context.read<MeetingService>().clearSearch();
+                                                  setState(() {});
+                                                },
+                                                child: Icon(Icons.close, color: AppColors.textMuted, size: 18),
+                                              )
+                                            : null,
+                                        suffixIconConstraints: const BoxConstraints(minWidth: 32, minHeight: 0),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
                   ),
-                )
-              : null,
-          suffixIconConstraints: const BoxConstraints(minWidth: 32, minHeight: 0),
-          filled: true,
-          fillColor: AppColors.cardDark,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide.none,
-          ),
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 10),
-        ),
-      ),
-    ),
-  ],
-),
-
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: _isSearchExpanded
+                        ? const SizedBox(height: 12)
+                        : const SizedBox.shrink(),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Recordings',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${meetings.length} recent recordings',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.textMuted,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (!_isSearchExpanded)
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _isSearchExpanded = true;
+                            });
+                            Future.delayed(const Duration(milliseconds: 300), () {
+                              _searchFocusNode.requestFocus();
+                            });
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.cardDark,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.search,
+                              color: AppColors.textMuted,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             // Section header
             Padding(
