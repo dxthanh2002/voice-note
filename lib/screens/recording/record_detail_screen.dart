@@ -111,22 +111,19 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
 
     final meeting = _detail!.meeting;
 
-    return Hero(
-      tag: 'meeting_card_${widget.id}',
-      child: Scaffold(
-        backgroundColor: AppColors.backgroundDark,
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              // App Bar
-              _buildAppBar(context),
-              // Content
-              Expanded(child: _buildContent(meeting)),
-              // Bottom bar - Audio player
-              _buildBottomBar(),
-            ],
-          ),
+    return Scaffold(
+      backgroundColor: AppColors.backgroundDark,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // App Bar
+            _buildAppBar(context),
+            // Content
+            Expanded(child: _buildContent(meeting)),
+            // Bottom bar - Audio player
+            _buildBottomBar(),
+          ],
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../theme/colors.dart';
 import '../../../services/repository.dart';
@@ -448,41 +449,24 @@ class _SummaryTabState extends State<SummaryTab> {
 
   // Summary actions (copy, refresh, etc.)
   Widget _buildSummaryActions() {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () {
-              // TODO: Copy to clipboard
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Summary copied to clipboard'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-            icon: const Icon(Icons.copy, size: 18),
-            label: const Text('Copy'),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+    return OutlinedButton.icon(
+      onPressed: () {
+        if (_summaryContent != null) {
+          Clipboard.setData(ClipboardData(text: _summaryContent!));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Summary copied to clipboard'),
+              duration: Duration(seconds: 2),
             ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: _generateSummary,
-            icon: const Icon(Icons.refresh, size: 18),
-            label: const Text('Regenerate'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
-        ),
-      ],
+          );
+        }
+      },
+      icon: const Icon(Icons.copy, size: 18),
+      label: const Text('Copy'),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+      ),
     );
   }
 
