@@ -54,7 +54,8 @@ class OnboardingScreen extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   context.read<AppState>().setOnboarded(true);
-                  Navigator.pushReplacementNamed(context, '/login');
+                  // TODO: Change back to '/login' when login feature is ready
+                  Navigator.pushReplacementNamed(context, '/');
                 },
                 child: const Text('Get Started'),
               ),
