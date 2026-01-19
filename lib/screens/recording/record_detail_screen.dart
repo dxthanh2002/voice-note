@@ -196,9 +196,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
                     if (!context.mounted) return;
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Deleted "${meeting.title}"'),
-                      ),
+                      SnackBar(content: Text('Deleted "${meeting.title}"')),
                     );
                   } catch (e) {
                     if (!context.mounted) return;
@@ -211,11 +209,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
                 _showRenameDialog(context, meeting);
               }
             },
-            icon: const Icon(
-              Icons.more_vert,
-              size: 20,
-              color: Colors.white,
-            ),
+            icon: const Icon(Icons.more_vert, size: 20, color: Colors.white),
             color: AppColors.cardDark,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -228,11 +222,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.share,
-                      size: 16,
-                      color: AppColors.textSecondary,
-                    ),
+                    Icon(Icons.share, size: 16, color: AppColors.textSecondary),
                     const SizedBox(width: 8),
                     Text('Share', style: TextStyle(fontSize: 13)),
                   ],
@@ -244,11 +234,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.edit,
-                      size: 16,
-                      color: AppColors.textSecondary,
-                    ),
+                    Icon(Icons.edit, size: 16, color: AppColors.textSecondary),
                     const SizedBox(width: 8),
                     Text('Rename', style: TextStyle(fontSize: 13)),
                   ],
@@ -261,18 +247,11 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.delete,
-                      size: 16,
-                      color: AppColors.error,
-                    ),
+                    Icon(Icons.delete, size: 16, color: AppColors.error),
                     const SizedBox(width: 8),
                     Text(
                       'Delete',
-                      style: TextStyle(
-                        color: AppColors.error,
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(color: AppColors.error, fontSize: 13),
                     ),
                   ],
                 ),

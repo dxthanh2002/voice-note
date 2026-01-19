@@ -37,9 +37,7 @@ dependencies:
   shared_preferences: ^2.3.2
 
   # Audio recording & playback
-  just_audio: ^0.9.40
-  audio_waveforms: ^2.0.2
-  record: ^6.0.0
+  record: ^6.1.2
 
   # File & permissions
   path: ^1.9.0
@@ -54,6 +52,7 @@ dependencies:
   # UI
   cupertino_icons: ^1.0.8
   shimmer: ^3.0.0
+  just_audio: ^0.10.5
 
 dev_dependencies:
   flutter_test:
