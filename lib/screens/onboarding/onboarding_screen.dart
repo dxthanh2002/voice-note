@@ -41,23 +41,24 @@ class OnboardingScreen extends StatelessWidget {
               Text(
                 'Record & Summarize\nMeetings Easily',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      height: 1.2,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.headlineLarge?.copyWith(height: 1.2),
               ),
               const SizedBox(height: 16),
               // Subtitle
               Text(
                 'Boost your meeting productivity, never miss any important details.',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
               ),
               const Spacer(),
               // Continue button
               ElevatedButton(
                 onPressed: () {
+                  // onboarding login
                   HapticFeedback.mediumImpact();
                   context.read<AppState>().completeOnboarding();
                 },
