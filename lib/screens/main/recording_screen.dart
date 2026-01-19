@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../components/bouncing_button.dart';
-import '../../components/button.dart';
+
 import '../../components/shimmer_loading.dart';
 import '../../models/meeting.dart';
 import '../../services/meeting.dart';
@@ -32,6 +32,13 @@ class _RecordingsTabState extends State<RecordingsTab> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MeetingService>().loadMeetings();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -557,18 +564,7 @@ class _MeetingCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                // Status & Play row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _StatusBadge(meeting: meeting),
-                    PlayButton(
-                      onPressed: () {
-                        // TODO: Quick play
-                      },
-                    ),
-                  ],
-                ),
+                _StatusBadge(meeting: meeting),
               ],
             ),
           ),
