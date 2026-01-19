@@ -173,8 +173,14 @@ class AudioService {
     if (_state == RecordingState.idle) return null;
     
     try {
-      // Stop the controller
-      await _recorderController.stop();
+      // Stop the controller with timeout to prevent hanging
+      await _recorderController.stop().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          debugPrint('RecorderController.stop() timed out after 5 seconds');
+          return null;
+        },
+      );
       
       // Update state
       _state = RecordingState.stopped;
