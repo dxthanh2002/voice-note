@@ -62,7 +62,9 @@ class _RecordingsTabState extends State<RecordingsTab> {
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
-                        width: _isSearchExpanded ? MediaQuery.of(context).size.width - 48 : 0,
+                        width: _isSearchExpanded
+                            ? MediaQuery.of(context).size.width - 48
+                            : 0,
                         height: _isSearchExpanded ? 40 : 0,
                         clipBehavior: Clip.hardEdge,
                         decoration: BoxDecoration(
@@ -70,62 +72,83 @@ class _RecordingsTabState extends State<RecordingsTab> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
-                                children: [
-                                  Semantics(
-                                    button: true,
-                                    label: 'Close search',
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        FocusScope.of(context).unfocus();
-                                        setState(() {
-                                          _isSearchExpanded = false;
-                                          _searchController.clear();
-                                          context.read<MeetingService>().clearSearch();
-                                        });
-                                      },
-                                      child: Container(
-                                        width: 48,
-                                        height: 48,
-                                        alignment: Alignment.center,
-                                        child: Icon(
-                                          Icons.arrow_back,
-                                          color: AppColors.textMuted,
-                                          size: 20,
-                                        ),
-                                      ),
-                                    ),
+                          children: [
+                            Semantics(
+                              button: true,
+                              label: 'Close search',
+                              child: GestureDetector(
+                                onTap: () {
+                                  FocusScope.of(context).unfocus();
+                                  setState(() {
+                                    _isSearchExpanded = false;
+                                    _searchController.clear();
+                                    context
+                                        .read<MeetingService>()
+                                        .clearSearch();
+                                  });
+                                },
+                                child: Container(
+                                  width: 48,
+                                  height: 48,
+                                  alignment: Alignment.center,
+                                  child: Icon(
+                                    Icons.arrow_back,
+                                    color: AppColors.textMuted,
+                                    size: 20,
                                   ),
-                                  Expanded(
-                                    child: TextField(
-                                      controller: _searchController,
-                                      focusNode: _searchFocusNode,
-                                      onChanged: (value) {
-                                        context.read<MeetingService>().searchByTitleLive(value);
-                                        setState(() {});
-                                      },
-                                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                                      decoration: InputDecoration(
-                                        hintText: 'Search...',
-                                        hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 14),
-                                        border: InputBorder.none,
-                                        isDense: true,
-                                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                                        suffixIcon: _searchController.text.isNotEmpty
-                                            ? GestureDetector(
-                                                onTap: () {
-                                                  _searchController.clear();
-                                                  context.read<MeetingService>().clearSearch();
-                                                  setState(() {});
-                                                },
-                                                child: Icon(Icons.close, color: AppColors.textMuted, size: 18),
-                                              )
-                                            : null,
-                                        suffixIconConstraints: const BoxConstraints(minWidth: 32, minHeight: 0),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
+                            ),
+                            Expanded(
+                              child: TextField(
+                                controller: _searchController,
+                                focusNode: _searchFocusNode,
+                                onChanged: (value) {
+                                  context
+                                      .read<MeetingService>()
+                                      .searchByTitleLive(value);
+                                  setState(() {});
+                                },
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: 'Search...',
+                                  hintStyle: TextStyle(
+                                    color: AppColors.textMuted,
+                                    fontSize: 14,
+                                  ),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
+                                  suffixIcon: _searchController.text.isNotEmpty
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            _searchController.clear();
+                                            context
+                                                .read<MeetingService>()
+                                                .clearSearch();
+                                            setState(() {});
+                                          },
+                                          child: Icon(
+                                            Icons.close,
+                                            color: AppColors.textMuted,
+                                            size: 18,
+                                          ),
+                                        )
+                                      : null,
+                                  suffixIconConstraints: const BoxConstraints(
+                                    minWidth: 32,
+                                    minHeight: 0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -144,9 +167,7 @@ class _RecordingsTabState extends State<RecordingsTab> {
                           children: [
                             Text(
                               'Recordings',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineSmall
+                              style: Theme.of(context).textTheme.headlineSmall
                                   ?.copyWith(fontWeight: FontWeight.bold),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -154,9 +175,8 @@ class _RecordingsTabState extends State<RecordingsTab> {
                             const SizedBox(height: 2),
                             Text(
                               '${meetings.length} recent recordings',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textMuted,
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.textMuted),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -173,9 +193,12 @@ class _RecordingsTabState extends State<RecordingsTab> {
                               setState(() {
                                 _isSearchExpanded = true;
                               });
-                              Future.delayed(const Duration(milliseconds: 300), () {
-                                _searchFocusNode.requestFocus();
-                              });
+                              Future.delayed(
+                                const Duration(milliseconds: 300),
+                                () {
+                                  _searchFocusNode.requestFocus();
+                                },
+                              );
                             },
                             child: Container(
                               width: 48,
@@ -375,7 +398,8 @@ class _MeetingCard extends StatelessWidget {
       tag: 'meeting_card_${meeting.id}',
       child: Semantics(
         button: true,
-        label: '${meeting.title}, recorded on ${formatDate(meeting.startedAt)}, duration ${formatDuration(meeting.duration)}, status ${_getStatusText()}',
+        label:
+            '${meeting.title}, recorded on ${formatDate(meeting.startedAt)}, duration ${formatDuration(meeting.duration)}, status ${_getStatusText()}',
         child: Material(
           color: AppColors.cardDark,
           borderRadius: BorderRadius.circular(16),
@@ -390,186 +414,191 @@ class _MeetingCard extends StatelessWidget {
             },
             borderRadius: BorderRadius.circular(16),
             child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title row
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            meeting.title,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Text(
-                                formatDate(meeting.startedAt),
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: AppColors.textMuted),
-                              ),
-                              Container(
-                                width: 4,
-                                height: 4,
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 8,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title row
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              meeting.title,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Text(
+                                  formatDate(meeting.startedAt),
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(color: AppColors.textMuted),
                                 ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.textMuted.withValues(
-                                    alpha: 0.5,
+                                Container(
+                                  width: 4,
+                                  height: 4,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 8,
                                   ),
-                                  shape: BoxShape.circle,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.textMuted.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                formatDuration(meeting.duration),
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: AppColors.textSecondary),
-                              ),
-                            ],
-                          ),
-                        ],
+                                Text(
+                                  formatDuration(meeting.audio?.durationObject),
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    PopupMenuButton<String>(
-                      onSelected: (value) async {
-                        if (value == 'delete') {
-                          final confirmed = await showDialog<bool>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Delete recording?'),
-                              content: Text(
-                                'Are you sure you want to delete "${meeting.title}"?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context, false),
-                                  child: const Text('Cancel'),
+                      PopupMenuButton<String>(
+                        onSelected: (value) async {
+                          if (value == 'delete') {
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Delete recording?'),
+                                content: Text(
+                                  'Are you sure you want to delete "${meeting.title}"?',
                                 ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: const Text(
-                                    'Delete',
-                                    style: TextStyle(color: Colors.red),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: const Text(
+                                      'Delete',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirmed == true) {
+                              HapticFeedback.heavyImpact();
+                              try {
+                                await Repository.delete(meeting.id);
+                                if (!context.mounted) return;
+                                context.read<MeetingService>().loadMeetings();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Deleted "${meeting.title}"'),
+                                  ),
+                                );
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error: ${e.toString()}'),
+                                  ),
+                                );
+                              }
+                            }
+                          } else if (value == 'rename') {
+                            _showRenameDialog(context, meeting);
+                          }
+                        },
+                        icon: Icon(
+                          Icons.more_vert,
+                          size: 20,
+                          color: AppColors.textMuted,
+                        ),
+                        color: AppColors.cardDark,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        menuPadding: EdgeInsets.zero,
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            height: 40,
+                            value: 'share',
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.share,
+                                  size: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text('Share', style: TextStyle(fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            height: 40,
+                            value: 'rename',
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.edit,
+                                  size: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text('Rename', style: TextStyle(fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuDivider(height: 1),
+                          PopupMenuItem(
+                            height: 40,
+                            value: 'delete',
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.delete,
+                                  size: 16,
+                                  color: AppColors.error,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Delete',
+                                  style: TextStyle(
+                                    color: AppColors.error,
+                                    fontSize: 13,
                                   ),
                                 ),
                               ],
                             ),
-                          );
-
-                          if (confirmed == true) {
-                            HapticFeedback.heavyImpact();
-                            try {
-                              await Repository.delete(meeting.id);
-                              if (!context.mounted) return;
-                              context.read<MeetingService>().loadMeetings();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Deleted "${meeting.title}"'),
-                                ),
-                              );
-                            } catch (e) {
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error: ${e.toString()}')),
-                              );
-                            }
-                          }
-                        } else if (value == 'rename') {
-                          _showRenameDialog(context, meeting);
-                        }
-                      },
-                      icon: Icon(
-                        Icons.more_vert,
-                        size: 20,
-                        color: AppColors.textMuted,
+                          ),
+                        ],
                       ),
-                      color: AppColors.cardDark,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      menuPadding: EdgeInsets.zero,
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          height: 40,
-                          value: 'share',
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.share,
-                                size: 16,
-                                color: AppColors.textSecondary,
-                              ),
-                              const SizedBox(width: 8),
-                              Text('Share', style: TextStyle(fontSize: 13)),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          height: 40,
-                          value: 'rename',
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.edit,
-                                size: 16,
-                                color: AppColors.textSecondary,
-                              ),
-                              const SizedBox(width: 8),
-                              Text('Rename', style: TextStyle(fontSize: 13)),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuDivider(height: 1),
-                        PopupMenuItem(
-                          height: 40,
-                          value: 'delete',
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.delete,
-                                size: 16,
-                                color: AppColors.error,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Delete',
-                                style: TextStyle(
-                                  color: AppColors.error,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _StatusBadge(meeting: meeting),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _StatusBadge(meeting: meeting),
+                ],
+              ),
             ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -606,9 +635,9 @@ void _showRenameDialog(BuildContext context, MeetingResponse meeting) {
                 );
               } catch (e) {
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: ${e.toString()}')),
+                );
               }
             }
           },

@@ -7,6 +7,7 @@ import '../models/login.dart';
 import '../models/audio.dart';
 import '../models/meeting.dart';
 import '../models/transcript.dart';
+
 class Repository {
   static Future<LoginResponse> login(String deviceId, String platform) async {
     final response = await clientRequest.post(
@@ -30,13 +31,13 @@ class Repository {
   }
 
   static Future<List<MeetingResponse>> getMeetings(String? title) async {
-      final query = (title != null && title.trim().isNotEmpty)
-      ? '?title=${Uri.encodeQueryComponent(title)}'
-      : '';
+    final query = (title != null && title.trim().isNotEmpty)
+        ? '?title=${Uri.encodeQueryComponent(title)}'
+        : '';
     final response = await clientRequest.get('app-audio-note/meetings$query');
     final List data = response.data['data'];
     return data.map((item) => MeetingResponse.fromJson(item)).toList();
-  } 
+  }
 
   static Future<MeetingDetail> getMeetingDetail(String meetingId) async {
     final response = await clientRequest.get(
@@ -142,6 +143,6 @@ class Repository {
       'app-audio-note/meetings/$id/summary',
     );
 
-  return SummaryTranscriptionResponse.fromJson(response.data['data']);
-}
+    return SummaryTranscriptionResponse.fromJson(response.data['data']);
+  }
 }
