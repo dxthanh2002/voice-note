@@ -6,15 +6,15 @@ String formatDate(DateTime date) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final dateOnly = DateTime(date.year, date.month, date.day);
-  
+
   final difference = today.difference(dateOnly).inDays;
-  
+
   if (difference == 0) {
     return 'Today';
   } else if (difference == 1) {
     return 'Yesterday';
   }
-  
+
   return DateFormat('MMMM d, yyyy').format(date);
 }
 

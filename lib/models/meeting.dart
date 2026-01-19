@@ -13,6 +13,7 @@ class MeetingResponse {
   final String summaryStatus;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final AudioMeetingResponse? audio;
 
   const MeetingResponse({
     required this.id,
@@ -26,6 +27,7 @@ class MeetingResponse {
     required this.summaryStatus,
     required this.createdAt,
     required this.updatedAt,
+    this.audio,
   });
 
   factory MeetingResponse.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,9 @@ class MeetingResponse {
       summaryStatus: json['summaryStatus'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
+      audio: json['audio'] != null
+          ? AudioMeetingResponse.fromJson(json['audio'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -52,6 +57,31 @@ class MeetingResponse {
   bool get isRecording => status == 'RECORDING';
 
   bool get hasSummary => summaryStatus == 'DONE';
+}
+
+class AudioMeetingResponse {
+  final String id;
+  final int size; // in bytes
+  final int? duration; // optional format (m4a, mp3, etc.)
+
+  const AudioMeetingResponse({
+    required this.id,
+    required this.size,
+    this.duration,
+  });
+
+  factory AudioMeetingResponse.fromJson(Map<String, dynamic> json) {
+    return AudioMeetingResponse(
+      id: json['_id'] as String? ?? '',
+      size: json['size'] as int? ?? 0,
+      duration: json['duration'] as int?,
+    );
+  }
+
+  Duration? get durationObject {
+    if (duration == null) return null;
+    return Duration(seconds: duration!);
+  }
 }
 
 class MeetingDetail {
