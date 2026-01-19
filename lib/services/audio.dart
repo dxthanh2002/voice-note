@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -24,18 +25,26 @@ class AudioService {
   RecordingState get state => _state;
   String? get currentFilePath => _currentFilePath;
   Duration get recordedDuration => _recordedDuration;
+  RecorderController get recorderController => _recorderController;
 
   AudioService() {
     _initController();
   }
 
   void _initController() {
-    _recorderController = RecorderController()
-      ..androidEncoder = AndroidEncoder.aacLc
-      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
-      ..sampleRate = 44100
-      ..bitRate = 128000;
+    _recorderController = RecorderController();
   }
+
+  RecorderSettings get _recorderSettings => const RecorderSettings(
+    androidEncoderSettings: AndroidEncoderSettings(
+      androidEncoder: AndroidEncoder.aacLc,
+    ),
+    iosEncoderSettings: IosEncoderSetting(
+      iosEncoder: IosEncoder.kAudioFormatMPEG4AAC,
+    ),
+    sampleRate: 44100,
+    bitRate: 128000,
+  );
 
   Future<bool> _requestPermissions() async {
     final micStatus = await Permission.microphone.request();
@@ -96,7 +105,10 @@ class AudioService {
       _currentFilePath = p.join(recordingsDir, 'recording_$timestamp.m4a');
 
       // Start recording
-      await _recorderController.record(path: _currentFilePath);
+      await _recorderController.record(
+        path: _currentFilePath,
+        recorderSettings: _recorderSettings,
+      );
       
       _state = RecordingState.recording;
       _recordedDuration = Duration.zero;
@@ -146,6 +158,14 @@ class AudioService {
       });
     } catch (e) {
       debugPrint('Error resuming recording: $e');
+    }
+  }
+
+  Future<void> togglePause() async {
+    if (_state == RecordingState.recording) {
+      await pauseRecording();
+    } else if (_state == RecordingState.paused) {
+      await resumeRecording();
     }
   }
 

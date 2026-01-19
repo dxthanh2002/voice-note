@@ -334,6 +334,7 @@ class _RecordingsTabState extends State<RecordingsTab> {
   }
 
   void _showCreateRecordSheet(BuildContext context) {
+    FocusScope.of(context).unfocus();
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.backgroundDark,
