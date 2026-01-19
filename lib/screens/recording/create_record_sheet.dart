@@ -80,13 +80,12 @@ class CreateRecordSheet extends StatelessWidget {
 
               _PrimaryRecordButton(
                 onTap: () async {
-                  Navigator.pop(context);
+                  final navigator = Navigator.of(context);
+                  navigator.pop();
                   final meetingId = await RecordingModal.show(context);
 
-                  if (!context.mounted) return;
                   if (meetingId != null && meetingId.isNotEmpty) {
-                    Navigator.pushNamed(
-                      context,
+                    navigator.pushNamed(
                       AppRoutes.recordDetail,
                       arguments: meetingId,
                     );

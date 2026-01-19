@@ -104,8 +104,10 @@ class _RecordingModalState extends State<RecordingModal>
     });
 
     _stateSubscription = _audioService!.stateStream.listen((state) {
+      debugPrint('[MODAL] AudioService state changed: $state');
       if (!mounted || _isStopping) return;
       if (state == RecordingState.recording) {
+        debugPrint('[MODAL] Setting state to recording');
         setState(() => _state = RecordingModalState.recording);
         _pulseController.repeat(reverse: true);
       } else if (state == RecordingState.paused) {
@@ -115,6 +117,7 @@ class _RecordingModalState extends State<RecordingModal>
     });
 
     final success = await _audioService!.startRecording();
+    debugPrint('[MODAL] startRecording returned: $success, current _state: $_state');
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -142,10 +145,10 @@ class _RecordingModalState extends State<RecordingModal>
     await _durationSubscription?.cancel();
     await _stateSubscription?.cancel();
 
-    // Timeout after 7 seconds
-    final timeoutTimer = Timer(const Duration(seconds: 7), () {
+    // Timeout after 30 seconds
+    final timeoutTimer = Timer(const Duration(seconds: 30), () {
       if (mounted && _isStopping) {
-        debugPrint('[STOP] Timeout after 7 seconds, returning to home');
+        debugPrint('[STOP] Timeout after 30 seconds, returning to home');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Processing timeout. Please try again.'),
@@ -157,7 +160,9 @@ class _RecordingModalState extends State<RecordingModal>
     });
 
     try {
+      debugPrint('[STOP] Calling audioService.stopRecording()...');
       final filePath = await _audioService!.stopRecording();
+      debugPrint('[STOP] stopRecording() returned: $filePath');
 
       if (filePath == null) {
         debugPrint('No file path returned from recording');
@@ -479,7 +484,10 @@ class _RecordingModalState extends State<RecordingModal>
                 icon: Icons.stop_rounded,
                 label: 'Stop',
                 backgroundColor: AppColors.error,
-                onTap: _stopRecording,
+                onTap: () {
+                  debugPrint('[UI] Stop button tapped');
+                  _stopRecording();
+                },
               ),
             ],
           ),
