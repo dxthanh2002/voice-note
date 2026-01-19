@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:aimateflutter/models/login.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import '../models/login.dart';
 import 'repository.dart';
 
 class DeviceService {
