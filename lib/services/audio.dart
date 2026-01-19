@@ -7,11 +7,17 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 
 enum RecordingState { idle, recording, paused, stopped }
 
 class AudioService {
+  // Record package for actual recording (stable)
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  
+  // Audio waveforms for visual effect only
   late final RecorderController _recorderController;
+  
   RecordingState _state = RecordingState.idle;
   String? _currentFilePath;
   Duration _recordedDuration = Duration.zero;
@@ -34,17 +40,6 @@ class AudioService {
   void _initController() {
     _recorderController = RecorderController();
   }
-
-  RecorderSettings get _recorderSettings => const RecorderSettings(
-    androidEncoderSettings: AndroidEncoderSettings(
-      androidEncoder: AndroidEncoder.aacLc,
-    ),
-    iosEncoderSettings: IosEncoderSetting(
-      iosEncoder: IosEncoder.kAudioFormatMPEG4AAC,
-    ),
-    sampleRate: 44100,
-    bitRate: 128000,
-  );
 
   Future<bool> _requestPermissions() async {
     final micStatus = await Permission.microphone.request();
@@ -99,16 +94,29 @@ class AudioService {
         return false;
       }
 
+      // Check if recorder is available
+      if (!await _audioRecorder.hasPermission()) {
+        debugPrint('Audio recorder permission denied');
+        return false;
+      }
+
       // Get directory and create file path
       final recordingsDir = await _getRecordingsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       _currentFilePath = p.join(recordingsDir, 'recording_$timestamp.m4a');
 
-      // Start recording
-      await _recorderController.record(
-        path: _currentFilePath,
-        recorderSettings: _recorderSettings,
+      // Configure recording with record package
+      const config = RecordConfig(
+        encoder: AudioEncoder.aacLc,
+        sampleRate: 44100,
+        bitRate: 128000,
       );
+
+      // Start actual recording with record package
+      await _audioRecorder.start(config, path: _currentFilePath!);
+      
+      // Start waveform controller for visual effect (no file output)
+      await _recorderController.record();
       
       _state = RecordingState.recording;
       _recordedDuration = Duration.zero;
@@ -133,6 +141,7 @@ class AudioService {
     if (_state != RecordingState.recording) return;
     
     try {
+      await _audioRecorder.pause();
       await _recorderController.pause();
       _state = RecordingState.paused;
       _stateController.add(_state);
@@ -147,6 +156,7 @@ class AudioService {
     if (_state != RecordingState.paused) return;
     
     try {
+      await _audioRecorder.resume();
       await _recorderController.record();
       _state = RecordingState.recording;
       _stateController.add(_state);
@@ -173,14 +183,15 @@ class AudioService {
     if (_state == RecordingState.idle) return null;
     
     try {
-      // Stop the controller with timeout to prevent hanging
-      await _recorderController.stop().timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          debugPrint('RecorderController.stop() timed out after 5 seconds');
-          return null;
-        },
-      );
+      // Stop waveform controller first (visual only)
+      try {
+        await _recorderController.stop();
+      } catch (e) {
+        debugPrint('Error stopping waveform controller: $e');
+      }
+      
+      // Stop actual recording with record package
+      final path = await _audioRecorder.stop();
       
       // Update state
       _state = RecordingState.stopped;
@@ -194,15 +205,17 @@ class AudioService {
       await Future.delayed(const Duration(milliseconds: 100));
       
       // Verify file exists
-      if (_currentFilePath != null) {
-        final file = File(_currentFilePath!);
+      final filePath = path ?? _currentFilePath;
+      if (filePath != null) {
+        final file = File(filePath);
         final exists = await file.exists();
         final size = exists ? await file.length() : 0;
         
-        debugPrint('Recording stopped. File exists: $exists, size: $size bytes');
+        debugPrint('Recording stopped. File: $filePath, exists: $exists, size: $size bytes');
         
         if (exists && size > 0) {
-          return _currentFilePath;
+          _currentFilePath = filePath;
+          return filePath;
         }
       }
       
@@ -222,7 +235,12 @@ class AudioService {
     try {
       // Stop recording if active
       if (_state == RecordingState.recording || _state == RecordingState.paused) {
-        await _recorderController.stop();
+        try {
+          await _recorderController.stop();
+        } catch (e) {
+          debugPrint('Error stopping waveform controller: $e');
+        }
+        await _audioRecorder.stop();
       }
       
       // Delete the file if it exists
@@ -255,5 +273,6 @@ class AudioService {
     _durationController.close();
     _stateController.close();
     _recorderController.dispose();
+    _audioRecorder.dispose();
   }
 }
