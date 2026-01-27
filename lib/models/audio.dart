@@ -1,4 +1,4 @@
-class AudioPresignedResponse {
+class AudioPresigned {
   final String audioId;
   final String url;
   final String method; // "PUT" or "POST"
@@ -6,7 +6,7 @@ class AudioPresignedResponse {
   final String key;
   final int expiresIn; // in seconds
 
-  const AudioPresignedResponse({
+  const AudioPresigned({
     required this.audioId,
     required this.url,
     required this.method,
@@ -15,8 +15,8 @@ class AudioPresignedResponse {
     required this.expiresIn,
   });
 
-  factory AudioPresignedResponse.fromJson(Map<String, dynamic> json) {
-    return AudioPresignedResponse(
+  factory AudioPresigned.fromJson(Map<String, dynamic> json) {
+    return AudioPresigned(
       audioId: json['audioId'] ?? '',
       url: json['url'] ?? '',
       method: json['method'] ?? 'PUT',
@@ -36,15 +36,6 @@ class AudioPresignedResponse {
   DateTime get expiresAt => DateTime.now().add(Duration(seconds: expiresIn));
 
   // Get formatted expiration time
-  String get expiresInFormatted {
-    if (expiresIn < 60) {
-      return '$expiresIn seconds';
-    } else if (expiresIn < 3600) {
-      return '${(expiresIn / 60).round()} minutes';
-    } else {
-      return '${(expiresIn / 3600).round()} hours';
-    }
-  }
 }
 
 class AudioUploadResponse {

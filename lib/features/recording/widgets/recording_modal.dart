@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aimateflutter/services/repository.dart';
 import 'package:provider/provider.dart';
-import 'package:path/path.dart' as path; // For getting filename
+// For getting filename
 
 import '../../../services/database.dart'; // Your DatabaseService
 import '../../../services/audio.dart';
@@ -126,32 +126,36 @@ class _RecordingModalState extends State<RecordingModal>
       try {
         final newMeeting = await Repository.createMeeting(withoutExtension);
 
-        // save to database local
-        final db = DatabaseService();
-        final databaseId = await db.save(
-          meetingId: newMeeting.id,
-          fileName: fileName,
-          filePath: filePath,
-          duration: duration,
-          status: 'raw',
-        );
+        Console.log(newMeeting.id);
+        Console.log(duration);
 
-        // for debug
-        final savedRecording = await db.getById(newMeeting.id);
-        if (savedRecording != null) {
-          debugPrint('''
-✅ VERIFIED IN DATABASE:
-├─ ID: ${savedRecording.id}
-├─ Meeting ID: ${savedRecording.meetingId}
-├─ File: ${savedRecording.fileName}
-├─ Path: ${savedRecording.filePath}
-├─ Duration: ${savedRecording.duration}s
-├─ Status: ${savedRecording.status}
-└─ Recorded at: ${savedRecording.recordedAt}
-''');
-        } else {
-          debugPrint('❌ ERROR: Recording not found in database after saving!');
-        }
+        // Console.log("SAVE TO DATABASE");
+        //         // save to database local
+        //         final db = DatabaseService();
+        //         final databaseId = await db.save(
+        //           meetingId: newMeeting.id,
+        //           fileName: fileName,
+        //           filePath: filePath,
+        //           duration: duration,
+        //           status: 'raw',
+        //         );
+
+        //         // for debug
+        //         final savedRecording = await db.getById(newMeeting.id);
+        //         if (savedRecording != null) {
+        //           debugPrint('''
+        // ✅ VERIFIED IN DATABASE:
+        // ├─ ID: ${savedRecording.id}
+        // ├─ Meeting ID: ${savedRecording.meetingId}
+        // ├─ File: ${savedRecording.fileName}
+        // ├─ Path: ${savedRecording.filePath}
+        // ├─ Duration: ${savedRecording.duration}s
+        // ├─ Status: ${savedRecording.status}
+        // └─ Recorded at: ${savedRecording.recordedAt}
+        // ''');
+        //         } else {
+        //           debugPrint('❌ ERROR: Recording not found in database after saving!');
+        //         }
 
         // Get presigned URL for S3 upload
         final presigned = await Repository.getPresignedUrl(
@@ -167,13 +171,14 @@ class _RecordingModalState extends State<RecordingModal>
         final meetingService = context.read<MeetingService>();
         await meetingService.loadMeetings();
 
-        final responseMeeting = await Repository.getMeetings("");
-
-        // for (int i = 0; i < responseMeeting.length; i++) {
-        //   Console.log("ID from meeting ${responseMeeting[i].id}");
-        // }
         Console.log("ID from confirm ${responseConfirm.id}");
         Console.log("ID from meeting.id ${newMeeting.id}");
+
+        final responseMeeting = await Repository.getMeetings("");
+
+        for (int i = 0; i < responseMeeting.length; i++) {
+          Console.log("ID from meeting ${responseMeeting[i].id}");
+        }
 
         if (mounted) Navigator.pop(context, responseConfirm.meetingId);
       } catch (e) {

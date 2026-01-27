@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
+import '../services/api.dart';
 import '../services/storage.dart';
+import '../utils/console.dart';
 
 /// App-level state for Meeting Recorder
 class AppService extends ChangeNotifier {
@@ -9,7 +11,7 @@ class AppService extends ChangeNotifier {
 
   bool get booted => _booted;
   bool get onboarded => _onboarded;
-  
+
   AppService() {
     init();
   }
@@ -17,13 +19,17 @@ class AppService extends ChangeNotifier {
   Future<void> init() async {
     if (_booted) return;
 
-    final token = await StorageService.get(AppStorageKeys.accessToken);
+    final storedToken = await StorageService.get(AppStorageKeys.accessToken);
     final isNewUser =
         await StorageService.get(AppStorageKeys.isNewUser) == 'true';
 
-    if (token != null && !isNewUser) {
+    if (storedToken != null && !isNewUser) {
+      Console.log("TEST: $storedToken");
+      api.options.headers['Authorization'] = "Bearer $storedToken";
+
       _onboarded = true;
     } else {
+      api.options.headers['Authorization'] = "Bearer $storedToken";
       _onboarded = false;
     }
 
