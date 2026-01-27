@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../navigation/app_routes.dart';
-import '../screens/auth/login_screen.dart';
-import '../screens/main/navigation_tab.dart';
-import '../screens/onboarding/onboarding_screen.dart';
+import 'routes.dart';
+import '../features/auth/login_screen.dart';
+import '../features/main/navigation_tab.dart';
+import '../features/onboarding/onboarding_screen.dart';
 
-import '../screens/recording/record_detail_screen.dart';
-import '../screens/subscription/upgrade_screen.dart';
+import '../features/recording/record_detail_screen.dart';
+import '../features/subscription/upgrade_screen.dart';
 
-Route<dynamic> buildRoute(RouteSettings settings) {
+Route<dynamic> AppRouter(RouteSettings settings) {
   switch (settings.name) {
     case AppRoutes.onboarding:
       return MaterialPageRoute(builder: (_) => const OnboardingScreen());

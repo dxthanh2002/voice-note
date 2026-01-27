@@ -60,7 +60,7 @@ class OnboardingScreen extends StatelessWidget {
                 onPressed: () {
                   // onboarding login
                   HapticFeedback.mediumImpact();
-                  context.read<AppState>().completeOnboarding();
+                  context.read<AppService>().completeOnboarding();
                 },
                 child: const Text('Get Started'),
               ),

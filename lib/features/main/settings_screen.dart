@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../navigation/app_routes.dart';
+import '../../navigation/routes.dart';
 import '../../theme/colors.dart';
 
 class SettingsTab extends StatefulWidget {

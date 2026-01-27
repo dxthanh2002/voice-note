@@ -31,7 +31,7 @@ class _SummaryTabState extends State<SummaryTab> {
     }
 
     try {
-      final detail = await Repository.getMeetingDetail(widget.id!);
+      final detail = await Repository.getMeetingbyId(widget.id!);
       final summaryStatus = detail.meeting.summaryStatus;
 
       if (summaryStatus == 'DONE') {
