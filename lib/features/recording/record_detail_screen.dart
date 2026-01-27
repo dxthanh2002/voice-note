@@ -21,7 +21,6 @@ class RecordDetailScreen extends StatefulWidget {
 
   const RecordDetailScreen({super.key, this.id});
 
-
   @override
   State<RecordDetailScreen> createState() => _RecordDetailScreenState();
 }
@@ -56,12 +55,12 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
 
   Future<void> _loadMeeting() async {
     try {
-      // if uploaded to server or not ? confirm 
+      // if uploaded to server or not ? confirm
+      Console.log("HEHEHEHE DETAIL");
       final response = await Repository.getMeetingbyId(widget.id!);
-      
+
       Console.log(widget.id!);
       await Repository.getMeetingbyId(widget.id!);
-      
 
       setState(() {
         _detail = response;

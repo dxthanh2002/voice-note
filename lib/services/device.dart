@@ -33,6 +33,5 @@ class DeviceService {
     final response = await Repository.login(deviceId, platform, appCode);
 
     return response;
-
   }
 }

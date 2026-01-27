@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'dart:io';
 
+import '../utils/console.dart';
 import 'api.dart';
 import '../models/login.dart';
 import '../models/audio.dart';
@@ -9,12 +10,15 @@ import '../models/meeting.dart';
 import '../models/transcript.dart';
 
 class Repository {
-  static Future<LoginResponse> login(String deviceId, String platform, String appCode) async {
+  static Future<LoginResponse> login(
+    String deviceId,
+    String platform,
+    String appCode,
+  ) async {
     final response = await api.post(
       'auth/device',
       data: {"deviceId": deviceId, "platform": platform, "appCode": appCode},
     );
-
 
     return LoginResponse.fromJson(response.data['data']);
   }
@@ -24,6 +28,8 @@ class Repository {
       'app-audio-note/meetings',
       data: {"title": title},
     );
+
+    Console.log("HIII");
 
     return MeetingResponse.fromJson(response.data['data']);
   }
@@ -38,15 +44,12 @@ class Repository {
   }
 
   static Future<MeetingDetail> getMeetingbyId(String meetingId) async {
-    final response = await api.get(
-      'app-audio-note/meetings/$meetingId',
-    );
-
+    final response = await api.get('app-audio-note/meetings/$meetingId');
 
     return MeetingDetail.fromJson(response.data['data']);
   }
 
-  static Future<AudioPresignedResponse> getPresignedUrl(
+  static Future<AudioPresigned> getPresignedUrl(
     String meetingId,
     String title,
     int duration,
@@ -60,7 +63,7 @@ class Repository {
       },
     );
 
-    return AudioPresignedResponse.fromJson(response.data['data']);
+    return AudioPresigned.fromJson(response.data['data']);
   }
 
   static Future<int?> uploadAudioToServer(String url, String filePath) async {
@@ -90,9 +93,7 @@ class Repository {
   }
 
   static Future<AudioUploadResponse> confirm(String audioId) async {
-    final response = await api.post(
-      'app-audio-note/audios/$audioId/confirm',
-    );
+    final response = await api.post('app-audio-note/audios/$audioId/confirm');
 
     return AudioUploadResponse.fromJson(response.data['data']);
   }
@@ -113,24 +114,17 @@ class Repository {
   }
 
   static Future<void> processTranscript(String id) async {
-    final response = await api.post(
-      'app-audio-note/meetings/$id/transcript',
-    );
-
+    final response = await api.post('app-audio-note/meetings/$id/transcript');
   }
 
   static Future<String> status(String id) async {
-    final response = await api.get(
-      'app-audio-note/meetings/$id/status',
-    );
+    final response = await api.get('app-audio-note/meetings/$id/status');
 
     return response.data['data']['status'];
   }
 
   static Future<SummaryTranscriptionResponse> getSummary(String id) async {
-    final response = await api.get(
-      'app-audio-note/meetings/$id/summary',
-    );
+    final response = await api.get('app-audio-note/meetings/$id/summary');
 
     return SummaryTranscriptionResponse.fromJson(response.data['data']);
   }

@@ -8,25 +8,25 @@ class MeetingResponse {
   final String title;
   final DateTime startedAt;
   final DateTime? endedAt;
-  final String status;
-  final String transcriptStatus;
-  final String summaryStatus;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final String? status;
+  final String? transcriptStatus;
+  final String? summaryStatus;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final AudioMeetingResponse? audio;
 
   const MeetingResponse({
-    required this.id,
     required this.userId,
     required this.appId,
     required this.title,
     required this.startedAt,
-    this.endedAt,
-    required this.status,
     required this.transcriptStatus,
-    required this.summaryStatus,
-    required this.createdAt,
-    required this.updatedAt,
+    required this.id,
+    this.endedAt,
+    this.status,
+    this.summaryStatus,
+    this.createdAt,
+    this.updatedAt,
     this.audio,
   });
 
