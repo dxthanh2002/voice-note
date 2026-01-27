@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../components/bouncing_button.dart';
-import '../../navigation/app_routes.dart';
+import '../../navigation/routes.dart';
 import '../../theme/colors.dart';
 import 'widgets/recording_modal.dart';
 
@@ -92,6 +92,7 @@ class CreateRecordSheet extends StatelessWidget {
                   }
                 },
               ),
+
               const SizedBox(height: 12),
 
               // Secondary actions - Grid layout

@@ -1,6 +1,7 @@
+import '../utils/constants.dart';
+import 'api.dart';
 import 'storage.dart';
 import 'device.dart';
-import 'client_request.dart';
 
 
 class Bootstrap {
@@ -10,12 +11,12 @@ class Bootstrap {
 
     if (token != null) {
       // Token exists → nothing to do
-      setAuthToken(token);
+      api.options.headers["Authorization"] = token;
       return;
     }
 
     // No token → login with device
-    final response = await DeviceService.login();
+    final response = await DeviceService.login(APP_CODE);
 
     // Save token
     await StorageService.set(
@@ -23,12 +24,13 @@ class Bootstrap {
       response.accessToken,
     );
 
-    setAuthToken(response.accessToken);
-
     await StorageService.set(
       AppStorageKeys.isNewUser,
       response.isNewUser.toString(),
     );
+
+    api.options.headers["Authorization"] = response.accessToken;
+
   }
 
   

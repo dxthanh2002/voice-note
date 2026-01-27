@@ -7,6 +7,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
 import '../../theme/colors.dart';
+import '../../utils/console.dart';
 import 'tabs/chat_ai_tab.dart';
 import 'tabs/summary_tab.dart';
 import 'tabs/transcript_tab.dart';
@@ -16,9 +17,10 @@ import 'widgets/pill_tab_bar.dart';
 import '../../utils/format.dart';
 
 class RecordDetailScreen extends StatefulWidget {
+  final String? id;
+
   const RecordDetailScreen({super.key, this.id});
 
-  final String? id;
 
   @override
   State<RecordDetailScreen> createState() => _RecordDetailScreenState();
@@ -54,7 +56,12 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
 
   Future<void> _loadMeeting() async {
     try {
-      final response = await Repository.getMeetingDetail(widget.id!);
+      // if uploaded to server or not ? confirm 
+      final response = await Repository.getMeetingbyId(widget.id!);
+      
+      Console.log(widget.id!);
+      await Repository.getMeetingbyId(widget.id!);
+      
 
       setState(() {
         _detail = response;

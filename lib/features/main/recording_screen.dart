@@ -7,7 +7,7 @@ import '../../components/bouncing_button.dart';
 import '../../components/shimmer_loading.dart';
 import '../../models/meeting.dart';
 import '../../services/meeting.dart';
-import '../../navigation/app_routes.dart';
+import '../../navigation/routes.dart';
 import '../../theme/colors.dart';
 import '../../utils/format.dart';
 import '../recording/create_record_sheet.dart';

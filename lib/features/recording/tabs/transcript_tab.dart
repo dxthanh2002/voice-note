@@ -43,7 +43,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
     if (widget.id == null) return;
 
     try {
-      final detail = await Repository.getMeetingDetail(widget.id!);
+      final detail = await Repository.getMeetingbyId(widget.id!);
       if (!mounted) return;
       final transcriptStatus = detail.meeting.transcriptStatus;
 
@@ -119,7 +119,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
         debugPrint('Transcription status: $statusResponse');
 
         if (statusResponse == 'DONE') {
-          final detail = await Repository.getMeetingDetail(widget.id!);
+          final detail = await Repository.getMeetingbyId(widget.id!);
           if (mounted) {
             setState(() {
               _transcriptItems = detail.transcripts;

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'contexts/app_context.dart';
-import 'navigation/app_navigator.dart';
-import 'screens/main/navigation_tab.dart';
-import 'screens/onboarding/onboarding_screen.dart';
+import 'navigation/router.dart';
+import 'features/main/navigation_tab.dart';
+import 'features/onboarding/onboarding_screen.dart';
 import 'services/bootstrap.dart';
 import 'theme/app_theme.dart';
 import 'theme/colors.dart';
@@ -23,13 +23,13 @@ class MeetingRecorderApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AppState()..boot()),
+        ChangeNotifierProvider(create: (_) => AppService()),
         ChangeNotifierProvider(create: (_) => MeetingService()),
       ],
       child: MaterialApp(
         title: 'Meeting Recorder',
         theme: buildAppTheme(),
-        onGenerateRoute: buildRoute,
+        onGenerateRoute: AppRouter,
         home: const AppRoot(),
         debugShowCheckedModeBanner: false,
       ),
@@ -42,7 +42,7 @@ class AppRoot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppState>(
+    return Consumer<AppService>(
       builder: (context, state, _) {
         if (!state.booted) { // loading
           return Scaffold(

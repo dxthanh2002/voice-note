@@ -3,14 +3,18 @@ import 'package:flutter/foundation.dart';
 import '../services/storage.dart';
 
 /// App-level state for Meeting Recorder
-class AppState extends ChangeNotifier {
+class AppService extends ChangeNotifier {
   bool _booted = false;
   bool _onboarded = false;
 
   bool get booted => _booted;
   bool get onboarded => _onboarded;
+  
+  AppService() {
+    init();
+  }
 
-  Future<void> boot() async {
+  Future<void> init() async {
     if (_booted) return;
 
     final token = await StorageService.get(AppStorageKeys.accessToken);

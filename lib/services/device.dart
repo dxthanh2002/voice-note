@@ -26,11 +26,11 @@ class DeviceService {
     return 'unknown';
   }
 
-  static Future<LoginResponse> login() async {
+  static Future<LoginResponse> login(String appCode) async {
     final deviceId = await DeviceService.getDeviceId();
     final platform = DeviceService.getPlatform();
 
-    final response = await Repository.login(deviceId, platform);
+    final response = await Repository.login(deviceId, platform, appCode);
 
     return response;
 
