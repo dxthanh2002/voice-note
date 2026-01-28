@@ -13,10 +13,10 @@ ACCESS_TOKEN=$(curl -s -X POST "$BASE_URL/api/auth/device" \
 
 
 
-curl --location 'https://apps-be.nesailab.com/api/app-audio-note/meetings' \
+curl -s -X GET "$BASE_URL/api/app-audio-note/meetings" \
 --header 'x-app-code: audio_note_1' \
 --header 'Content-Type: application/json' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OTVlMmE2NTQ3N2E5ZmU1ZTBjOWNhMzciLCJhcHBJZCI6IjY5NWUxZGFhNGNmY2FhMzMyNjIwY2Q2ZSIsImRldmljZUlkIjoiMTIzMjMiLCJpYXQiOjE3Njk0ODMyMTgsImV4cCI6MTc3MDA4ODAxOH0.ILKDhYGWZkLaXO0lMEtEl376IAdtCunMDUg34ZDMxi4' \
+--header "Authorization: Bearer $ACCESS_TOKEN" \
 --data '{
     "title": ""
 }'

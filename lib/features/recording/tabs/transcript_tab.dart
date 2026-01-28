@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../services/database.dart';
 import '../../../theme/colors.dart';
 import '../../../services/repository.dart';
 import '../../../models/transcript.dart';
+import '../../../utils/console.dart';
 import '../widgets/transcript_message_bubble.dart';
 
 enum TranscriptState {
@@ -89,6 +91,48 @@ class _TranscriptTabState extends State<TranscriptTab> {
     });
 
     try {
+      final detail = await Repository.getMeetingbyId(widget.id!);
+      if (detail.meeting.transcriptStatus == 'NONE') {
+        // get from data local
+
+        final db = DatabaseService();
+
+        final savedRecording = await db.getRecordingById(widget.id!);
+        if (savedRecording != null) {
+          debugPrint('''
+        ✅ VERIFIED IN DATABASE:
+        ├─ ID: ${savedRecording.id}
+        ├─ Meeting ID: ${savedRecording.meetingId}
+        ├─ File: ${savedRecording.fileName}
+        ├─ Path: ${savedRecording.filePath}
+        ├─ Duration: ${savedRecording.duration}s
+        ├─ Status: ${savedRecording.status}
+        └─ Recorded at: ${savedRecording.recordedAt}
+        ''');
+        } else {
+          debugPrint('❌ ERROR: Recording not found in database after saving!');
+        }
+
+        final presigned = await Repository.getPresignedUrl(
+          widget.id!,
+          savedRecording!.fileName,
+          savedRecording!.duration,
+        );
+
+        await Repository.uploadAudioToServer(
+          presigned.url,
+          savedRecording!.filePath,
+        );
+
+        final responseConfirm = await Repository.confirm(presigned.audioId);
+        Console.log("ID from confirm ${responseConfirm.id}");
+
+        // load outside
+      }
+
+      // get
+      Console.log("NOW START TRANSCRIPT");
+
       // Start transcription
       await Repository.processTranscript(widget.id!);
 

@@ -1,10 +1,12 @@
+import 'package:aimateflutter/features/recordings/recordings_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
-import '../../components/bouncing_button.dart';
-import '../../navigation/routes.dart';
-import '../../theme/colors.dart';
-import 'widgets/recording_modal.dart';
+import '../../../components/bouncing_button.dart';
+import '../../../navigation/routes.dart';
+import '../../../theme/colors.dart';
+import 'recording_modal.dart';
 
 class CreateRecordSheet extends StatelessWidget {
   const CreateRecordSheet({super.key});
@@ -82,7 +84,12 @@ class CreateRecordSheet extends StatelessWidget {
                 onTap: () async {
                   final navigator = Navigator.of(context);
                   navigator.pop();
-                  final meetingId = await RecordingModal.show(context);
+
+                  final viewModel = context.read<RecordingsViewModel>();
+                  final meetingId = await RecordingModal.show(
+                    context,
+                    viewModel,
+                  );
 
                   if (meetingId != null && meetingId.isNotEmpty) {
                     navigator.pushNamed(

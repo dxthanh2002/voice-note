@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme/colors.dart';
-import 'recording_screen.dart';
+import '../recordings/recordings_screen.dart';
 import 'settings_screen.dart';
 
 class MainTabsScreen extends StatefulWidget {
@@ -15,7 +15,7 @@ class MainTabsScreen extends StatefulWidget {
 class _MainTabsScreenState extends State<MainTabsScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _tabs = const [RecordingsTab(), SettingsTab()];
+  final List<Widget> _tabs = const [RecordingsScreen(), SettingsTab()];
 
   @override
   Widget build(BuildContext context) {

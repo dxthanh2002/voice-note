@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:aimateflutter/features/recordings/recordings_viewmodel.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 
@@ -8,7 +9,6 @@ import 'package:provider/provider.dart';
 
 import '../../../services/database.dart'; // Your DatabaseService
 import '../../../services/audio.dart';
-import '../../../services/meeting.dart';
 import '../../../theme/colors.dart';
 import '../../../utils/console.dart';
 import '../../../utils/format.dart';
@@ -16,15 +16,19 @@ import '../../../utils/format.dart';
 enum RecordingModalState { initial, recording, paused }
 
 class RecordingModal extends StatefulWidget {
-  const RecordingModal({super.key});
+  final RecordingsViewModel? viewModel;
+  const RecordingModal({super.key, this.viewModel});
 
   /// Shows the recording modal and returns the file path on success, null on cancel
-  static Future<String?> show(BuildContext context) {
+  static Future<String?> show(
+    BuildContext context,
+    RecordingsViewModel viewModel,
+  ) {
     return showDialog<String?>(
       context: context,
       barrierDismissible: false, // We control this manually based on state
       barrierColor: Colors.black.withValues(alpha: 0.7),
-      builder: (_) => const RecordingModal(),
+      builder: (_) => RecordingModal(viewModel: viewModel),
     );
   }
 
@@ -106,81 +110,56 @@ class _RecordingModalState extends State<RecordingModal>
       final filePath = await _audioService!.stopRecording();
 
       if (filePath == null) {
-        debugPrint('No file path returned from recording');
+        Console.log('No file path returned from recording');
         if (mounted) Navigator.pop(context, null);
         return;
       }
 
-      // Get file size
-      // final fileSize = await _audioService!.getFileSize(filePath);
       final fileName = path.basename(filePath);
       final duration = _audioService!.recordedDuration.inSeconds;
-      debugPrint('Recording saved: $filePath');
-      debugPrint('Duration: $duration');
+      Console.log('Recording saved: $filePath');
+      Console.log('Duration: $duration');
 
-      // Get presigned URL and upload to S3
       debugPrint('Meeting title: $fileName');
-      final withoutExtension = fileName.substring(0, fileName.length - 4);
-      debugPrint('New name: $withoutExtension');
 
       try {
-        final newMeeting = await Repository.createMeeting(withoutExtension);
+        final newMeeting = await Repository.createMeeting(fileName);
 
+        Console.log("NEW MEETING ID");
         Console.log(newMeeting.id);
         Console.log(duration);
 
-        // Console.log("SAVE TO DATABASE");
-        //         // save to database local
-        //         final db = DatabaseService();
-        //         final databaseId = await db.save(
-        //           meetingId: newMeeting.id,
-        //           fileName: fileName,
-        //           filePath: filePath,
-        //           duration: duration,
-        //           status: 'raw',
-        //         );
-
-        //         // for debug
-        //         final savedRecording = await db.getById(newMeeting.id);
-        //         if (savedRecording != null) {
-        //           debugPrint('''
-        // ✅ VERIFIED IN DATABASE:
-        // ├─ ID: ${savedRecording.id}
-        // ├─ Meeting ID: ${savedRecording.meetingId}
-        // ├─ File: ${savedRecording.fileName}
-        // ├─ Path: ${savedRecording.filePath}
-        // ├─ Duration: ${savedRecording.duration}s
-        // ├─ Status: ${savedRecording.status}
-        // └─ Recorded at: ${savedRecording.recordedAt}
-        // ''');
-        //         } else {
-        //           debugPrint('❌ ERROR: Recording not found in database after saving!');
-        //         }
-
-        // Get presigned URL for S3 upload
-        final presigned = await Repository.getPresignedUrl(
-          newMeeting.id,
-          fileName,
-          duration,
+        Console.log("SAVE TO DATABASE");
+        final db = DatabaseService();
+        final databaseId = await db.save(
+          meetingId: newMeeting.id,
+          fileName: fileName,
+          filePath: filePath,
+          duration: duration,
+          status: 'raw',
         );
 
-        await Repository.uploadAudioToServer(presigned.url, filePath);
-
-        final responseConfirm = await Repository.confirm(presigned.audioId);
-
-        final meetingService = context.read<MeetingService>();
-        await meetingService.loadMeetings();
-
-        Console.log("ID from confirm ${responseConfirm.id}");
-        Console.log("ID from meeting.id ${newMeeting.id}");
-
-        final responseMeeting = await Repository.getMeetings("");
-
-        for (int i = 0; i < responseMeeting.length; i++) {
-          Console.log("ID from meeting ${responseMeeting[i].id}");
+        // for debug
+        final savedRecording = await db.getRecordingById(newMeeting.id);
+        if (savedRecording != null) {
+          debugPrint('''
+        ✅ VERIFIED IN DATABASE:
+        ├─ ID: ${savedRecording.id}
+        ├─ Meeting ID: ${savedRecording.meetingId}
+        ├─ File: ${savedRecording.fileName}
+        ├─ Path: ${savedRecording.filePath}
+        ├─ Duration: ${savedRecording.duration}s
+        ├─ Status: ${savedRecording.status}
+        └─ Recorded at: ${savedRecording.recordedAt}
+        ''');
+        } else {
+          debugPrint('❌ ERROR: Recording not found in database after saving!');
         }
 
-        if (mounted) Navigator.pop(context, responseConfirm.meetingId);
+        /// load the home page
+        await widget.viewModel!.loadRecordings();
+
+        if (mounted) Navigator.pop(context, newMeeting.id);
       } catch (e) {
         debugPrint('Error getting presigned URL: $e');
         if (mounted) {
