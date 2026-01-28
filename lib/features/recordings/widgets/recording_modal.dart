@@ -17,18 +17,20 @@ enum RecordingModalState { initial, recording, paused }
 
 class RecordingModal extends StatefulWidget {
   final RecordingsViewModel? viewModel;
-  const RecordingModal({super.key, this.viewModel});
+  final String? title;
+  const RecordingModal({super.key, this.viewModel, this.title});
 
   /// Shows the recording modal and returns the file path on success, null on cancel
   static Future<String?> show(
     BuildContext context,
-    RecordingsViewModel viewModel,
-  ) {
+    RecordingsViewModel viewModel, {
+    String? title,
+  }) {
     return showDialog<String?>(
       context: context,
       barrierDismissible: false, // We control this manually based on state
       barrierColor: Colors.black.withValues(alpha: 0.7),
-      builder: (_) => RecordingModal(viewModel: viewModel),
+      builder: (_) => RecordingModal(viewModel: viewModel, title: title),
     );
   }
 
@@ -120,10 +122,12 @@ class _RecordingModalState extends State<RecordingModal>
       Console.log('Recording saved: $filePath');
       Console.log('Duration: $duration');
 
-      debugPrint('Meeting title: $fileName');
+      // Use provided title or fall back to filename
+      final meetingTitle = widget.title?.isNotEmpty == true ? widget.title! : fileName;
+      debugPrint('Meeting title: $meetingTitle');
 
       try {
-        final newMeeting = await Repository.createMeeting(fileName);
+        final newMeeting = await Repository.createMeeting(meetingTitle);
 
         Console.log("NEW MEETING ID");
         Console.log(newMeeting.id);
