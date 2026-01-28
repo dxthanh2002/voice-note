@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../components/dialogs/delete_dialog.dart';
+import '../../components/dialogs/rename_dialog.dart';
 import '../../models/meeting.dart';
 import '../../navigation/routes.dart';
 import '../../services/repository.dart';
@@ -148,22 +150,9 @@ class RecordingsViewModel extends ChangeNotifier {
     BuildContext context,
     MeetingResponse meeting,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete recording?'),
-        content: Text('Are you sure you want to delete "${meeting.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+    final confirmed = await showDeleteDialog(
+      context,
+      title: 'Delete Recording?',
     );
 
     if (confirmed == true) {
@@ -187,32 +176,13 @@ class RecordingsViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> showRenameDialog(
+  Future<void> showRenameRecordingDialog(
     BuildContext context,
     MeetingResponse meeting,
   ) async {
-    final controller = TextEditingController(text: meeting.title);
-
-    final newName = await showDialog<String?>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Rename'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: 'Enter new name'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+    final newName = await showRenameDialog(
+      context,
+      initialTitle: meeting.title,
     );
 
     if (newName != null && newName.isNotEmpty && newName != meeting.title) {

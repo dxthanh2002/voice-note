@@ -9,7 +9,7 @@ import '../../navigation/routes.dart';
 import '../../theme/colors.dart';
 import '../../utils/format.dart';
 import 'widgets/record_sheet.dart';
-import 'widgets/recording_modal.dart';
+import 'widgets/recording_screen.dart';
 import 'recordings_viewmodel.dart'; // Import the ViewModel
 
 class RecordingsScreen extends StatefulWidget {
@@ -340,7 +340,7 @@ class _RecordingsScreenContent extends StatelessWidget {
           meeting: meeting,
           onTap: () => viewModel.navigateToRecordingDetail(context, meeting.id),
           onDelete: () => viewModel.deleteRecording(context, meeting),
-          onRename: () => viewModel.showRenameDialog(context, meeting),
+          onRename: () => viewModel.showRenameRecordingDialog(context, meeting),
         );
       },
     );
@@ -387,7 +387,7 @@ class _RecordingsScreenContent extends StatelessWidget {
     if (result != null && context.mounted) {
       final title = result['title'] as String;
       
-      final meetingId = await RecordingModal.show(
+      final meetingId = await RecordingScreen.show(
         context,
         viewModel,
         title: title,
@@ -549,25 +549,12 @@ class RecordingCard extends StatelessWidget {
         } else if (value == 'rename') {
           onRename();
         }
-        // TODO: Implement share functionality
       },
       icon: Icon(Icons.more_vert, size: 20, color: AppColors.textMuted),
       color: AppColors.cardDark,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       menuPadding: EdgeInsets.zero,
       itemBuilder: (context) => [
-        PopupMenuItem(
-          height: 40,
-          value: 'share',
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.share, size: 16, color: AppColors.textSecondary),
-              const SizedBox(width: 8),
-              Text('Share', style: TextStyle(fontSize: 13)),
-            ],
-          ),
-        ),
         PopupMenuItem(
           height: 40,
           value: 'rename',
