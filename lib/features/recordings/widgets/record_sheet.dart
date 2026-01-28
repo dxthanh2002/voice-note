@@ -1,145 +1,150 @@
-import 'package:aimateflutter/features/recordings/recordings_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 
 import '../../../components/bouncing_button.dart';
-import '../../../navigation/routes.dart';
 import '../../../theme/colors.dart';
-import 'recording_modal.dart';
 
-class CreateRecordSheet extends StatelessWidget {
+class CreateRecordSheet extends StatefulWidget {
   const CreateRecordSheet({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle bar
-              Container(
-                width: 48,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: AppColors.textMuted.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-              const SizedBox(height: 16),
+  State<CreateRecordSheet> createState() => _CreateRecordSheetState();
+}
 
-              // Header with title and close button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'New recording',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+class _CreateRecordSheetState extends State<CreateRecordSheet> {
+  final _titleController = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _startRecording() async {
+    final title = _titleController.text.trim();
+    if (title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a title')),
+      );
+      return;
+    }
+    
+    Navigator.pop(context, {'title': title});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.cardDark,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header with title and close button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'New Recording',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  Semantics(
-                    button: true,
-                    label: 'Close',
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          Navigator.pop(context);
-                        },
-                        borderRadius: BorderRadius.circular(24),
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          alignment: Alignment.center,
-                          child: Icon(
-                            Icons.close,
-                            color: AppColors.textMuted,
-                            size: 24,
+                    Semantics(
+                      button: true,
+                      label: 'Close',
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.pop(context);
+                          },
+                          borderRadius: BorderRadius.circular(24),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.close,
+                              color: AppColors.textMuted,
+                              size: 24,
+                            ),
                           ),
                         ),
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Title label
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(
+                      'TITLE',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.2,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 24),
+                ),
+                const SizedBox(height: 8),
 
-              _PrimaryRecordButton(
-                onTap: () async {
-                  final navigator = Navigator.of(context);
-                  navigator.pop();
+                // Title input field
+                TextField(
+                  controller: _titleController,
+                  autofocus: true,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Enter meeting title...',
+                    hintStyle: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textMuted.withValues(alpha: 0.5),
+                    ),
+                    filled: true,
+                    fillColor: AppColors.backgroundDark,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
 
-                  final viewModel = context.read<RecordingsViewModel>();
-                  final meetingId = await RecordingModal.show(
-                    context,
-                    viewModel,
-                  );
-
-                  if (meetingId != null && meetingId.isNotEmpty) {
-                    navigator.pushNamed(
-                      AppRoutes.recordDetail,
-                      arguments: meetingId,
-                    );
-                  }
-                },
-              ),
-
-              const SizedBox(height: 12),
-
-              // Secondary actions - Grid layout
-              // Row(
-              //   children: [
-              //     Expanded(
-              //       child: _SecondaryOptionCard(
-              //         icon: Icons.calendar_month,
-              //         iconBackgroundColor: const Color(
-              //           0xFF6366F1,
-              //         ).withValues(alpha: 0.2),
-              //         iconColor: const Color(0xFF818CF8),
-              //         title: 'Đặt lịch ghi âm',
-              //         onTap: () {
-              //           Navigator.pop(context);
-              //           // TODO: Schedule recording
-              //         },
-              //       ),
-              //     ),
-              //     const SizedBox(width: 12),
-              //     Expanded(
-              //       child: _SecondaryOptionCard(
-              //         icon: Icons.upload_file,
-              //         iconBackgroundColor: const Color(
-              //           0xFFF97316,
-              //         ).withValues(alpha: 0.2),
-              //         iconColor: const Color(0xFFFB923C),
-              //         title: 'Nhập âm thanh',
-              //         onTap: () {
-              //           Navigator.pop(context);
-              //           // TODO: Import audio
-              //         },
-              //       ),
-              //     ),
-              //   ],
-              // ),
-            ],
+                _PrimaryRecordButton(onTap: _startRecording),
+              ],
+            ),
           ),
         ),
-      ),
     );
   }
 }
@@ -163,15 +168,7 @@ class _PrimaryRecordButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.mic, color: Colors.white, size: 24),
-            ),
+            const Icon(Icons.mic, color: Colors.white, size: 28),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -181,7 +178,7 @@ class _PrimaryRecordButton extends StatelessWidget {
                     'Start recording now',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -189,17 +186,12 @@ class _PrimaryRecordButton extends StatelessWidget {
                   Text(
                     'Tap to begin',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 14,
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 11,
                     ),
                   ),
                 ],
               ),
-            ),
-            Icon(
-              Icons.arrow_forward,
-              color: Colors.white.withValues(alpha: 0.7),
-              size: 24,
             ),
           ],
         ),

@@ -9,6 +9,7 @@ import '../../navigation/routes.dart';
 import '../../theme/colors.dart';
 import '../../utils/format.dart';
 import 'widgets/record_sheet.dart';
+import 'widgets/recording_modal.dart';
 import 'recordings_viewmodel.dart'; // Import the ViewModel
 
 class RecordingsScreen extends StatefulWidget {
@@ -369,16 +370,37 @@ class _RecordingsScreenContent extends StatelessWidget {
     );
   }
 
-  void _showCreateRecordSheet(BuildContext context) {
+  Future<void> _showCreateRecordSheet(BuildContext context) async {
     FocusScope.of(context).unfocus();
-    showModalBottomSheet(
+    final viewModel = context.read<RecordingsViewModel>();
+    
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      backgroundColor: AppColors.backgroundDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      barrierDismissible: true,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (dialogContext) => ChangeNotifierProvider.value(
+        value: viewModel,
+        child: const CreateRecordSheet(),
       ),
-      builder: (_) => const CreateRecordSheet(),
     );
+
+    if (result != null && context.mounted) {
+      final title = result['title'] as String;
+      
+      final meetingId = await RecordingModal.show(
+        context,
+        viewModel,
+        title: title,
+      );
+
+      if (meetingId != null && meetingId.isNotEmpty && context.mounted) {
+        Navigator.pushNamed(
+          context,
+          AppRoutes.recordDetail,
+          arguments: meetingId,
+        );
+      }
+    }
   }
 }
 
@@ -434,10 +456,9 @@ class RecordingCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title row
-                  _buildTitleRow(context),
+                  _buildMainRow(context),
                   const SizedBox(height: 12),
-                  _buildStatusBadge(),
+                  _buildFooterRow(),
                 ],
               ),
             ),
@@ -447,10 +468,24 @@ class RecordingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTitleRow(BuildContext context) {
+  Widget _buildMainRow(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Icon(
+            Icons.audio_file,
+            size: 24,
+            color: AppColors.primary,
+          ),
+        ),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -497,8 +532,17 @@ class RecordingCard extends StatelessWidget {
     );
   }
 
+  Widget _buildFooterRow() {
+    return Row(
+      children: [
+        _buildStatusBadge(),
+      ],
+    );
+  }
+
   Widget _buildOptionsMenu() {
     return PopupMenuButton<String>(
+      offset: const Offset(0, 40),
       onSelected: (value) {
         if (value == 'delete') {
           onDelete();
