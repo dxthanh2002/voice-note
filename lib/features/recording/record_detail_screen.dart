@@ -1,5 +1,4 @@
 import 'package:aimateflutter/models/meeting.dart';
-import 'package:aimateflutter/services/meeting.dart';
 import 'package:aimateflutter/services/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -389,7 +388,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
                 try {
                   await Repository.rename(meeting.id, newName);
                   if (!context.mounted) return;
-                  context.read<MeetingService>().loadMeetings();
+                  // context.read<MeetingService>().loadMeetings();
                   Navigator.pop(context);
                   _loadMeeting();
                   ScaffoldMessenger.of(context).showSnackBar(

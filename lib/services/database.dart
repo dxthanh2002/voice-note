@@ -10,7 +10,7 @@ class DatabaseService {
   DatabaseService._internal();
 
   Future<void> init() async {
-        if (!_initialized) {
+    if (!_initialized) {
       _db = RecordingDatabase();
       _initialized = true;
     }
@@ -22,22 +22,22 @@ class DatabaseService {
     required String filePath,
     required int duration,
     required String status,
-    }) async {
-      await init();
+  }) async {
+    await init();
 
-      final recording = RecordingsCompanion.insert(
-        meetingId: meetingId,
-        fileName: fileName,
-        filePath: filePath,
-        duration: duration,
-        status: Value(status),
-        recordedAt: DateTime.now()
-      );
+    final recording = RecordingsCompanion.insert(
+      meetingId: meetingId,
+      fileName: fileName,
+      filePath: filePath,
+      duration: duration,
+      status: Value(status),
+      recordedAt: DateTime.now(),
+    );
 
-      return await _db.insertRecording(recording);
+    return await _db.insertRecording(recording);
   }
 
-  Future<Recording?> getById(String meetingId) async {
+  Future<Recording?> getRecordingById(String meetingId) async {
     await init();
     return await _db.getRecordingById(meetingId);
   }
@@ -54,11 +54,10 @@ class DatabaseService {
 
   Future<int> deleteById(String meetingId) async {
     await init();
-    final recording = await getById(meetingId);
+    final recording = await getRecordingById(meetingId);
     if (recording != null) {
       return await _db.deleteRecording(recording);
-    } 
+    }
     return 0;
   }
-
 }

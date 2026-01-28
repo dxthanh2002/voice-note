@@ -1,4 +1,3 @@
-import 'package:aimateflutter/services/meeting.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,10 +21,7 @@ class MeetingRecorderApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AppService()),
-        ChangeNotifierProvider(create: (_) => MeetingService()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => AppService())],
       child: MaterialApp(
         title: 'Meeting Recorder',
         theme: buildAppTheme(),
@@ -44,13 +40,14 @@ class AppRoot extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppService>(
       builder: (context, state, _) {
-        if (!state.booted) { // loading
+        if (!state.booted) {
+          // loading
           return Scaffold(
             backgroundColor: AppColors.backgroundDark,
             body: const Center(child: CircularProgressIndicator()),
           );
         }
-        
+
         // Show onboarding for first time users, otherwise go to main
         if (!state.onboarded) {
           return const OnboardingScreen();
@@ -61,5 +58,3 @@ class AppRoot extends StatelessWidget {
     );
   }
 }
-
-

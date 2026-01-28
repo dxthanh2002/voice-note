@@ -115,6 +115,8 @@ class Repository {
 
   static Future<void> processTranscript(String id) async {
     final response = await api.post('app-audio-note/meetings/$id/transcript');
+
+    // return response.data['data']['status'
   }
 
   static Future<String> status(String id) async {
