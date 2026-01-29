@@ -18,17 +18,17 @@ class PillTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(6),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppColors.cardDark.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: List.generate(tabs.length, (index) {
           final isSelected = index == selectedIndex;
           return Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 2),
               child: Semantics(
                 button: true,
                 selected: isSelected,
@@ -41,13 +41,13 @@ class PillTabBar extends StatelessWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeInOut,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    constraints: const BoxConstraints(minHeight: 40),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    constraints: const BoxConstraints(minHeight: 28),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.cardDark
                           : Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(8),
                       border: isSelected
                           ? Border.all(
                               color: Colors.white.withValues(alpha: 0.05),
@@ -67,7 +67,7 @@ class PillTabBar extends StatelessWidget {
                       tabs[index],
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: isSelected
                             ? FontWeight.w600
                             : FontWeight.w500,

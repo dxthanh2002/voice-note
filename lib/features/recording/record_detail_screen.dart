@@ -264,7 +264,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
                   context,
                 ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 28),
               PillTabBar(
                 tabs: _tabs,
                 selectedIndex: _selectedTabIndex,
