@@ -47,7 +47,10 @@ class _SettingsTabState extends State<SettingsTab> {
                     title: 'Audio Quality',
                     subtitle: 'High',
                     onTap: () {},
-                    trailing: const Icon(Icons.expand_more, color: AppColors.textMuted),
+                    trailing: const Icon(
+                      Icons.expand_more,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                   _SettingsItem(
                     icon: Icons.record_voice_over,
@@ -85,7 +88,10 @@ class _SettingsTabState extends State<SettingsTab> {
                     title: 'Summary Language',
                     subtitle: 'English',
                     onTap: () {},
-                    trailing: const Icon(Icons.expand_more, color: AppColors.textMuted),
+                    trailing: const Icon(
+                      Icons.expand_more,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                   _SettingsItem(
                     icon: Icons.auto_awesome,
@@ -129,7 +135,10 @@ class _SettingsTabState extends State<SettingsTab> {
                     title: 'Appearance',
                     subtitle: 'System default',
                     onTap: () {},
-                    trailing: const Icon(Icons.expand_more, color: AppColors.textMuted),
+                    trailing: const Icon(
+                      Icons.expand_more,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ],
               ),
@@ -143,11 +152,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     title: 'Help & Feedback',
                     onTap: () {},
                   ),
-                  _SettingsItem(
-                    icon: Icons.info,
-                    title: 'About',
-                    onTap: () {},
-                  ),
+                  _SettingsItem(icon: Icons.info, title: 'About', onTap: () {}),
                 ],
               ),
               // Logout button
@@ -269,10 +274,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 ),
               ),
               item.trailing ??
-                  const Icon(
-                    Icons.chevron_right,
-                    color: AppColors.textMuted,
-                  ),
+                  const Icon(Icons.chevron_right, color: AppColors.textMuted),
             ],
           ),
         ),

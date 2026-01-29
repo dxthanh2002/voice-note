@@ -80,6 +80,7 @@ class _RecordingScreenState extends State<RecordingScreen>
   void dispose() {
     _pulseController.dispose();
     _ampSubscription?.cancel();
+
     _audioService?.dispose();
     super.dispose();
   }
@@ -108,7 +109,9 @@ class _RecordingScreenState extends State<RecordingScreen>
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền truy cập.'),
+          content: Text(
+            'Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền truy cập.',
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -175,7 +178,10 @@ class _RecordingScreenState extends State<RecordingScreen>
         debugPrint('Error creating meeting: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Lỗi khi tải lên: $e'), backgroundColor: AppColors.error),
+            SnackBar(
+              content: Text('Lỗi khi tải lên: $e'),
+              backgroundColor: AppColors.error,
+            ),
           );
           Navigator.pop(context, null);
         }
@@ -184,7 +190,10 @@ class _RecordingScreenState extends State<RecordingScreen>
       debugPrint('Error in stopRecording: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi dừng ghi âm: $e'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text('Lỗi khi dừng ghi âm: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
         Navigator.pop(context, null);
       }
@@ -251,7 +260,26 @@ class _RecordingScreenState extends State<RecordingScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: List.generate(18, (index) {
-              final heights = [48, 96, 64, 128, 160, 112, 170, 144, 80, 180, 128, 160, 64, 96, 48, 128, 80, 112];
+              final heights = [
+                48,
+                96,
+                64,
+                128,
+                160,
+                112,
+                170,
+                144,
+                80,
+                180,
+                128,
+                160,
+                64,
+                96,
+                48,
+                128,
+                80,
+                112,
+              ];
               return Shimmer.fromColors(
                 baseColor: Colors.white.withValues(alpha: 0.08),
                 highlightColor: Colors.white.withValues(alpha: 0.15),
@@ -281,9 +309,13 @@ class _RecordingScreenState extends State<RecordingScreen>
             children: [
               Row(
                 children: [
-                  Expanded(child: _buildShimmerBox(double.infinity, 60, radius: 24)),
+                  Expanded(
+                    child: _buildShimmerBox(double.infinity, 60, radius: 24),
+                  ),
                   const SizedBox(width: 24),
-                  Expanded(child: _buildShimmerBox(double.infinity, 60, radius: 24)),
+                  Expanded(
+                    child: _buildShimmerBox(double.infinity, 60, radius: 24),
+                  ),
                 ],
               ),
             ],
@@ -384,7 +416,8 @@ class _RecordingScreenState extends State<RecordingScreen>
   }
 
   bool _isRecordingOrPaused() {
-    return _state == RecordingScreenState.recording || _state == RecordingScreenState.paused;
+    return _state == RecordingScreenState.recording ||
+        _state == RecordingScreenState.paused;
   }
 
   Future<void> _handleBack() async {
@@ -416,6 +449,7 @@ class _RecordingScreenState extends State<RecordingScreen>
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 60),
                 curve: Curves.easeOut,
+
                 width: 4,
                 height: height.clamp(20.0, 180.0),
                 margin: const EdgeInsets.symmetric(horizontal: 3),

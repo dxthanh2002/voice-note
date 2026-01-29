@@ -305,7 +305,9 @@ class AudioService {
 
   void _startAmplitudeMetering() {
     _ampSubscription?.cancel();
-    _ampSubscription = _recorder!.onAmplitudeChanged(_ampInterval).listen((amp) {
+    _ampSubscription = _recorder!.onAmplitudeChanged(_ampInterval).listen((
+      amp,
+    ) {
       final normalized = _dbToNormalized(amp.current);
       _ampController.add(normalized);
     });
@@ -328,6 +330,7 @@ class AudioService {
     _durationTimer?.cancel();
     _ampSubscription?.cancel();
     _ampController.close();
+
     _durationController.close();
     _stateController.close();
     _recorder!.dispose();

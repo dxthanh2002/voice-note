@@ -85,6 +85,7 @@ class _RecordingsScreenContent extends StatelessWidget {
   ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+
       child: Column(
         children: [
           // Search Bar (expandable)
@@ -137,8 +138,10 @@ class _RecordingsScreenContent extends StatelessWidget {
                         controller: viewModel.searchController,
                         focusNode: viewModel.searchFocusNode,
                         onChanged: (value) => viewModel.searchRecordings(value),
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 14),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
                         decoration: InputDecoration(
                           hintText: 'Search...',
                           hintStyle: TextStyle(
@@ -147,8 +150,9 @@ class _RecordingsScreenContent extends StatelessWidget {
                           ),
                           border: InputBorder.none,
                           isDense: true,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 10),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                          ),
                           suffixIcon: viewModel.searchController.text.isNotEmpty
                               ? GestureDetector(
                                   onTap: () => viewModel.clearSearch(),
@@ -249,20 +253,20 @@ class _RecordingsScreenContent extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'LIST',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.textMuted,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.2,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'LIST',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.textMuted,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              // TODO: Implement sort functionality if needed
+            ],
           ),
-          // TODO: Implement sort functionality if needed
-        ],
-      ),
         ),
       ],
     );
@@ -386,7 +390,7 @@ class _RecordingsScreenContent extends StatelessWidget {
   Future<void> _showCreateRecordSheet(BuildContext context) async {
     FocusScope.of(context).unfocus();
     final viewModel = context.read<RecordingsViewModel>();
-    
+
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: true,
@@ -399,7 +403,7 @@ class _RecordingsScreenContent extends StatelessWidget {
 
     if (result != null && context.mounted) {
       final title = result['title'] as String;
-      
+
       final meetingId = await RecordingScreen.show(
         context,
         viewModel,
@@ -462,6 +466,7 @@ class RecordingCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             child: Container(
               padding: const EdgeInsets.all(12),
+
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
@@ -478,6 +483,7 @@ class RecordingCard extends StatelessWidget {
                 children: [
                   _buildMainRow(context),
                   const SizedBox(height: 12),
+
                   _buildFooterRow(),
                 ],
               ),
@@ -553,11 +559,7 @@ class RecordingCard extends StatelessWidget {
   }
 
   Widget _buildFooterRow() {
-    return Row(
-      children: [
-        _buildStatusBadge(),
-      ],
-    );
+    return Row(children: [_buildStatusBadge()]);
   }
 
   Widget _buildOptionsMenu() {
@@ -642,6 +644,7 @@ class RecordingCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
