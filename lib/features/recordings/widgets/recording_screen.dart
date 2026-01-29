@@ -426,7 +426,7 @@ class _RecordingScreenState extends State<RecordingScreen>
             }),
           ),
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 24),
         // Timer display
         Text(
           formatDuration(_duration),

@@ -440,24 +440,31 @@ class RecordingCard extends StatelessWidget {
             '${meeting.title}, recorded on ${formatDate(meeting.startedAt)}, duration ${formatDuration(meeting.duration)}, status ${_getStatusText()}',
         child: Material(
           color: AppColors.cardDark,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           child: InkWell(
             onTap: () {
               HapticFeedback.selectionClick();
               onTap();
             },
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildMainRow(context),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   _buildFooterRow(),
                 ],
               ),
@@ -542,7 +549,7 @@ class RecordingCard extends StatelessWidget {
 
   Widget _buildOptionsMenu() {
     return PopupMenuButton<String>(
-      offset: const Offset(0, 40),
+      offset: const Offset(0, 48),
       onSelected: (value) {
         if (value == 'delete') {
           onDelete();
@@ -550,9 +557,14 @@ class RecordingCard extends StatelessWidget {
           onRename();
         }
       },
-      icon: Icon(Icons.more_vert, size: 20, color: AppColors.textMuted),
+      icon: const Icon(Icons.more_horiz, size: 20, color: AppColors.textMuted),
       color: AppColors.cardDark,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 8,
+      shadowColor: Colors.black.withValues(alpha: 0.3),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+      ),
       menuPadding: EdgeInsets.zero,
       itemBuilder: (context) => [
         PopupMenuItem(
@@ -561,9 +573,9 @@ class RecordingCard extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.edit, size: 16, color: AppColors.textSecondary),
+              const Icon(Icons.edit, size: 16, color: AppColors.textSecondary),
               const SizedBox(width: 8),
-              Text('Rename', style: TextStyle(fontSize: 13)),
+              const Text('Rename', style: TextStyle(fontSize: 13)),
             ],
           ),
         ),
@@ -574,9 +586,9 @@ class RecordingCard extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.delete, size: 16, color: AppColors.error),
+              const Icon(Icons.delete, size: 16, color: AppColors.error),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'Delete',
                 style: TextStyle(color: AppColors.error, fontSize: 13),
               ),
@@ -616,10 +628,10 @@ class RecordingCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(

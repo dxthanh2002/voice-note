@@ -32,7 +32,7 @@ class AudioPlayerBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       decoration: BoxDecoration(
         color: AppColors.backgroundDark,
         border: Border(top: BorderSide(color: AppColors.dividerDark)),
@@ -127,7 +127,7 @@ class AudioPlayerBar extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 6),
             // Time & controls
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

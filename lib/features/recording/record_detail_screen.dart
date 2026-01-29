@@ -9,7 +9,8 @@ import '../../components/dialogs/delete_dialog.dart';
 import '../../components/dialogs/rename_dialog.dart';
 import '../../theme/colors.dart';
 import '../../utils/console.dart';
-import 'tabs/chat_ai_tab.dart';
+// TODO: Uncomment when Chat AI feature is ready
+// import 'tabs/chat_ai_tab.dart';
 import 'tabs/summary_tab.dart';
 import 'tabs/transcript_tab.dart';
 import 'widgets/audio_player_bar.dart';
@@ -39,7 +40,9 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
   bool _isPlaying = false;
   bool _loading = true;
 
-  final List<String> _tabs = ['Transcript', 'Summary', 'Chat AI'];
+  // TODO: Uncomment when Chat AI feature is ready
+  // final List<String> _tabs = ['Transcript', 'Summary', 'Chat AI'];
+  final List<String> _tabs = ['Transcript', 'Summary'];
 
   @override
   void initState() {
@@ -281,15 +284,17 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
         return TranscriptTab(id: id);
       case 1:
         return SummaryTab(id: id);
-      case 2:
-        return const ChatAITab();
+      // TODO: Uncomment when Chat AI feature is ready
+      // case 2:
+      //   return const ChatAITab();
       default:
         return TranscriptTab(id: id);
     }
   }
 
   Widget _buildBottomBar() {
-    if (_selectedTabIndex == 2) return const SizedBox.shrink();
+    // TODO: Uncomment when Chat AI feature is ready
+    // if (_selectedTabIndex == 2) return const SizedBox.shrink();
 
     final meeting = _detail!.meeting;
     final meetingDuration = meeting.duration ?? Duration.zero;
