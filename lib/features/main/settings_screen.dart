@@ -28,10 +28,12 @@ class _SettingsTabState extends State<SettingsTab> {
             children: [
               // App bar
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
                 child: Text(
                   'Settings',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -190,14 +192,18 @@ class _SettingsTabState extends State<SettingsTab> {
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
             child: Text(
               title,
-              style: Theme.of(context).textTheme.labelLarge,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 1.2,
+              ),
             ),
           ),
           Container(
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: AppColors.cardDark,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
               children: [
@@ -219,8 +225,8 @@ class _SettingsTabState extends State<SettingsTab> {
 
   Widget _buildItem(_SettingsItem item, bool isFirst, bool isLast) {
     final borderRadius = BorderRadius.vertical(
-      top: isFirst ? const Radius.circular(12) : Radius.zero,
-      bottom: isLast ? const Radius.circular(12) : Radius.zero,
+      top: isFirst ? const Radius.circular(20) : Radius.zero,
+      bottom: isLast ? const Radius.circular(20) : Radius.zero,
     );
 
     return Material(
@@ -237,7 +243,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 height: 44,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(item.icon, color: AppColors.primary),
               ),
@@ -254,7 +260,9 @@ class _SettingsTabState extends State<SettingsTab> {
                       const SizedBox(height: 2),
                       Text(
                         item.subtitle!,
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textMuted,
+                        ),
                       ),
                     ],
                   ],

@@ -84,7 +84,7 @@ class _RecordingsScreenContent extends StatelessWidget {
     RecordingsViewModel viewModel,
   ) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
       child: Column(
         children: [
           // Search Bar (expandable)
@@ -112,59 +112,63 @@ class _RecordingsScreenContent extends StatelessWidget {
             color: AppColors.cardDark,
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Row(
-            children: [
-              Semantics(
-                button: true,
-                label: 'Close search',
-                child: GestureDetector(
-                  onTap: () => viewModel.closeSearch(),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.arrow_back,
-                      color: AppColors.textMuted,
-                      size: 20,
+          child: viewModel.isSearchExpanded
+              ? Row(
+                  children: [
+                    Semantics(
+                      button: true,
+                      label: 'Close search',
+                      child: GestureDetector(
+                        onTap: () => viewModel.closeSearch(),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.arrow_back,
+                            color: AppColors.textMuted,
+                            size: 20,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: TextField(
-                  controller: viewModel.searchController,
-                  focusNode: viewModel.searchFocusNode,
-                  onChanged: (value) => viewModel.searchRecordings(value),
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: 'Search...',
-                    hintStyle: TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 14,
+                    Expanded(
+                      child: TextField(
+                        controller: viewModel.searchController,
+                        focusNode: viewModel.searchFocusNode,
+                        onChanged: (value) => viewModel.searchRecordings(value),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'Search...',
+                          hintStyle: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 14,
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 10),
+                          suffixIcon: viewModel.searchController.text.isNotEmpty
+                              ? GestureDetector(
+                                  onTap: () => viewModel.clearSearch(),
+                                  child: Icon(
+                                    Icons.close,
+                                    color: AppColors.textMuted,
+                                    size: 18,
+                                  ),
+                                )
+                              : null,
+                          suffixIconConstraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 0,
+                          ),
+                        ),
+                      ),
                     ),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                    suffixIcon: viewModel.searchController.text.isNotEmpty
-                        ? GestureDetector(
-                            onTap: () => viewModel.clearSearch(),
-                            child: Icon(
-                              Icons.close,
-                              color: AppColors.textMuted,
-                              size: 18,
-                            ),
-                          )
-                        : null,
-                    suffixIconConstraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 0,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+                  ],
+                )
+              : const SizedBox.shrink(),
         ),
       ],
     );
@@ -236,8 +240,15 @@ class _RecordingsScreenContent extends StatelessWidget {
 
   // ============ Section Header ============
   Widget _buildSectionHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+    return Column(
+      children: [
+        Divider(
+          color: Colors.white.withValues(alpha: 0.1),
+          thickness: 1,
+          height: 1,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -252,6 +263,8 @@ class _RecordingsScreenContent extends StatelessWidget {
           // TODO: Implement sort functionality if needed
         ],
       ),
+        ),
+      ],
     );
   }
 
@@ -448,7 +461,7 @@ class RecordingCard extends StatelessWidget {
             },
             borderRadius: BorderRadius.circular(20),
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
@@ -464,7 +477,7 @@ class RecordingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildMainRow(context),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   _buildFooterRow(),
                 ],
               ),
@@ -628,7 +641,7 @@ class RecordingCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(20),

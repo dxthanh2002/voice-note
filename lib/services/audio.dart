@@ -32,6 +32,13 @@ class AudioService {
       StreamController<RecordingState>.broadcast();
   Stream<RecordingState> get stateStream => _stateController.stream;
 
+  // Amplitude metering for real-time waveform
+  StreamSubscription<Amplitude>? _ampSubscription;
+  final StreamController<double> _ampController =
+      StreamController<double>.broadcast();
+  Stream<double> get amplitudeStream => _ampController.stream;
+  static const _ampInterval = Duration(milliseconds: 50);
+
   Future<void> _initRecorder() async {
     if (_recorder == null) {
       _recorder = AudioRecorder();
@@ -177,6 +184,9 @@ class AudioService {
       // Start duration timer
       _startDurationTimer();
 
+      // Start amplitude metering for waveform
+      _startAmplitudeMetering();
+
       debugPrint('Recording started successfully');
       return true;
     } catch (e) {
@@ -194,6 +204,7 @@ class AudioService {
       _state = RecordingState.paused;
       _stateController.add(_state);
       _stopDurationTimer();
+      _stopAmplitudeMetering();
     } catch (e) {
       debugPrint('Error pausing recording: $e');
     }
@@ -208,6 +219,7 @@ class AudioService {
       _state = RecordingState.recording;
       _stateController.add(_state);
       _startDurationTimer();
+      _startAmplitudeMetering();
     } catch (e) {
       debugPrint('Error resuming recording: $e');
     }
@@ -224,6 +236,7 @@ class AudioService {
       _state = RecordingState.stopped;
       _stateController.add(_state);
       _stopDurationTimer();
+      _stopAmplitudeMetering();
 
       debugPrint('Recording stopped. File saved to: $path');
 
@@ -290,9 +303,31 @@ class AudioService {
     _durationTimer = null;
   }
 
+  void _startAmplitudeMetering() {
+    _ampSubscription?.cancel();
+    _ampSubscription = _recorder!.onAmplitudeChanged(_ampInterval).listen((amp) {
+      final normalized = _dbToNormalized(amp.current);
+      _ampController.add(normalized);
+    });
+  }
+
+  void _stopAmplitudeMetering() {
+    _ampSubscription?.cancel();
+    _ampSubscription = null;
+  }
+
+  /// Convert dBFS [-60..0] to normalized [0..1]
+  double _dbToNormalized(double db) {
+    const minDb = -60.0;
+    final clamped = db.clamp(minDb, 0.0);
+    return (clamped - minDb) / (0.0 - minDb);
+  }
+
   /// Dispose resources
   void dispose() {
     _durationTimer?.cancel();
+    _ampSubscription?.cancel();
+    _ampController.close();
     _durationController.close();
     _stateController.close();
     _recorder!.dispose();

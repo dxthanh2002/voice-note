@@ -93,6 +93,7 @@ class RecordingsViewModel extends ChangeNotifier {
     _isSearchExpanded = false;
     searchController.clear();
     clearSearch();
+    notifyListeners();
   }
 
   void searchRecordings(String query) {

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math';
+
 import 'package:aimateflutter/features/recordings/recordings_viewmodel.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
@@ -48,9 +48,9 @@ class _RecordingScreenState extends State<RecordingScreen>
   Duration _duration = Duration.zero;
 
   late AnimationController _pulseController;
-  late AnimationController _waveController;
-  final Random _random = Random();
   List<double> _waveHeights = [];
+  double _smoothedAmp = 0.0;
+  StreamSubscription<double>? _ampSubscription;
 
   @override
   void initState() {
@@ -60,18 +60,7 @@ class _RecordingScreenState extends State<RecordingScreen>
       duration: const Duration(milliseconds: 1000),
     );
 
-    _waveController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    )..addListener(() {
-        if (_state == RecordingScreenState.recording) {
-          setState(() {
-            _waveHeights = List.generate(18, (_) => 0.2 + _random.nextDouble() * 0.8);
-          });
-        }
-      });
-
-    _waveHeights = List.generate(18, (_) => 0.3);
+    _waveHeights = List.generate(18, (_) => 0.1);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeRecording();
@@ -90,7 +79,7 @@ class _RecordingScreenState extends State<RecordingScreen>
   @override
   void dispose() {
     _pulseController.dispose();
-    _waveController.dispose();
+    _ampSubscription?.cancel();
     _audioService?.dispose();
     super.dispose();
   }
@@ -107,11 +96,11 @@ class _RecordingScreenState extends State<RecordingScreen>
       if (state == RecordingState.recording) {
         setState(() => _state = RecordingScreenState.recording);
         _pulseController.repeat(reverse: true);
-        _waveController.repeat();
+        _startAmplitudeListening();
       } else if (state == RecordingState.paused) {
         setState(() => _state = RecordingScreenState.paused);
         _pulseController.stop();
-        _waveController.stop();
+        _ampSubscription?.cancel();
       }
     });
 
@@ -125,6 +114,24 @@ class _RecordingScreenState extends State<RecordingScreen>
       );
       Navigator.pop(context);
     }
+  }
+
+  void _startAmplitudeListening() {
+    _ampSubscription?.cancel();
+    _ampSubscription = _audioService!.amplitudeStream.listen((amp) {
+      if (!mounted || _state != RecordingScreenState.recording) return;
+
+      // Exponential smoothing
+      _smoothedAmp = 0.3 * amp + 0.7 * _smoothedAmp;
+
+      // Gate noise floor
+      final value = _smoothedAmp < 0.05 ? 0.1 : _smoothedAmp;
+
+      setState(() {
+        _waveHeights.removeAt(0);
+        _waveHeights.add(value);
+      });
+    });
   }
 
   Future<void> _togglePause() async {
@@ -407,7 +414,8 @@ class _RecordingScreenState extends State<RecordingScreen>
               final height = isRecording ? baseHeight * 180 : 40.0;
 
               return AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 60),
+                curve: Curves.easeOut,
                 width: 4,
                 height: height.clamp(20.0, 180.0),
                 margin: const EdgeInsets.symmetric(horizontal: 3),
