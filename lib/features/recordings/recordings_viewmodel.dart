@@ -37,10 +37,6 @@ class RecordingsViewModel extends ChangeNotifier {
     });
   }
 
-  void _onMeetingServiceChanged() {
-    notifyListeners();
-  }
-
   Future<void> _loadRecordings() async {
     _isLoading = true;
     notifyListeners();
@@ -186,7 +182,10 @@ class RecordingsViewModel extends ChangeNotifier {
       initialTitle: meeting.title,
     );
 
-    if (newName != null && newName.isNotEmpty && newName != meeting.title) {
+    if (newName != null &&
+        newName.isNotEmpty &&
+        newName != meeting.title &&
+        context.mounted) {
       await _renameRecording(context, meeting.id, newName);
     }
   }
