@@ -68,7 +68,7 @@ class LoggingInterceptor extends Interceptor {
       final response = await Repository.login(deviceId, platform, APP_CODE);
       final newToken = response.accessToken;
 
-      if (newToken != null && newToken.isNotEmpty) {
+      if (newToken.isNotEmpty) {
         Console.log("NEWWWW $newToken");
 
         await StorageService.set(AppStorageKeys.accessToken, newToken);

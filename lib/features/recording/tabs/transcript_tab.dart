@@ -116,12 +116,12 @@ class _TranscriptTabState extends State<TranscriptTab> {
         final presigned = await Repository.getPresignedUrl(
           widget.id!,
           savedRecording!.fileName,
-          savedRecording!.duration,
+          savedRecording.duration,
         );
 
         await Repository.uploadAudioToServer(
           presigned.url,
-          savedRecording!.filePath,
+          savedRecording.filePath,
         );
 
         final responseConfirm = await Repository.confirm(presigned.audioId);

@@ -3,7 +3,6 @@ import 'package:aimateflutter/services/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:provider/provider.dart';
 
 import '../../components/dialogs/delete_dialog.dart';
 import '../../components/dialogs/rename_dialog.dart';
