@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:aimateflutter/services/database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -8,13 +9,16 @@ import '../../components/dialogs/rename_dialog.dart';
 import '../../models/meeting.dart';
 import '../../navigation/routes.dart';
 import '../../services/repository.dart';
+import '../../services/data/recordings.dart';
+import '../../utils/console.dart';
 
 class RecordingsViewModel extends ChangeNotifier {
   // State
   final TextEditingController searchController = TextEditingController();
   final FocusNode searchFocusNode = FocusNode();
   bool _isSearchExpanded = false;
-  List<MeetingResponse> _recordings = [];
+  // List<MeetingResponse> _recordings = [];
+  List<Recording> _recordings = [];
 
   bool _isLoading = false;
   String _searchTitle = '';
@@ -24,32 +28,36 @@ class RecordingsViewModel extends ChangeNotifier {
   // ============ Getters ============
   bool get isSearchExpanded => _isSearchExpanded;
   bool get isLoading => _isLoading;
-  List<MeetingResponse> get recordings => List.unmodifiable(_recordings);
+  List<Recording> get recordings => List.unmodifiable(_recordings);
 
   RecordingsViewModel() {
-    _setupSearchListeners();
-  }
-
-  // ============ Setup ============
-  void _setupSearchListeners() {
     searchController.addListener(() {
       // Optional: Add any search controller listeners if needed
+      if (searchController.text != _searchTitle) {
+        searchRecordings(searchController.text);
+      }
     });
   }
 
-  Future<void> _loadRecordings() async {
-    _isLoading = true;
-    notifyListeners();
+  // ============ Setup ============
+
+  Future<void> loadRecordings() async {
+    if (_isLoading) return;
+
+    _setLoading(true);
 
     try {
-      final data = await Repository.getMeetings(_searchTitle);
-      _recordings = data..sort((a, b) => b.startedAt.compareTo(a.startedAt));
-    } catch (e) {
-      _recordings = [];
-    }
+      Console.log("LOADING RECORDINGS");
 
-    _isLoading = false;
-    notifyListeners();
+      final recordings = await DatabaseService().searchRecordings(_searchTitle);
+      _recordings = recordings;
+      //
+    } catch (e) {
+      Console.error("FAIL LOAD RECORDING");
+      _recordings = [];
+    } finally {
+      _setLoading(false);
+    }
   }
 
   // ============ Dispose ============
@@ -62,11 +70,11 @@ class RecordingsViewModel extends ChangeNotifier {
   }
 
   // ============ Recording Management ============
-  Future<void> loadRecordings() async {
-    _setLoading(true);
-    _loadRecordings();
-    _setLoading(false);
-  }
+  // Future<void> loadRecordings() async {
+  //   _setLoading(true);
+  //   await _loadRecordings();
+  //   _setLoading(false);
+  // }
 
   void _setLoading(bool loading) {
     _isLoading = loading;
@@ -93,11 +101,11 @@ class RecordingsViewModel extends ChangeNotifier {
   }
 
   void searchRecordings(String query) {
-    _searchTitle = query;
+    _searchTitle = query.trim();
 
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 400), () {
-      _loadRecordings();
+    _debounce = Timer(const Duration(milliseconds: 700), () {
+      loadRecordings();
     });
   }
 
@@ -143,10 +151,7 @@ class RecordingsViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteRecording(
-    BuildContext context,
-    MeetingResponse meeting,
-  ) async {
+  Future<void> deleteRecording(BuildContext context, String meetingId) async {
     final confirmed = await showDeleteDialog(
       context,
       title: 'Delete Recording?',
@@ -155,14 +160,8 @@ class RecordingsViewModel extends ChangeNotifier {
     if (confirmed == true) {
       HapticFeedback.heavyImpact();
       try {
-        await Repository.delete(meeting.id);
+        await Repository.deleteMeeting(meetingId);
         await loadRecordings();
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Deleted "${meeting.title}"')));
-        }
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(
@@ -175,18 +174,17 @@ class RecordingsViewModel extends ChangeNotifier {
 
   Future<void> showRenameRecordingDialog(
     BuildContext context,
-    MeetingResponse meeting,
+    String meetingId,
+    String meetingTitle,
   ) async {
-    final newName = await showRenameDialog(
-      context,
-      initialTitle: meeting.title,
-    );
+    final newName = await showRenameDialog(context, initialTitle: meetingTitle);
 
     if (newName != null &&
         newName.isNotEmpty &&
-        newName != meeting.title &&
+        newName != meetingTitle &&
         context.mounted) {
-      await _renameRecording(context, meeting.id, newName);
+      // TODO:
+      await _renameRecording(context, meetingTitle, newName);
     }
   }
 

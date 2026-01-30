@@ -29,22 +29,34 @@ class _SummaryTabState extends State<SummaryTab> {
       setState(() => _state = SummaryState.empty);
       return;
     }
+    debugPrint('SummaryTab: Checking summary for ID: ${widget.id}');
 
     try {
       final detail = await Repository.getMeetingbyId(widget.id!);
       final summaryStatus = detail.meeting.summaryStatus;
 
-      if (summaryStatus == 'DONE') {
-        final summaryResponse = await Repository.getSummary(widget.id!);
-        setState(() {
-          _summaryContent = summaryResponse.content;
-          _state = SummaryState.done;
-        });
-      } else if (summaryStatus == 'PROCESSING') {
-        setState(() => _state = SummaryState.processing);
-      } else {
-        setState(() => _state = SummaryState.empty);
-      }
+      final summaryResponse = await Repository.getSummary(widget.id!);
+
+      setState(() {
+        _summaryContent = summaryResponse.content;
+        _state = SummaryState.done;
+      });
+
+      // if (summaryStatus == 'DONE') {
+      //   final summaryResponse = await Repository.getSummary(widget.id!);
+      //   debugPrint('SummaryTab: Meeting detail received: ${detail.meeting.id}');
+      //   debugPrint(
+      //     'SummaryTab: Summary status: ${detail.meeting.summaryStatus}',
+      //   );
+      //   setState(() {
+      //     _summaryContent = summaryResponse.content;
+      //     _state = SummaryState.done;
+      //   });
+      // } else if (summaryStatus == 'PROCESSING') {
+      //   setState(() => _state = SummaryState.processing);
+      // } else {
+      //   setState(() => _state = SummaryState.empty);
+      // }
     } catch (e) {
       debugPrint('Error checking summary status: $e');
       setState(() {
@@ -61,7 +73,10 @@ class _SummaryTabState extends State<SummaryTab> {
 
     try {
       // Call API to generate summary
-      await Repository.getSummary(widget.id!);
+      final response = await Repository.getSummary(widget.id!);
+
+      _summaryContent = response.content;
+      print(_summaryContent);
 
       // In real app, you might want to poll for status
       // For now, show success message and refresh

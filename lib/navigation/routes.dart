@@ -9,6 +9,7 @@ class AppRoutes {
 
   // Recording flow
   static const String recordDetail = '/record/detail';
+  static const String recordControl = '/record/control';
 
   // Subscription
   static const String upgrade = '/upgrade';

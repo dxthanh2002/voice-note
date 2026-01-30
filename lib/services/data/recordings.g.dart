@@ -38,9 +38,9 @@ class $RecordingsTable extends Recordings
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
     'status',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _fileNameMeta = const VerificationMeta(
     'fileName',
@@ -84,7 +84,8 @@ class $RecordingsTable extends Recordings
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -124,6 +125,8 @@ class $RecordingsTable extends Recordings
         _statusMeta,
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
       );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
     }
     if (data.containsKey('file_name')) {
       context.handle(
@@ -154,8 +157,6 @@ class $RecordingsTable extends Recordings
         _recordedAtMeta,
         recordedAt.isAcceptableOrUnknown(data['recorded_at']!, _recordedAtMeta),
       );
-    } else if (isInserting) {
-      context.missing(_recordedAtMeta);
     }
     return context;
   }
@@ -181,7 +182,7 @@ class $RecordingsTable extends Recordings
       status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}status'],
-      ),
+      )!,
       fileName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}file_name'],
@@ -210,7 +211,7 @@ class $RecordingsTable extends Recordings
 class Recording extends DataClass implements Insertable<Recording> {
   final int id;
   final String meetingId;
-  final String? status;
+  final String status;
   final String fileName;
   final String filePath;
   final int duration;
@@ -218,7 +219,7 @@ class Recording extends DataClass implements Insertable<Recording> {
   const Recording({
     required this.id,
     required this.meetingId,
-    this.status,
+    required this.status,
     required this.fileName,
     required this.filePath,
     required this.duration,
@@ -229,9 +230,7 @@ class Recording extends DataClass implements Insertable<Recording> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['meeting_id'] = Variable<String>(meetingId);
-    if (!nullToAbsent || status != null) {
-      map['status'] = Variable<String>(status);
-    }
+    map['status'] = Variable<String>(status);
     map['file_name'] = Variable<String>(fileName);
     map['file_path'] = Variable<String>(filePath);
     map['duration'] = Variable<int>(duration);
@@ -243,9 +242,7 @@ class Recording extends DataClass implements Insertable<Recording> {
     return RecordingsCompanion(
       id: Value(id),
       meetingId: Value(meetingId),
-      status: status == null && nullToAbsent
-          ? const Value.absent()
-          : Value(status),
+      status: Value(status),
       fileName: Value(fileName),
       filePath: Value(filePath),
       duration: Value(duration),
@@ -261,7 +258,7 @@ class Recording extends DataClass implements Insertable<Recording> {
     return Recording(
       id: serializer.fromJson<int>(json['id']),
       meetingId: serializer.fromJson<String>(json['meetingId']),
-      status: serializer.fromJson<String?>(json['status']),
+      status: serializer.fromJson<String>(json['status']),
       fileName: serializer.fromJson<String>(json['fileName']),
       filePath: serializer.fromJson<String>(json['filePath']),
       duration: serializer.fromJson<int>(json['duration']),
@@ -274,7 +271,7 @@ class Recording extends DataClass implements Insertable<Recording> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'meetingId': serializer.toJson<String>(meetingId),
-      'status': serializer.toJson<String?>(status),
+      'status': serializer.toJson<String>(status),
       'fileName': serializer.toJson<String>(fileName),
       'filePath': serializer.toJson<String>(filePath),
       'duration': serializer.toJson<int>(duration),
@@ -285,7 +282,7 @@ class Recording extends DataClass implements Insertable<Recording> {
   Recording copyWith({
     int? id,
     String? meetingId,
-    Value<String?> status = const Value.absent(),
+    String? status,
     String? fileName,
     String? filePath,
     int? duration,
@@ -293,7 +290,7 @@ class Recording extends DataClass implements Insertable<Recording> {
   }) => Recording(
     id: id ?? this.id,
     meetingId: meetingId ?? this.meetingId,
-    status: status.present ? status.value : this.status,
+    status: status ?? this.status,
     fileName: fileName ?? this.fileName,
     filePath: filePath ?? this.filePath,
     duration: duration ?? this.duration,
@@ -353,7 +350,7 @@ class Recording extends DataClass implements Insertable<Recording> {
 class RecordingsCompanion extends UpdateCompanion<Recording> {
   final Value<int> id;
   final Value<String> meetingId;
-  final Value<String?> status;
+  final Value<String> status;
   final Value<String> fileName;
   final Value<String> filePath;
   final Value<int> duration;
@@ -370,16 +367,16 @@ class RecordingsCompanion extends UpdateCompanion<Recording> {
   RecordingsCompanion.insert({
     this.id = const Value.absent(),
     required String meetingId,
-    this.status = const Value.absent(),
+    required String status,
     required String fileName,
     required String filePath,
     required int duration,
-    required DateTime recordedAt,
+    this.recordedAt = const Value.absent(),
   }) : meetingId = Value(meetingId),
+       status = Value(status),
        fileName = Value(fileName),
        filePath = Value(filePath),
-       duration = Value(duration),
-       recordedAt = Value(recordedAt);
+       duration = Value(duration);
   static Insertable<Recording> custom({
     Expression<int>? id,
     Expression<String>? meetingId,
@@ -403,7 +400,7 @@ class RecordingsCompanion extends UpdateCompanion<Recording> {
   RecordingsCompanion copyWith({
     Value<int>? id,
     Value<String>? meetingId,
-    Value<String?>? status,
+    Value<String>? status,
     Value<String>? fileName,
     Value<String>? filePath,
     Value<int>? duration,
@@ -477,17 +474,17 @@ typedef $$RecordingsTableCreateCompanionBuilder =
     RecordingsCompanion Function({
       Value<int> id,
       required String meetingId,
-      Value<String?> status,
+      required String status,
       required String fileName,
       required String filePath,
       required int duration,
-      required DateTime recordedAt,
+      Value<DateTime> recordedAt,
     });
 typedef $$RecordingsTableUpdateCompanionBuilder =
     RecordingsCompanion Function({
       Value<int> id,
       Value<String> meetingId,
-      Value<String?> status,
+      Value<String> status,
       Value<String> fileName,
       Value<String> filePath,
       Value<int> duration,
@@ -650,7 +647,7 @@ class $$RecordingsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> meetingId = const Value.absent(),
-                Value<String?> status = const Value.absent(),
+                Value<String> status = const Value.absent(),
                 Value<String> fileName = const Value.absent(),
                 Value<String> filePath = const Value.absent(),
                 Value<int> duration = const Value.absent(),
@@ -668,11 +665,11 @@ class $$RecordingsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String meetingId,
-                Value<String?> status = const Value.absent(),
+                required String status,
                 required String fileName,
                 required String filePath,
                 required int duration,
-                required DateTime recordedAt,
+                Value<DateTime> recordedAt = const Value.absent(),
               }) => RecordingsCompanion.insert(
                 id: id,
                 meetingId: meetingId,

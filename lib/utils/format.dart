@@ -34,6 +34,13 @@ String formatDuration(Duration? duration) {
   }
 }
 
+String formatDurationFromSeconds(int? seconds) {
+  if (seconds == null || seconds == 0) {
+    return '--:--';
+  }
+  return formatDuration(Duration(seconds: seconds));
+}
+
 void printFormatted(dynamic data) {
   const encoder = JsonEncoder.withIndent('  ');
   final formatted = encoder.convert(data);

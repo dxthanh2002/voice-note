@@ -95,7 +95,7 @@ class AudioService {
   }
 
   /// Request all required permissions
-  Future<bool> requestPermissions() async {
+  static Future<bool> requestPermissions() async {
     if (Platform.isAndroid) {
       final deviceInfo = DeviceInfoPlugin();
       final androidInfo = await deviceInfo.androidInfo;
@@ -145,11 +145,6 @@ class AudioService {
     try {
       await _initRecorder();
       // Request all permissions
-      final granted = await requestPermissions();
-      if (!granted) {
-        debugPrint('Permissions not granted');
-        return false;
-      }
 
       // Check if device supports recording
       if (!await _recorder!.hasPermission()) {

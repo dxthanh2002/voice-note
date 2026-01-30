@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'contexts/app_context.dart';
 import 'navigation/router.dart';
-import 'features/main/navigation_tab.dart';
+import 'features/main/bottom_navigator_tab.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'services/bootstrap.dart';
 import 'theme/app_theme.dart';
@@ -53,7 +53,7 @@ class AppRoot extends StatelessWidget {
           return const OnboardingScreen();
         }
 
-        return const MainTabsScreen();
+        return const BottomNavigatorTab();
       },
     );
   }

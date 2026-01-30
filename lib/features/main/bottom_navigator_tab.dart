@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme/colors.dart';
-import '../recordings/recordings_screen.dart';
+import '../home/recordings_screen.dart';
 import 'settings_screen.dart';
 
-class MainTabsScreen extends StatefulWidget {
-  const MainTabsScreen({super.key});
+class BottomNavigatorTab extends StatefulWidget {
+  const BottomNavigatorTab({super.key});
 
   @override
-  State<MainTabsScreen> createState() => _MainTabsScreenState();
+  State<BottomNavigatorTab> createState() => _BottomNavigatorTabState();
 }
 
-class _MainTabsScreenState extends State<MainTabsScreen> {
+class _BottomNavigatorTabState extends State<BottomNavigatorTab> {
   int _currentIndex = 0;
 
   final List<Widget> _tabs = const [RecordingsScreen(), SettingsTab()];

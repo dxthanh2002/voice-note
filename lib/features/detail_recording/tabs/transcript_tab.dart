@@ -97,7 +97,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
 
         final db = DatabaseService();
 
-        final savedRecording = await db.getRecordingById(widget.id!);
+        final savedRecording = await db.getRecording(widget.id!);
         if (savedRecording != null) {
           debugPrint('''
         ✅ VERIFIED IN DATABASE:
@@ -124,19 +124,22 @@ class _TranscriptTabState extends State<TranscriptTab> {
           savedRecording.filePath,
         );
 
+        // now start processing
+        await DatabaseService().updateRecordingStatus(
+          meetingId: widget.id!,
+          status: 'processing',
+        );
+
         final responseConfirm = await Repository.confirm(presigned.audioId);
         Console.log("ID from confirm ${responseConfirm.id}");
 
         // load outside
+        Console.log("NOW START TRANSCRIPT ${widget.id}");
+        // await Repository.processTranscript(detail.meeting.id);
       }
 
       // get
-      Console.log("NOW START TRANSCRIPT");
 
-      // Start transcription
-      await Repository.processTranscript(widget.id!);
-
-      // Don't await - let it run in background
       _pollTranscript();
     } catch (e) {
       setState(() {
@@ -165,6 +168,11 @@ class _TranscriptTabState extends State<TranscriptTab> {
         if (statusResponse == 'DONE') {
           final detail = await Repository.getMeetingbyId(widget.id!);
           if (mounted) {
+            await DatabaseService().updateRecordingStatus(
+              meetingId: widget.id!,
+              status: 'done',
+            );
+
             setState(() {
               _transcriptItems = detail.transcripts;
               _state = TranscriptState.done;
@@ -174,6 +182,11 @@ class _TranscriptTabState extends State<TranscriptTab> {
           break;
         } else if (statusResponse == 'FAILED') {
           if (mounted) {
+            await DatabaseService().updateRecordingStatus(
+              meetingId: widget.id!,
+              status: 'failed',
+            );
+
             setState(() {
               _state = TranscriptState.failed;
               _errorMessage = 'Transcription failed. Please try again.';

@@ -1,17 +1,32 @@
 import 'package:flutter/foundation.dart';
 
 class Console {
+  static void logPreview(String label, dynamic data) {
+    if (data == null) return;
+
+    if (kDebugMode) {
+      final dataStr = data.toString();
+      if (dataStr.isEmpty) return;
+
+      final preview = dataStr.length > 400
+          ? '${dataStr.substring(0, 400)}...'
+          : dataStr;
+
+      debugPrint('  ● $label: $preview');
+    }
+  }
+
   static void log(dynamic message) {
     if (kDebugMode) {
       final timestamp = DateTime.now().toIso8601String();
-      debugPrint(' 🔍 DEBUG [$timestamp] : $message');
+      debugPrint(' 🔍 DEBUG: $message');
     }
   }
 
   static void warning(dynamic message) {
     if (kDebugMode) {
       final timestamp = DateTime.now().toIso8601String();
-      debugPrint(' ⚠️ WARNING [$timestamp] : $message');
+      debugPrint(' ⚠️ WARNING: $message');
     }
   }
 
@@ -28,7 +43,7 @@ class Console {
   static void lifecycle(String event) {
     if (kDebugMode) {
       final timestamp = DateTime.now().toIso8601String();
-      debugPrint(' 🔄 LIFECYCLE [$timestamp] : $event');
+      debugPrint(' 🔄 LIFECYCLE: $event');
     }
   }
 }

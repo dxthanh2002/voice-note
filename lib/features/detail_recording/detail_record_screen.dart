@@ -17,21 +17,21 @@ import 'widgets/pill_tab_bar.dart';
 
 import '../../utils/format.dart';
 
-class RecordDetailScreen extends StatefulWidget {
+class DetailRecordScreen extends StatefulWidget {
   final String? id;
 
-  const RecordDetailScreen({super.key, this.id});
+  const DetailRecordScreen({super.key, this.id});
 
   @override
-  State<RecordDetailScreen> createState() => _RecordDetailScreenState();
+  State<DetailRecordScreen> createState() => _DetailRecordScreenState();
 }
 
-class _RecordDetailScreenState extends State<RecordDetailScreen> {
+class _DetailRecordScreenState extends State<DetailRecordScreen> {
   // Audio player
   final AudioPlayer _audioPlayer = AudioPlayer();
   int _selectedTabIndex = 0;
 
-  MeetingDetail? _detail;
+  MeetingDetail? _detailMeeting;
 
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
@@ -47,7 +47,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
   void initState() {
     super.initState();
 
-    _loadMeeting();
+    _loadMeetingInfo();
   }
 
   @override
@@ -56,7 +56,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
     super.dispose();
   }
 
-  Future<void> _loadMeeting() async {
+  Future<void> _loadMeetingInfo() async {
     try {
       // if uploaded to server or not ? confirm
       Console.log("HEHEHEHE DETAIL");
@@ -66,7 +66,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
       await Repository.getMeetingbyId(widget.id!);
 
       setState(() {
-        _detail = response;
+        _detailMeeting = response;
         _loading = false;
       });
 
@@ -110,7 +110,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
   @override
   Widget build(BuildContext context) {
     // Show loading while saving recording
-    if (_loading || _detail == null) {
+    if (_loading || _detailMeeting == null) {
       return Scaffold(
         backgroundColor: AppColors.backgroundDark,
         body: const Center(
@@ -119,7 +119,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
       );
     }
 
-    final meeting = _detail!.meeting;
+    final meeting = _detailMeeting!.meeting;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
@@ -140,7 +140,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
   }
 
   Widget _buildAppBar(BuildContext context) {
-    final meeting = _detail!.meeting;
+    final meeting = _detailMeeting!.meeting;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -184,7 +184,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
                 if (confirmed == true) {
                   HapticFeedback.heavyImpact();
                   try {
-                    await Repository.delete(meeting.id);
+                    await Repository.deleteMeeting(meeting.id);
                     if (!context.mounted) return;
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -297,7 +297,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
     // TODO: Uncomment when Chat AI feature is ready
     // if (_selectedTabIndex == 2) return const SizedBox.shrink();
 
-    final meeting = _detail!.meeting;
+    final meeting = _detailMeeting!.meeting;
     final meetingDuration = meeting.duration ?? Duration.zero;
     final total = _duration.inMilliseconds > 0 ? _duration : meetingDuration;
 
@@ -355,15 +355,15 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
       try {
         await Repository.rename(meeting.id, newName);
         if (!context.mounted) return;
-        _loadMeeting();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Renamed to "$newName"')),
-        );
+        _loadMeetingInfo();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Renamed to "$newName"')));
       } catch (e) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
     }
   }

@@ -29,7 +29,7 @@ class Repository {
       data: {"title": title},
     );
 
-    Console.log("HIII");
+    Console.log("CREATINGGGG");
 
     return MeetingResponse.fromJson(response.data['data']);
   }
@@ -98,7 +98,7 @@ class Repository {
     return AudioUploadResponse.fromJson(response.data['data']);
   }
 
-  static Future<bool> delete(String id) async {
+  static Future<bool> deleteMeeting(String id) async {
     final response = await api.delete('app-audio-note/meetings/$id');
 
     return response.data['success'];
@@ -113,11 +113,9 @@ class Repository {
     return MeetingResponse.fromJson(response.data['data']);
   }
 
-  static Future<void> processTranscript(String id) async {
-    await api.post('app-audio-note/meetings/$id/transcript');
-
-    // return response.data['data']['status'
-  }
+  // static Future<void> processTranscript(String id) async {
+  //   await api.post('app-audio-note/meetings/$id/transcript');
+  // }
 
   static Future<String> status(String id) async {
     final response = await api.get('app-audio-note/meetings/$id/status');

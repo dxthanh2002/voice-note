@@ -1,203 +1,46 @@
-import 'dart:async';
-
-import 'package:aimateflutter/features/recordings/recordings_viewmodel.dart';
-import 'package:path/path.dart' as p;
+import 'package:aimateflutter/models/meeting.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import 'package:aimateflutter/services/repository.dart';
-import '../../../services/database.dart';
-import '../../../services/audio.dart';
+import '../../services/repository.dart';
+import '../../utils/console.dart';
+import 'recording_control_viewmodel.dart';
 import '../../../theme/colors.dart';
-import '../../../utils/console.dart';
 import '../../../utils/format.dart';
 
-enum RecordingScreenState { loading, initial, recording, paused }
+class RecordControlScreen extends StatefulWidget {
+  final MeetingResponse meeting;
 
-class RecordingScreen extends StatefulWidget {
-  final RecordingsViewModel viewModel;
-  final String title;
-
-  const RecordingScreen({
-    super.key,
-    required this.viewModel,
-    required this.title,
-  });
-
-  static Future<String?> show(
-    BuildContext context,
-    RecordingsViewModel viewModel, {
-    required String title,
-  }) {
-    return Navigator.push<String?>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => RecordingScreen(viewModel: viewModel, title: title),
-      ),
-    );
-  }
+  const RecordControlScreen({super.key, required this.meeting});
 
   @override
-  State<RecordingScreen> createState() => _RecordingScreenState();
+  State<RecordControlScreen> createState() => _RecordControlScreenState();
 }
 
-class _RecordingScreenState extends State<RecordingScreen>
+class _RecordControlScreenState extends State<RecordControlScreen>
     with TickerProviderStateMixin {
-  RecordingScreenState _state = RecordingScreenState.loading;
-  AudioService? _audioService;
-  Duration _duration = Duration.zero;
-
+  late RecordingViewModel _viewModel;
   late AnimationController _pulseController;
-  List<double> _waveHeights = [];
-  double _smoothedAmp = 0.0;
-  StreamSubscription<double>? _ampSubscription;
 
   @override
   void initState() {
     super.initState();
+    _viewModel = RecordingViewModel();
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
 
-    _waveHeights = List.generate(18, (_) => 0.1);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeRecording();
+      _viewModel.initializeRecording();
     });
-  }
-
-  Future<void> _initializeRecording() async {
-    // Show loading for a brief moment
-    await Future.delayed(const Duration(milliseconds: 1500));
-    if (mounted) {
-      setState(() => _state = RecordingScreenState.initial);
-      _startRecording();
-    }
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
-    _ampSubscription?.cancel();
-
-    _audioService?.dispose();
+    _viewModel.dispose();
     super.dispose();
-  }
-
-  Future<void> _startRecording() async {
-    _audioService = AudioService();
-
-    _audioService!.durationStream.listen((duration) {
-      if (mounted) setState(() => _duration = duration);
-    });
-
-    _audioService!.stateStream.listen((state) {
-      if (!mounted) return;
-      if (state == RecordingState.recording) {
-        setState(() => _state = RecordingScreenState.recording);
-        _pulseController.repeat(reverse: true);
-        _startAmplitudeListening();
-      } else if (state == RecordingState.paused) {
-        setState(() => _state = RecordingScreenState.paused);
-        _pulseController.stop();
-        _ampSubscription?.cancel();
-      }
-    });
-
-    final success = await _audioService!.startRecording();
-    if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền truy cập.',
-          ),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      Navigator.pop(context);
-    }
-  }
-
-  void _startAmplitudeListening() {
-    _ampSubscription?.cancel();
-    _ampSubscription = _audioService!.amplitudeStream.listen((amp) {
-      if (!mounted || _state != RecordingScreenState.recording) return;
-
-      // Exponential smoothing
-      _smoothedAmp = 0.3 * amp + 0.7 * _smoothedAmp;
-
-      // Gate noise floor
-      final value = _smoothedAmp < 0.05 ? 0.1 : _smoothedAmp;
-
-      setState(() {
-        _waveHeights.removeAt(0);
-        _waveHeights.add(value);
-      });
-    });
-  }
-
-  Future<void> _togglePause() async {
-    await _audioService?.togglePause();
-  }
-
-  Future<void> _stopRecording() async {
-    if (_audioService == null) return;
-
-    try {
-      final filePath = await _audioService!.stopRecording();
-
-      if (filePath == null) {
-        Console.log('No file path returned from recording');
-        if (mounted) Navigator.pop(context, null);
-        return;
-      }
-
-      final fileName = p.basename(filePath);
-      final duration = _audioService!.recordedDuration.inSeconds;
-      Console.log('Recording saved: $filePath');
-
-      final meetingTitle = widget.title.isNotEmpty ? widget.title : fileName;
-
-      try {
-        final newMeeting = await Repository.createMeeting(meetingTitle);
-
-        final db = DatabaseService();
-        await db.save(
-          meetingId: newMeeting.id,
-          fileName: fileName,
-          filePath: filePath,
-          duration: duration,
-          status: 'raw',
-        );
-
-        await widget.viewModel.loadRecordings();
-
-        if (mounted) Navigator.pop(context, newMeeting.id);
-      } catch (e) {
-        debugPrint('Error creating meeting: $e');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Lỗi khi tải lên: $e'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-          Navigator.pop(context, null);
-        }
-      }
-    } catch (e) {
-      debugPrint('Error in stopRecording: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi khi dừng ghi âm: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        Navigator.pop(context, null);
-      }
-    }
   }
 
   @override
@@ -206,24 +49,29 @@ class _RecordingScreenState extends State<RecordingScreen>
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
-          _handleBack();
+          _onExit(context);
         }
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0B1222),
         body: SafeArea(
-          child: _state == RecordingScreenState.loading
-              ? _buildLoadingState()
-              : Column(
-                  children: [
-                    _buildHeader(),
-                    Expanded(child: _buildMainContent()),
-                    _buildFooter(),
-                    const SizedBox(height: 8),
-                    _buildHomeIndicator(),
-                    const SizedBox(height: 8),
-                  ],
-                ),
+          child: ListenableBuilder(
+            listenable: _viewModel,
+            builder: (context, _) {
+              return _viewModel.isLoading
+                  ? _buildLoadingState()
+                  : Column(
+                      children: [
+                        _buildHeader(context),
+                        Expanded(child: _buildMainContent()),
+                        _buildFooter(),
+                        const SizedBox(height: 8),
+                        _buildHomeIndicator(),
+                        const SizedBox(height: 8),
+                      ],
+                    );
+            },
+          ),
         ),
       ),
     );
@@ -281,8 +129,8 @@ class _RecordingScreenState extends State<RecordingScreen>
                 112,
               ];
               return Shimmer.fromColors(
-                baseColor: Colors.white.withValues(alpha: 0.08),
-                highlightColor: Colors.white.withValues(alpha: 0.15),
+                baseColor: Colors.white.withOpacity(0.08),
+                highlightColor: Colors.white.withOpacity(0.15),
                 child: Container(
                   width: 4,
                   height: heights[index].toDouble(),
@@ -330,8 +178,8 @@ class _RecordingScreenState extends State<RecordingScreen>
 
   Widget _buildShimmerCircle(double size) {
     return Shimmer.fromColors(
-      baseColor: Colors.white.withValues(alpha: 0.08),
-      highlightColor: Colors.white.withValues(alpha: 0.15),
+      baseColor: Colors.white.withOpacity(0.08),
+      highlightColor: Colors.white.withOpacity(0.15),
       child: Container(
         width: size,
         height: size,
@@ -345,8 +193,8 @@ class _RecordingScreenState extends State<RecordingScreen>
 
   Widget _buildShimmerBox(double width, double height, {double radius = 8}) {
     return Shimmer.fromColors(
-      baseColor: Colors.white.withValues(alpha: 0.08),
-      highlightColor: Colors.white.withValues(alpha: 0.15),
+      baseColor: Colors.white.withOpacity(0.08),
+      highlightColor: Colors.white.withOpacity(0.15),
       child: Container(
         width: width,
         height: height,
@@ -358,24 +206,24 @@ class _RecordingScreenState extends State<RecordingScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
       child: Row(
         children: [
           // Back button
           GestureDetector(
-            onTap: _handleBack,
+            onTap: () => _onExit(context),
             child: Container(
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
+                color: Colors.white.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.arrow_back,
-                color: Colors.white.withValues(alpha: 0.6),
+                color: Colors.white.withOpacity(0.6),
                 size: 24,
               ),
             ),
@@ -395,7 +243,7 @@ class _RecordingScreenState extends State<RecordingScreen>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.title,
+                  widget.meeting.title,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -415,24 +263,7 @@ class _RecordingScreenState extends State<RecordingScreen>
     );
   }
 
-  bool _isRecordingOrPaused() {
-    return _state == RecordingScreenState.recording ||
-        _state == RecordingScreenState.paused;
-  }
-
-  Future<void> _handleBack() async {
-    if (_isRecordingOrPaused()) {
-      // Save recording then go back
-      await _stopRecording();
-    } else {
-      // Not recording yet, just go back
-      Navigator.pop(context);
-    }
-  }
-
   Widget _buildMainContent() {
-    final isRecording = _state == RecordingScreenState.recording;
-
     return Column(
       children: [
         const SizedBox(height: 32),
@@ -443,13 +274,12 @@ class _RecordingScreenState extends State<RecordingScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: List.generate(18, (index) {
-              final baseHeight = _waveHeights[index];
-              final height = isRecording ? baseHeight * 180 : 40.0;
+              final baseHeight = _viewModel.waveHeights[index];
+              final height = _viewModel.isRecording ? baseHeight * 180 : 40.0;
 
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 60),
                 curve: Curves.easeOut,
-
                 width: 4,
                 height: height.clamp(20.0, 180.0),
                 margin: const EdgeInsets.symmetric(horizontal: 3),
@@ -460,7 +290,7 @@ class _RecordingScreenState extends State<RecordingScreen>
                     end: Alignment.topCenter,
                     colors: [
                       AppColors.primary,
-                      AppColors.primary.withValues(alpha: 0.7),
+                      AppColors.primary.withOpacity(0.7),
                     ],
                   ),
                 ),
@@ -471,7 +301,7 @@ class _RecordingScreenState extends State<RecordingScreen>
         const SizedBox(height: 24),
         // Timer display
         Text(
-          formatDuration(_duration),
+          formatDuration(_viewModel.duration),
           style: TextStyle(
             fontSize: 56,
             fontWeight: FontWeight.bold,
@@ -479,10 +309,7 @@ class _RecordingScreenState extends State<RecordingScreen>
             letterSpacing: -1,
             fontFeatures: const [FontFeature.tabularFigures()],
             shadows: [
-              Shadow(
-                color: AppColors.primary.withValues(alpha: 0.5),
-                blurRadius: 20,
-              ),
+              Shadow(color: AppColors.primary.withOpacity(0.5), blurRadius: 20),
             ],
           ),
         ),
@@ -492,7 +319,7 @@ class _RecordingScreenState extends State<RecordingScreen>
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: Colors.white.withValues(alpha: 0.4),
+            color: Colors.white.withOpacity(0.4),
             letterSpacing: 2,
           ),
         ),
@@ -503,8 +330,6 @@ class _RecordingScreenState extends State<RecordingScreen>
   }
 
   Widget _buildFooter() {
-    final isPaused = _state == RecordingScreenState.paused;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 24, 32, 48),
       child: Column(
@@ -515,31 +340,29 @@ class _RecordingScreenState extends State<RecordingScreen>
               // Pause button
               Expanded(
                 child: GestureDetector(
-                  onTap: _togglePause,
+                  onTap: () => _viewModel.togglePause(),
                   child: Container(
                     height: 60,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
+                      border: Border.all(color: Colors.white.withOpacity(0.1)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          isPaused ? Icons.play_arrow : Icons.pause,
-                          color: Colors.white.withValues(alpha: 0.8),
+                          _viewModel.isPaused ? Icons.play_arrow : Icons.pause,
+                          color: Colors.white.withOpacity(0.8),
                           size: 24,
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          isPaused ? 'Resume' : 'Pause',
+                          _viewModel.isPaused ? 'Resume' : 'Pause',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white.withValues(alpha: 0.8),
+                            color: Colors.white.withOpacity(0.8),
                           ),
                         ),
                       ],
@@ -551,7 +374,7 @@ class _RecordingScreenState extends State<RecordingScreen>
               // Stop button
               Expanded(
                 child: GestureDetector(
-                  onTap: _stopRecording,
+                  onTap: () => _onStopRecording(context),
                   child: Container(
                     height: 60,
                     decoration: BoxDecoration(
@@ -559,7 +382,7 @@ class _RecordingScreenState extends State<RecordingScreen>
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                          color: const Color(0xFFEF4444).withOpacity(0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -596,10 +419,56 @@ class _RecordingScreenState extends State<RecordingScreen>
         width: 128,
         height: 5,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.15),
+          color: Colors.white.withOpacity(0.15),
           borderRadius: BorderRadius.circular(4),
         ),
       ),
     );
+  }
+
+  Future<void> _onExit(BuildContext context) async {
+    // TODO: save id
+    // Show if they want to exit or not while recording
+    if (_viewModel.isRecordingOrPaused) {
+      // Save recording then go back
+      // MSG: do u wanna save
+      await _onStopRecording(context);
+    } else {
+      // is recording
+      // POP a meetingId
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> _onStopRecording(BuildContext context) async {
+    final meetingId = widget.meeting.id;
+    try {
+      await _viewModel.stopRecording(
+        title: widget.meeting.title,
+        meetingId: meetingId,
+      );
+
+      if (mounted) {
+        // return the meetingId
+        Navigator.pop(context, meetingId);
+      }
+      //
+    } catch (e) {
+      final result = await Repository.deleteMeeting(meetingId);
+
+      if (result == true) {
+        Console.log("Successful delete meeting while ERROR");
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi dừng ghi âm: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        Navigator.pop(context, null);
+      }
+    }
   }
 }

@@ -114,26 +114,14 @@ class LoggingInterceptor extends Interceptor {
   }
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    Console.log('''
-        🚀 REQUEST:
-        ${options.method} ${options.uri}
-        --Headers: ${options.headers}
-        --Data: ${options.data}
-        --Query: ${options.queryParameters}
-    ''');
-
-    handler.next(options);
-  }
-
-  @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    Console.log('''
-        ✅ RESPONSE:
-        --Status: ${response.statusCode}
-        --Data: ${response.data}
-    ''');
-    // JsonEncoder.withIndent('  ').convert
+    Console.log(
+      "🚀 ${response.requestOptions.method} ${response.requestOptions.path}  ✅ ${response.statusCode}",
+    );
+
+    Console.logPreview('REQUEST', response.requestOptions.data);
+    Console.logPreview('RESPONSE', response.data);
+
     handler.next(response);
   }
 }

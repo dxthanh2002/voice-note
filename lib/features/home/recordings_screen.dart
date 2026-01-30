@@ -1,3 +1,5 @@
+import 'package:aimateflutter/features/home/create_record/create_record_modal.dart';
+import 'package:aimateflutter/services/audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -6,10 +8,10 @@ import '../../components/bouncing_button.dart';
 import '../../components/shimmer_loading.dart';
 import '../../models/meeting.dart';
 import '../../navigation/routes.dart';
+import '../../services/data/recordings.dart';
 import '../../theme/colors.dart';
+import '../../utils/console.dart';
 import '../../utils/format.dart';
-import 'widgets/record_sheet.dart';
-import 'widgets/recording_screen.dart';
 import 'recordings_viewmodel.dart'; // Import the ViewModel
 
 class RecordingsScreen extends StatefulWidget {
@@ -42,8 +44,8 @@ class _RecordingsScreenState extends State<RecordingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => RecordingsViewModel(),
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
       child: const _RecordingsScreenContent(),
     );
   }
@@ -352,12 +354,18 @@ class _RecordingsScreenContent extends StatelessWidget {
       itemCount: viewModel.recordings.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final meeting = viewModel.recordings[index];
+        final recording = viewModel.recordings[index];
         return RecordingCard(
-          meeting: meeting,
-          onTap: () => viewModel.navigateToRecordingDetail(context, meeting.id),
-          onDelete: () => viewModel.deleteRecording(context, meeting),
-          onRename: () => viewModel.showRenameRecordingDialog(context, meeting),
+          meeting: recording,
+          onTap: () =>
+              viewModel.navigateToRecordingDetail(context, recording.meetingId),
+          onDelete: () =>
+              viewModel.deleteRecording(context, recording.meetingId),
+          onRename: () => viewModel.showRenameRecordingDialog(
+            context,
+            recording.meetingId,
+            recording.fileName,
+          ),
         );
       },
     );
@@ -367,7 +375,7 @@ class _RecordingsScreenContent extends StatelessWidget {
   Widget _buildFloatingActionButton(BuildContext context) {
     return BouncingButton(
       semanticLabel: 'Create new recording',
-      onPressed: () => _showCreateRecordSheet(context),
+      onPressed: () => _onCreateRecording(context),
       child: Container(
         width: 64,
         height: 64,
@@ -387,30 +395,32 @@ class _RecordingsScreenContent extends StatelessWidget {
     );
   }
 
-  Future<void> _showCreateRecordSheet(BuildContext context) async {
+  Future<void> _onCreateRecording(BuildContext context) async {
     FocusScope.of(context).unfocus();
-    final viewModel = context.read<RecordingsViewModel>();
 
-    final result = await showDialog<Map<String, dynamic>>(
+    // create record sheet
+    final newMeeting = await showDialog<MeetingResponse>(
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withValues(alpha: 0.6),
-      builder: (dialogContext) => ChangeNotifierProvider.value(
-        value: viewModel,
-        child: const CreateRecordSheet(),
-      ),
+      builder: (dialogContext) => const CreateRecordModal(),
     );
 
-    if (result != null && context.mounted) {
-      final title = result['title'] as String;
+    final granted = await AudioService.requestPermissions();
+    if (!granted) {
+      Console.warning('XXX Permissions not granted');
+      return;
+    }
+    // permission first
 
-      final meetingId = await RecordingScreen.show(
+    if (newMeeting != null && context.mounted && granted) {
+      final meetingId = await Navigator.pushNamed(
         context,
-        viewModel,
-        title: title,
+        AppRoutes.recordControl,
+        arguments: newMeeting,
       );
 
-      if (meetingId != null && meetingId.isNotEmpty && context.mounted) {
+      if (meetingId != null && meetingId is String && context.mounted) {
         Navigator.pushNamed(
           context,
           AppRoutes.recordDetail,
@@ -431,17 +441,17 @@ class RecordingCard extends StatelessWidget {
     required this.onRename,
   });
 
-  final MeetingResponse meeting;
+  final Recording meeting;
   final VoidCallback onTap;
   final VoidCallback onDelete;
   final VoidCallback onRename;
 
   String _getStatusText() {
-    if (meeting.transcriptStatus == 'DONE' && meeting.hasSummary) {
+    if (meeting.status == 'DONE') {
       return 'Ready';
-    } else if (meeting.transcriptStatus == 'PROCESSING') {
+    } else if (meeting.status == 'PROCESSING') {
       return 'Processing';
-    } else if (meeting.transcriptStatus == 'FAILED') {
+    } else if (meeting.status == 'FAILED') {
       return 'Error';
     }
     return 'Raw Audio';
@@ -454,7 +464,7 @@ class RecordingCard extends StatelessWidget {
       child: Semantics(
         button: true,
         label:
-            '${meeting.title}, recorded on ${formatDate(meeting.startedAt)}, duration ${formatDuration(meeting.duration)}, status ${_getStatusText()}',
+            '${meeting.fileName}, recorded on ${formatDate(meeting.recordedAt)}, duration ${formatDurationFromSeconds(meeting.duration)}, status ${_getStatusText()}',
         child: Material(
           color: AppColors.cardDark,
           borderRadius: BorderRadius.circular(24),
@@ -510,7 +520,7 @@ class RecordingCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                meeting.title,
+                meeting.fileName,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -521,7 +531,7 @@ class RecordingCard extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    formatDate(meeting.startedAt),
+                    formatDate(meeting.recordedAt),
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
@@ -536,7 +546,7 @@ class RecordingCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    formatDuration(meeting.audio?.durationObject),
+                    formatDurationFromSeconds(meeting.duration),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -613,17 +623,17 @@ class RecordingCard extends StatelessWidget {
     String text;
     IconData icon;
 
-    if (meeting.transcriptStatus == 'DONE' && meeting.hasSummary) {
+    if (meeting.status == 'DONE') {
       color = AppColors.success;
       bgColor = AppColors.success.withValues(alpha: 0.1);
       text = 'Ready';
       icon = Icons.check_circle;
-    } else if (meeting.transcriptStatus == 'PROCESSING') {
+    } else if (meeting.status == 'PROCESSING') {
       color = AppColors.warning;
       bgColor = AppColors.warning.withValues(alpha: 0.1);
       text = 'Processing';
       icon = Icons.schedule;
-    } else if (meeting.transcriptStatus == 'FAILED') {
+    } else if (meeting.status == 'FAILED') {
       color = AppColors.error;
       bgColor = AppColors.error.withValues(alpha: 0.1);
       text = 'Error';
