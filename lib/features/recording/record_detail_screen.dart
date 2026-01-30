@@ -174,6 +174,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
           ),
           PopupMenuButton<String>(
             tooltip: 'More options',
+            offset: const Offset(0, 48),
             onSelected: (value) async {
               if (value == 'delete') {
                 final confirmed = await showDeleteDialog(
@@ -205,6 +206,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
             color: AppColors.cardDark,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
             menuPadding: EdgeInsets.zero,
             itemBuilder: (context) => [
@@ -247,7 +249,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
           child: Column(
             children: [
               // Text(
@@ -264,7 +266,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
                   context,
                 ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
               PillTabBar(
                 tabs: _tabs,
                 selectedIndex: _selectedTabIndex,

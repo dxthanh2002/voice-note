@@ -84,7 +84,7 @@ class _RecordingsScreenContent extends StatelessWidget {
     RecordingsViewModel viewModel,
   ) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
 
       child: Column(
         children: [
@@ -204,7 +204,7 @@ class _RecordingsScreenContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${viewModel.recordings.length} recent recordings',
+                    '${viewModel.recordings.length} items',
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
@@ -221,11 +221,11 @@ class _RecordingsScreenContent extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () => viewModel.expandSearch(),
                   child: Container(
-                    width: 48,
-                    height: 48,
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
                       color: AppColors.cardDark,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     alignment: Alignment.center,
                     child: Icon(
@@ -257,7 +257,7 @@ class _RecordingsScreenContent extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'LIST',
+                'RECENT ACTIVITY',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: AppColors.textMuted,
                   fontWeight: FontWeight.w600,
@@ -457,26 +457,19 @@ class RecordingCard extends StatelessWidget {
             '${meeting.title}, recorded on ${formatDate(meeting.startedAt)}, duration ${formatDuration(meeting.duration)}, status ${_getStatusText()}',
         child: Material(
           color: AppColors.cardDark,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           child: InkWell(
             onTap: () {
               HapticFeedback.selectionClick();
               onTap();
             },
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(22),
 
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
