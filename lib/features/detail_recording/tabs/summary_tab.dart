@@ -112,14 +112,14 @@ class _SummaryTabState extends State<SummaryTab> {
     if (widget.id == null) return;
 
     // adss
-    final result = await RewardedManager.showAndWait(
-      rewardData: {'action': "start_chat"},
-    );
+    // final result = await RewardedManager.showAndWait(
+    //   rewardData: {'action': "start_chat"},
+    // );
 
-    if (result?.status != RewardResultStatus.success) {
-      Console.log("FAILL to watch reward");
-      return;
-    }
+    // if (result?.status != RewardResultStatus.success) {
+    //   Console.log("FAILL to watch reward");
+    //   return;
+    // }
 
     final recording = await _db.getRecording(widget.id!);
     if (recording?.status != 'done') {

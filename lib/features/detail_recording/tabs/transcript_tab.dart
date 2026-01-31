@@ -120,14 +120,14 @@ class _TranscriptTabState extends State<TranscriptTab> {
     if (widget.id == null) return;
 
     // ads
-    final result = await RewardedManager.showAndWait(
-      rewardData: {'action': "start_chat"},
-    );
+    // final result = await RewardedManager.showAndWait(
+    //   rewardData: {'action': "start_chat"},
+    // );
 
-    if (result?.status != RewardResultStatus.success) {
-      Console.log("FAILL to watch reward");
-      return;
-    }
+    // if (result?.status != RewardResultStatus.success) {
+    //   Console.log("FAILL to watch reward");
+    //   return;
+    // }
 
     Console.log("START processing");
     await _db.updateRecordingStatus(
