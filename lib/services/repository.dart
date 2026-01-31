@@ -104,20 +104,23 @@ class Repository {
     return response.data['success'];
   }
 
-  static Future<MeetingResponse> rename(String id, String name) async {
+  // wtf audio
+  static Future<void> rename({
+    required String meetingId,
+    required String name,
+  }) async {
+    Console.log("NOT YET");
     final response = await api.patch(
-      'app-audio-note/meetings/$id',
+      'app-audio-note/meetings/$meetingId',
       data: {"title": name},
     );
 
-    return MeetingResponse.fromJson(response.data['data']);
+    Console.log("Rename API response: ${response.data}");
+
+    // return MeetingResponse.fromJson(response.data['data']);
   }
 
-  // static Future<void> processTranscript(String id) async {
-  //   await api.post('app-audio-note/meetings/$id/transcript');
-  // }
-
-  static Future<String> status(String id) async {
+  static Future<String> transcriptStatus(String id) async {
     final response = await api.get('app-audio-note/meetings/$id/status');
 
     return response.data['data']['status'];
@@ -126,6 +129,18 @@ class Repository {
   static Future<SummaryTranscriptionResponse> getSummary(String id) async {
     final response = await api.get('app-audio-note/meetings/$id/summary');
 
+    Console.log("GET SUMMARY");
+    Console.log(response.data);
+
     return SummaryTranscriptionResponse.fromJson(response.data['data']);
+  }
+
+  static Future<SummaryProcessResponse> proccessSummary(String id) async {
+    final response = await api.post('app-audio-note/meetings/$id/summary');
+
+    Console.log("PROCESS SUMMARY");
+    Console.log(response.data);
+
+    return SummaryProcessResponse.fromJson(response.data['data']);
   }
 }

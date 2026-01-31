@@ -1,0 +1,2 @@
+C:/Users/pc/Desktop/hi/aimate-flutter/android/app/.cxx/release/2m176u5m/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/pc/Desktop/hi/aimate-flutter/android/app/.cxx/release/2m176u5m/x86_64/CMakeFiles/rebuild_cache.dir

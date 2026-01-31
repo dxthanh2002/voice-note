@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../services/ads/ads.dart';
+import '../../../services/database.dart';
+import '../../../services/process.dart';
 import '../../../theme/colors.dart';
 import '../../../services/repository.dart';
+import '../../../utils/console.dart';
+
+enum SummaryState { loading, none, processing, done, error }
 
 class SummaryTab extends StatefulWidget {
   const SummaryTab({super.key, this.id});
 
-  final String? id; // Add ID parameter
+  final String? id;
 
   @override
   State<SummaryTab> createState() => _SummaryTabState();
@@ -17,46 +23,82 @@ class _SummaryTabState extends State<SummaryTab> {
   String? _summaryContent;
   String? _errorMessage;
   SummaryState _state = SummaryState.loading;
+  bool _isSummaryActivated = false;
+  late DatabaseService _db;
+  bool _isPolling = false;
 
   @override
   void initState() {
     super.initState();
-    _checkSummaryStatus();
+    _db = DatabaseService();
+
+    // Check if already processing in background
+    if (ProcessingService().isProcessing("summary_${widget.id}")) {
+      setState(() {
+        _state = SummaryState.processing;
+        _isPolling = true;
+      });
+      _pollSummary();
+    } else {
+      _checkSummaryStatus();
+    }
+  }
+
+  @override
+  void dispose() {
+    // Don't stop background service - it keeps running
+    _isPolling = false; // Only stop local UI polling
+    super.dispose();
   }
 
   Future<void> _checkSummaryStatus() async {
     if (widget.id == null) {
-      setState(() => _state = SummaryState.empty);
+      setState(() => _state = SummaryState.none);
       return;
     }
-    debugPrint('SummaryTab: Checking summary for ID: ${widget.id}');
 
     try {
-      final detail = await Repository.getMeetingbyId(widget.id!);
-      final summaryStatus = detail.meeting.summaryStatus;
+      final recording = await _db.getRecording(widget.id!);
 
-      final summaryResponse = await Repository.getSummary(widget.id!);
+      if (recording != null) {
+        _isSummaryActivated = recording.isSummaryActivated;
 
-      setState(() {
-        _summaryContent = summaryResponse.content;
-        _state = SummaryState.done;
-      });
+        // If summary is already activated, check server status
+        if (_isSummaryActivated) {
+          final detail = await Repository.getMeetingbyId(widget.id!);
+          final summaryStatus = detail.meeting.summaryStatus;
+          Console.log('Summary status: $summaryStatus');
 
-      // if (summaryStatus == 'DONE') {
-      //   final summaryResponse = await Repository.getSummary(widget.id!);
-      //   debugPrint('SummaryTab: Meeting detail received: ${detail.meeting.id}');
-      //   debugPrint(
-      //     'SummaryTab: Summary status: ${detail.meeting.summaryStatus}',
-      //   );
-      //   setState(() {
-      //     _summaryContent = summaryResponse.content;
-      //     _state = SummaryState.done;
-      //   });
-      // } else if (summaryStatus == 'PROCESSING') {
-      //   setState(() => _state = SummaryState.processing);
-      // } else {
-      //   setState(() => _state = SummaryState.empty);
-      // }
+          if (summaryStatus == 'DONE') {
+            final summaryResponse = await Repository.getSummary(widget.id!);
+            setState(() {
+              _summaryContent = summaryResponse.content;
+              _state = SummaryState.done;
+            });
+            return;
+          } else if (summaryStatus == 'PROCESSING') {
+            setState(() {
+              _state = SummaryState.processing;
+              _isPolling = true;
+            });
+            _pollSummary();
+            return;
+          } else if (summaryStatus == 'FAILED') {
+            setState(() {
+              _state = SummaryState.error;
+              _errorMessage =
+                  'Summary generation previously failed. Please try again.';
+            });
+            return;
+          }
+        }
+
+        // If not activated OR activated but no summary yet
+        setState(() => _state = SummaryState.none);
+      } else {
+        // No recording found
+        setState(() => _state = SummaryState.none);
+      }
     } catch (e) {
       debugPrint('Error checking summary status: $e');
       setState(() {
@@ -69,34 +111,146 @@ class _SummaryTabState extends State<SummaryTab> {
   Future<void> _generateSummary() async {
     if (widget.id == null) return;
 
-    setState(() => _state = SummaryState.processing);
+    // adss
+    final result = await RewardedManager.showAndWait(
+      rewardData: {'action': "start_chat"},
+    );
+
+    if (result?.status != RewardResultStatus.success) {
+      Console.log("FAILL to watch reward");
+      return;
+    }
+
+    final recording = await _db.getRecording(widget.id!);
+    if (recording?.status != 'done') {
+      Console.log("Can't proceed");
+      return;
+    }
 
     try {
-      // Call API to generate summary
-      final response = await Repository.getSummary(widget.id!);
+      setState(() {
+        _state = SummaryState.processing;
+        _isPolling = true;
+      });
 
-      _summaryContent = response.content;
-      print(_summaryContent);
+      // Process summary
 
-      // In real app, you might want to poll for status
-      // For now, show success message and refresh
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Generating summary...'),
-          duration: Duration(seconds: 2),
-        ),
+      final response = await Repository.proccessSummary(widget.id!);
+      Console.log('Summary process started: ${response.id}');
+
+      // Show snackbar
+
+      // ✅ START BACKGROUND POLLING SERVICE
+      ProcessingService().startPolling(
+        meetingId: "summary_${widget.id}", // Unique ID for summary
+        checkFunction: () async {
+          final detail = await Repository.getMeetingbyId(widget.id!);
+          return detail.meeting.summaryStatus == 'DONE';
+        },
+        onSuccess: () async {
+          final summaryResponse = await Repository.getSummary(widget.id!);
+
+          // ✅ ACTIVATE ONLY AFTER SUCCESS
+          await _db.updateSummaryActivation(
+            meetingId: widget.id!,
+            isActivated: true,
+          );
+
+          if (mounted) {
+            setState(() {
+              _isSummaryActivated = true;
+              _summaryContent = summaryResponse.content;
+              _state = SummaryState.done;
+              _isPolling = false;
+            });
+          }
+        },
+        onError: () {
+          if (mounted) {
+            setState(() {
+              _state = SummaryState.error;
+              _errorMessage = 'Summary generation failed in background';
+              _isPolling = false;
+            });
+          }
+        },
       );
 
-      // Wait a bit then check status again
-      await Future.delayed(const Duration(seconds: 2));
-      await _checkSummaryStatus();
+      // Also start local polling for immediate UI updates
+      _pollSummary();
     } catch (e) {
       setState(() {
         _state = SummaryState.error;
         _errorMessage = 'Could not create summary.\n${e.toString()}';
+        _isPolling = false;
       });
       debugPrint('Error generating summary: $e');
+    }
+  }
+
+  Future<void> _pollSummary() async {
+    if (!_isPolling) return;
+
+    const checkInterval = Duration(seconds: 5);
+
+    while (_isPolling) {
+      await Future.delayed(checkInterval);
+
+      if (!_isPolling || !mounted) break;
+
+      try {
+        final detail = await Repository.getMeetingbyId(widget.id!);
+        final summaryStatus = detail.meeting.summaryStatus;
+
+        if (summaryStatus == 'DONE') {
+          final summaryResponse = await Repository.getSummary(widget.id!);
+
+          // ✅ ACTIVATE ONLY AFTER SUCCESS
+          await _db.updateSummaryActivation(
+            meetingId: widget.id!,
+            isActivated: true,
+          );
+
+          if (mounted) {
+            setState(() {
+              _isSummaryActivated = true;
+              _summaryContent = summaryResponse.content;
+              _state = SummaryState.done;
+              _isPolling = false;
+            });
+
+            // ✅ STOP BACKGROUND SERVICE
+            ProcessingService().stopPolling("summary_${widget.id}");
+          }
+          break;
+        } else if (summaryStatus == 'FAILED') {
+          if (mounted) {
+            setState(() {
+              _state = SummaryState.error;
+              _errorMessage = 'Summary generation failed. Please try again.';
+              _isPolling = false;
+            });
+
+            // ✅ STOP BACKGROUND SERVICE
+            ProcessingService().stopPolling("summary_${widget.id}");
+          }
+          break;
+        }
+        // Continue polling if still PROCESSING
+      } catch (e) {
+        debugPrint('Error polling summary: $e');
+        if (mounted) {
+          setState(() {
+            _state = SummaryState.error;
+            _errorMessage = 'Error checking summary status: ${e.toString()}';
+            _isPolling = false;
+          });
+
+          // ✅ STOP BACKGROUND SERVICE
+          ProcessingService().stopPolling("summary_${widget.id}");
+        }
+        break;
+      }
     }
   }
 
@@ -105,7 +259,7 @@ class _SummaryTabState extends State<SummaryTab> {
     switch (_state) {
       case SummaryState.loading:
         return _buildLoadingState();
-      case SummaryState.empty:
+      case SummaryState.none:
         return _buildEmptyState();
       case SummaryState.processing:
         return _buildProcessingState();
@@ -116,7 +270,6 @@ class _SummaryTabState extends State<SummaryTab> {
     }
   }
 
-  // Loading state
   Widget _buildLoadingState() {
     return Center(
       child: Padding(
@@ -145,18 +298,15 @@ class _SummaryTabState extends State<SummaryTab> {
     );
   }
 
-  // Empty state - no summary yet
   Widget _buildEmptyState() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
           const SizedBox(height: 40),
-          // Icon container with glow effect
           Stack(
             alignment: Alignment.center,
             children: [
-              // Glow
               Container(
                 width: 100,
                 height: 100,
@@ -172,7 +322,6 @@ class _SummaryTabState extends State<SummaryTab> {
                   ],
                 ),
               ),
-              // Icon box
               Container(
                 width: 80,
                 height: 80,
@@ -197,28 +346,32 @@ class _SummaryTabState extends State<SummaryTab> {
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.auto_awesome,
                   size: 40,
-                  color: AppColors.textMuted,
+                  color: _isSummaryActivated
+                      ? AppColors.textMuted
+                      : AppColors.primary,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 24),
-          // Title
           Text(
-            'No summary yet',
+            _isSummaryActivated
+                ? 'Summary not generated yet'
+                : 'Summary not activated',
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          // Description
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
-              'This conversation has not been processed. Tap the button below to create an AI summary.',
+              _isSummaryActivated
+                  ? 'This recording has summary activated but no summary has been generated yet.'
+                  : 'Summary generation is not activated for this recording.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
@@ -227,15 +380,23 @@ class _SummaryTabState extends State<SummaryTab> {
             ),
           ),
           const SizedBox(height: 24),
-          // CTA Button
           SizedBox(
             width: double.infinity,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton.icon(
                 onPressed: _generateSummary,
-                icon: const Icon(Icons.auto_awesome, size: 20),
-                label: const Text('Summarize with AI'),
+                icon: Icon(
+                  _isSummaryActivated
+                      ? Icons.auto_awesome
+                      : Icons.play_circle_outline,
+                  size: 20,
+                ),
+                label: Text(
+                  _isSummaryActivated
+                      ? 'Generate Summary'
+                      : 'Activate & Generate Summary',
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -255,7 +416,6 @@ class _SummaryTabState extends State<SummaryTab> {
     );
   }
 
-  // Processing state
   Widget _buildProcessingState() {
     return Center(
       child: Padding(
@@ -294,14 +454,12 @@ class _SummaryTabState extends State<SummaryTab> {
     );
   }
 
-  // Done state - Show summary content
   Widget _buildSummaryList() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -328,20 +486,14 @@ class _SummaryTabState extends State<SummaryTab> {
             ),
           ),
           const SizedBox(height: 20),
-
-          // Summary content (parsed markdown-like text)
           _buildSummaryContent(),
-
           const SizedBox(height: 20),
-
-          // Actions
           _buildSummaryActions(),
         ],
       ),
     );
   }
 
-  // Build summary content with formatting
   Widget _buildSummaryContent() {
     if (_summaryContent == null) {
       return Center(
@@ -390,7 +542,6 @@ class _SummaryTabState extends State<SummaryTab> {
             ),
           );
         } else if (line.startsWith('- [')) {
-          // Checkbox item
           final isChecked = line.contains('[x]') || line.contains('[X]');
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
@@ -462,7 +613,6 @@ class _SummaryTabState extends State<SummaryTab> {
     );
   }
 
-  // Summary actions (copy, refresh, etc.)
   Widget _buildSummaryActions() {
     return OutlinedButton.icon(
       onPressed: () {
@@ -485,7 +635,6 @@ class _SummaryTabState extends State<SummaryTab> {
     );
   }
 
-  // Error state
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -536,6 +685,3 @@ class _SummaryTabState extends State<SummaryTab> {
     );
   }
 }
-
-// Summary state enum
-enum SummaryState { loading, empty, processing, done, error }

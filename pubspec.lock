@@ -688,6 +688,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  secmtp_sdk:
+    dependency: "direct main"
+    description:
+      name: secmtp_sdk
+      sha256: "9fa2021e8c8a45878501480554c149dc5bf6026f2a2019f38f4eebdc16abc9db"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.8"
   shared_preferences:
     dependency: "direct main"
     description:

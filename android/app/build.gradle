@@ -1,0 +1,130 @@
+plugins {
+    id "com.android.application"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+android {
+    namespace "com.topon.flutter.demo"
+    compileSdkVersion 36
+    ndkVersion "28.2.13676358"
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId "com.topon.flutter.demo"
+        minSdkVersion 24
+        targetSdkVersion 35
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+
+        multiDexEnabled true
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
+
+    buildTypes {
+        release {
+            // minifyEnabled true
+            // shrinkResources true
+            minifyEnabled false  // Change to false temporarily
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+
+
+            signingConfig signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source '../..'
+}
+
+
+// dependencies {
+//     implementation 'com.android.support:appcompat-v7:28.0.0'
+
+//     implementation 'com.anythink.sdk:debugger-ui-tpn:1.1.2'
+
+//     //Anythink (Necessary)
+//     api "com.anythink.sdk:core-tpn:6.5.38"
+//     api "com.anythink.sdk:nativead-tpn:6.5.38"
+//     api "com.anythink.sdk:banner-tpn:6.5.38"
+//     api "com.anythink.sdk:interstitial-tpn:6.5.38"
+//     api "com.anythink.sdk:rewardedvideo-tpn:6.5.38"
+//     api "com.anythink.sdk:splash-tpn:6.5.38"
+//     api "com.anythink.sdk:dm-vp-tpn:6.5.38"
+
+//     //Androidx (Necessary)
+//     api "androidx.appcompat:appcompat:1.6.1"
+//     api "androidx.browser:browser:1.4.0"
+
+//     //Anythink Adx SDK(Necessary)
+//     api "com.anythink.sdk:adapter-tpn-sdm:6.5.38"
+//     api "com.smartdigimkttech.sdk:smartdigimkttech-sdk:6.5.48"
+// }
+
+dependencies {
+
+    // TU Core
+    api "com.anythink.sdk:core-tpn:6.5.38.2"
+    api "com.anythink.sdk:nativead-tpn:6.5.38.2"
+    api "com.anythink.sdk:banner-tpn:6.5.38.2"
+    api "com.anythink.sdk:interstitial-tpn:6.5.38.2"
+    api "com.anythink.sdk:rewardedvideo-tpn:6.5.38.2"
+    api "com.anythink.sdk:splash-tpn:6.5.38.2"
+
+    // AndroidX
+    api "androidx.appcompat:appcompat:1.6.1"
+    api "androidx.browser:browser:1.4.0"
+
+    // Pangle
+    api "com.anythink.sdk:adapter-tpn-pangle:6.5.38.1"
+    api "com.pangle.global:pag-sdk:7.6.0.5"
+    api "com.google.android.gms:play-services-ads-identifier:18.2.0"
+
+    // Facebook
+    api "com.anythink.sdk:adapter-tpn-facebook:6.5.38.1"
+    api "com.facebook.android:audience-network-sdk:6.20.0"
+
+    // AdMob
+    api "com.anythink.sdk:adapter-tpn-admob:6.5.38.2"
+    api "com.google.android.gms:play-services-ads:24.9.0"
+
+    // AppLovin
+    api "com.anythink.sdk:adapter-tpn-applovin:6.5.38.1"
+    api "com.applovin:applovin-sdk:13.5.0"
+
+    // Mintegral
+    api "com.anythink.sdk:adapter-tpn-mintegral:6.5.38.1"
+    api "com.mbridge.msdk.oversea:mbridge_android_sdk:17.0.21"
+
+    // TU Adx
+    api "com.anythink.sdk:adapter-tpn-sdm:6.5.38.1"
+    api "com.smartdigimkttech.sdk:smartdigimkttech-sdk:6.5.48"
+
+    // Tramini (debug / mediation inspector)
+    api "com.anythink.sdk:tramini-plugin-tpn:6.5.38"
+}

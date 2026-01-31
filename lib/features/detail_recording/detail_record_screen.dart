@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 
-import '../../components/dialogs/delete_dialog.dart';
-import '../../components/dialogs/rename_dialog.dart';
+import '../../services/ads/ads.dart';
+import '../../services/process.dart';
+import '../../services/recording.dart';
 import '../../theme/colors.dart';
 import '../../utils/console.dart';
 // TODO: Uncomment when Chat AI feature is ready
@@ -132,7 +133,7 @@ class _DetailRecordScreenState extends State<DetailRecordScreen> {
             // Content
             Expanded(child: _buildContent(meeting)),
             // Bottom bar - Audio player
-            _buildBottomBar(),
+            _buildBottomPlayBar(),
           ],
         ),
       ),
@@ -155,7 +156,18 @@ class _DetailRecordScreenState extends State<DetailRecordScreen> {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () async {
+              final shouldExit = await _showExitConfirmation(context);
+              if (shouldExit && mounted) {
+                // show ads
+                Console.log("WHATTT");
+                Console.log("WHATTT");
+                InterstitialManager.show();
+                Future.delayed(const Duration(milliseconds: 300));
+
+                Navigator.pop(context, true);
+              }
+            },
             tooltip: 'Go back',
             icon: const Icon(Icons.arrow_back),
             color: Colors.white,
@@ -176,29 +188,24 @@ class _DetailRecordScreenState extends State<DetailRecordScreen> {
             offset: const Offset(0, 48),
             onSelected: (value) async {
               if (value == 'delete') {
-                final confirmed = await showDeleteDialog(
+                await RecordingService.deleteRecording(
                   context,
-                  title: 'Delete Recording?',
+                  meeting.id,
+                  refresh: false,
                 );
-
-                if (confirmed == true) {
-                  HapticFeedback.heavyImpact();
-                  try {
-                    await Repository.deleteMeeting(meeting.id);
-                    if (!context.mounted) return;
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Deleted "${meeting.title}"')),
-                    );
-                  } catch (e) {
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: ${e.toString()}')),
-                    );
-                  }
+                if (context.mounted) {
+                  Navigator.pop(context, true);
                 }
               } else if (value == 'rename') {
-                _showRenameRecordingDialog(context, meeting);
+                await RecordingService.renameRecording(
+                  context,
+                  meeting.id,
+                  meeting.title,
+                  refresh: false,
+                );
+                if (context.mounted) {
+                  await _loadMeetingInfo();
+                }
               }
             },
             icon: const Icon(Icons.more_vert, size: 20, color: Colors.white),
@@ -242,6 +249,56 @@ class _DetailRecordScreenState extends State<DetailRecordScreen> {
         ],
       ),
     );
+  }
+
+  Future<bool> _showExitConfirmation(BuildContext context) async {
+    // Check if any processing is happening
+    final isTranscriptProcessing = ProcessingService().isProcessing(
+      "transcript_${widget.id}",
+    );
+    final isSummaryProcessing = ProcessingService().isProcessing(
+      "summary_${widget.id}",
+    );
+
+    final isAnyProcessing = isTranscriptProcessing || isSummaryProcessing;
+
+    // If no processing, just exit
+    if (!isAnyProcessing) {
+      return true; // Allow exit
+    }
+
+    // If processing, show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Processing in Progress'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('If you exit now:'),
+            const SizedBox(height: 8),
+            Text(
+              '• The transcript proccess will lose',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Exit Anyway'),
+          ),
+        ],
+      ),
+    );
+
+    return confirmed ?? false; // Return false if user cancels
   }
 
   Widget _buildContent(MeetingResponse meeting) {
@@ -293,7 +350,7 @@ class _DetailRecordScreenState extends State<DetailRecordScreen> {
     }
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomPlayBar() {
     // TODO: Uncomment when Chat AI feature is ready
     // if (_selectedTabIndex == 2) return const SizedBox.shrink();
 
@@ -340,31 +397,5 @@ class _DetailRecordScreenState extends State<DetailRecordScreen> {
         // TODO: Share
       },
     );
-  }
-
-  Future<void> _showRenameRecordingDialog(
-    BuildContext context,
-    MeetingResponse meeting,
-  ) async {
-    final newName = await showRenameDialog(
-      context,
-      initialTitle: meeting.title,
-    );
-
-    if (newName != null && newName.isNotEmpty && newName != meeting.title) {
-      try {
-        await Repository.rename(meeting.id, newName);
-        if (!context.mounted) return;
-        _loadMeetingInfo();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Renamed to "$newName"')));
-      } catch (e) {
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
-      }
-    }
   }
 }

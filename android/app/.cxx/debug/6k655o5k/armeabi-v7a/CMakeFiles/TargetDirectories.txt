@@ -1,0 +1,2 @@
+D:/Flutter/aimate-flutter/android/app/.cxx/debug/6k655o5k/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/Flutter/aimate-flutter/android/app/.cxx/debug/6k655o5k/armeabi-v7a/CMakeFiles/rebuild_cache.dir

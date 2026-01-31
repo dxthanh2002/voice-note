@@ -74,7 +74,7 @@ class _RecordingsScreenContent extends StatelessWidget {
               ],
             ),
           ),
-          floatingActionButton: _buildFloatingActionButton(context),
+          floatingActionButton: _buildFloatingActionButton(context, viewModel),
         );
       },
     );
@@ -139,7 +139,6 @@ class _RecordingsScreenContent extends StatelessWidget {
                       child: TextField(
                         controller: viewModel.searchController,
                         focusNode: viewModel.searchFocusNode,
-                        onChanged: (value) => viewModel.searchRecordings(value),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -157,7 +156,8 @@ class _RecordingsScreenContent extends StatelessWidget {
                           ),
                           suffixIcon: viewModel.searchController.text.isNotEmpty
                               ? GestureDetector(
-                                  onTap: () => viewModel.clearSearch(),
+                                  onTap: () =>
+                                      viewModel.searchController.clear(),
                                   child: Icon(
                                     Icons.close,
                                     color: AppColors.textMuted,
@@ -361,10 +361,10 @@ class _RecordingsScreenContent extends StatelessWidget {
               viewModel.navigateToRecordingDetail(context, recording.meetingId),
           onDelete: () =>
               viewModel.deleteRecording(context, recording.meetingId),
-          onRename: () => viewModel.showRenameRecordingDialog(
+          onRename: () => viewModel.renameRecording(
             context,
             recording.meetingId,
-            recording.fileName,
+            recording.title,
           ),
         );
       },
@@ -372,10 +372,13 @@ class _RecordingsScreenContent extends StatelessWidget {
   }
 
   // ============ Floating Action Button ============
-  Widget _buildFloatingActionButton(BuildContext context) {
+  Widget _buildFloatingActionButton(
+    BuildContext context,
+    RecordingsViewModel viewModel,
+  ) {
     return BouncingButton(
       semanticLabel: 'Create new recording',
-      onPressed: () => _onCreateRecording(context),
+      onPressed: () => _onCreateRecording(context, viewModel),
       child: Container(
         width: 64,
         height: 64,
@@ -395,8 +398,15 @@ class _RecordingsScreenContent extends StatelessWidget {
     );
   }
 
-  Future<void> _onCreateRecording(BuildContext context) async {
-    FocusScope.of(context).unfocus();
+  Future<void> _onCreateRecording(
+    BuildContext context,
+    RecordingsViewModel viewModel,
+  ) async {
+    final granted = await AudioService.requestPermissions();
+    if (!granted) {
+      Console.warning('XXX Permissions not granted');
+      return;
+    }
 
     // create record sheet
     final newMeeting = await showDialog<MeetingResponse>(
@@ -406,13 +416,6 @@ class _RecordingsScreenContent extends StatelessWidget {
       builder: (dialogContext) => const CreateRecordModal(),
     );
 
-    final granted = await AudioService.requestPermissions();
-    if (!granted) {
-      Console.warning('XXX Permissions not granted');
-      return;
-    }
-    // permission first
-
     if (newMeeting != null && context.mounted && granted) {
       final meetingId = await Navigator.pushNamed(
         context,
@@ -421,11 +424,7 @@ class _RecordingsScreenContent extends StatelessWidget {
       );
 
       if (meetingId != null && meetingId is String && context.mounted) {
-        Navigator.pushNamed(
-          context,
-          AppRoutes.recordDetail,
-          arguments: meetingId,
-        );
+        viewModel.navigateToRecordingDetail(context, meetingId);
       }
     }
   }
@@ -447,11 +446,11 @@ class RecordingCard extends StatelessWidget {
   final VoidCallback onRename;
 
   String _getStatusText() {
-    if (meeting.status == 'DONE') {
+    if (meeting.status == 'done') {
       return 'Ready';
-    } else if (meeting.status == 'PROCESSING') {
+    } else if (meeting.status == 'processing') {
       return 'Processing';
-    } else if (meeting.status == 'FAILED') {
+    } else if (meeting.status == 'failed') {
       return 'Error';
     }
     return 'Raw Audio';
@@ -464,7 +463,7 @@ class RecordingCard extends StatelessWidget {
       child: Semantics(
         button: true,
         label:
-            '${meeting.fileName}, recorded on ${formatDate(meeting.recordedAt)}, duration ${formatDurationFromSeconds(meeting.duration)}, status ${_getStatusText()}',
+            '${meeting.title}, recorded on ${formatDate(meeting.recordedAt)}, duration ${formatDurationFromSeconds(meeting.duration)}, status ${_getStatusText()}',
         child: Material(
           color: AppColors.cardDark,
           borderRadius: BorderRadius.circular(24),
@@ -520,7 +519,7 @@ class RecordingCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                meeting.fileName,
+                meeting.title,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -623,17 +622,17 @@ class RecordingCard extends StatelessWidget {
     String text;
     IconData icon;
 
-    if (meeting.status == 'DONE') {
+    if (meeting.status == 'done') {
       color = AppColors.success;
       bgColor = AppColors.success.withValues(alpha: 0.1);
       text = 'Ready';
       icon = Icons.check_circle;
-    } else if (meeting.status == 'PROCESSING') {
+    } else if (meeting.status == 'processing') {
       color = AppColors.warning;
       bgColor = AppColors.warning.withValues(alpha: 0.1);
       text = 'Processing';
       icon = Icons.schedule;
-    } else if (meeting.status == 'FAILED') {
+    } else if (meeting.status == 'failed') {
       color = AppColors.error;
       bgColor = AppColors.error.withValues(alpha: 0.1);
       text = 'Error';

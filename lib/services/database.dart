@@ -23,33 +23,38 @@ class DatabaseService {
 
   Future<int> save({
     required String meetingId,
-    required String fileName,
+    required String title,
     required String filePath,
     required int duration,
     required String status,
+    bool isTranscriptActivated = false, // New parameter with default
+    bool isSummaryActivated = false, // New parameter with default
   }) async {
     final db = await _database;
 
-    final recording = RecordingsCompanion.insert(
-      meetingId: meetingId,
-      fileName: fileName,
-      filePath: filePath,
-      duration: duration,
-      status: status,
+    final recording = RecordingsCompanion(
+      meetingId: Value(meetingId),
+      title: Value(title),
+      filePath: Value(filePath),
+      duration: Value(duration),
+      status: Value(status),
+      isTranscriptActivated: Value(isTranscriptActivated), // Add this
+      isSummaryActivated: Value(isSummaryActivated),
       recordedAt: Value(DateTime.now()),
     );
 
-    return await db.insertRecording(recording);
+    return await db.into(db.recordings).insert(recording);
   }
 
   Future<Recording?> getRecording(String meetingId) async {
+    // only return 1 or null
     final db = await _database;
     return await db.getRecordingById(meetingId);
   }
 
   Future<List<Recording>> getAllRecordings({
     String orderBy = 'recordedAt',
-    bool descending = false,
+    bool descending = true,
   }) async {
     final db = await _database;
     final query = db.select(db.recordings);
@@ -70,10 +75,11 @@ class DatabaseService {
             mode: descending ? OrderingMode.desc : OrderingMode.asc,
           ),
         ]);
-      case 'filename':
+        break;
+      case 'title':
         query.orderBy([
           (t) => OrderingTerm(
-            expression: t.fileName,
+            expression: t.title,
             mode: descending ? OrderingMode.desc : OrderingMode.asc,
           ),
         ]);
@@ -88,6 +94,22 @@ class DatabaseService {
   Future<bool> updateRecording(Recording recording) async {
     final db = await _database;
     return await db.updateRecording(recording);
+  }
+
+  Future<bool> updateRecordingTitle({
+    required String meetingId,
+    required String newTitle,
+  }) async {
+    final db = await _database;
+
+    // First get the current recording
+    final recording = await db.getRecordingById(meetingId);
+    if (recording == null) return false;
+
+    // Create updated recording with new title
+    final updatedRecording = recording.copyWith(title: newTitle);
+
+    return await db.updateRecording(updatedRecording);
   }
 
   Future<bool> updateRecordingStatus({
@@ -107,6 +129,32 @@ class DatabaseService {
     );
 
     return await db.updateRecording(updatedRecording);
+  }
+
+  Future<bool> updateTranscriptActivation({
+    required String meetingId,
+    required bool isActivated,
+  }) async {
+    final db = await _database;
+    try {
+      await db.updateTranscriptActivation(meetingId, isActivated);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateSummaryActivation({
+    required String meetingId,
+    required bool isActivated,
+  }) async {
+    final db = await _database;
+    try {
+      await db.updateSummaryActivation(meetingId, isActivated);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<int> deleteRecording(String meetingId) async {

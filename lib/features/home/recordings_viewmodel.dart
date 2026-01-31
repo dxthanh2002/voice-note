@@ -4,11 +4,9 @@ import 'package:aimateflutter/services/database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../components/dialogs/delete_dialog.dart';
-import '../../components/dialogs/rename_dialog.dart';
-import '../../models/meeting.dart';
 import '../../navigation/routes.dart';
-import '../../services/repository.dart';
+import '../../services/ads/ads.dart';
+import '../../services/recording.dart';
 import '../../services/data/recordings.dart';
 import '../../utils/console.dart';
 
@@ -31,12 +29,22 @@ class RecordingsViewModel extends ChangeNotifier {
   List<Recording> get recordings => List.unmodifiable(_recordings);
 
   RecordingsViewModel() {
-    searchController.addListener(() {
-      // Optional: Add any search controller listeners if needed
-      if (searchController.text != _searchTitle) {
-        searchRecordings(searchController.text);
-      }
-    });
+    searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    final query = searchController.text.trim();
+
+    // Only search if query changed
+    if (query != _searchTitle) {
+      _searchTitle = query;
+
+      // Debounce the search
+      _debounce?.cancel();
+      _debounce = Timer(const Duration(milliseconds: 700), () {
+        loadRecordings();
+      });
+    }
   }
 
   // ============ Setup ============
@@ -50,10 +58,18 @@ class RecordingsViewModel extends ChangeNotifier {
       Console.log("LOADING RECORDINGS");
 
       final recordings = await DatabaseService().searchRecordings(_searchTitle);
+      if (recordings.length != 0) {
+        for (var recording in recordings) {
+          Console.log(recording.meetingId);
+          Console.log("duration : ${recording.duration}");
+          Console.log(recording.status);
+          Console.log(recording.title);
+        }
+      }
       _recordings = recordings;
       //
-    } catch (e) {
-      Console.error("FAIL LOAD RECORDING");
+    } catch (e, stackTrace) {
+      Console.error("FAIL LOAD RECORDING $e", stackTrace);
       _recordings = [];
     } finally {
       _setLoading(false);
@@ -63,6 +79,7 @@ class RecordingsViewModel extends ChangeNotifier {
   // ============ Dispose ============
   @override
   void dispose() {
+    searchController.removeListener(_onSearchChanged);
     searchController.dispose();
     searchFocusNode.dispose();
     _debounce?.cancel();
@@ -70,11 +87,6 @@ class RecordingsViewModel extends ChangeNotifier {
   }
 
   // ============ Recording Management ============
-  // Future<void> loadRecordings() async {
-  //   _setLoading(true);
-  //   await _loadRecordings();
-  //   _setLoading(false);
-  // }
 
   void _setLoading(bool loading) {
     _isLoading = loading;
@@ -96,118 +108,40 @@ class RecordingsViewModel extends ChangeNotifier {
   void closeSearch() {
     _isSearchExpanded = false;
     searchController.clear();
-    clearSearch();
+    // clearSearch();
     notifyListeners();
   }
 
-  void searchRecordings(String query) {
-    _searchTitle = query.trim();
-
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 700), () {
-      loadRecordings();
-    });
-  }
-
-  void clearSearch() {
-    searchController.clear();
-    _searchTitle = '';
-  }
-
   // ============ Recording Actions ============
-  void navigateToRecordingDetail(BuildContext context, String meetingId) {
+  void navigateToRecordingDetail(BuildContext context, String meetingId) async {
+    // InterstitialManager.show();
+
     HapticFeedback.selectionClick();
-    Navigator.pushNamed(context, AppRoutes.recordDetail, arguments: meetingId);
-  }
+    final result = await Navigator.pushNamed(
+      context,
+      AppRoutes.recordDetail,
+      arguments: meetingId,
+    );
 
-  Future<void> onRename(
-    BuildContext context,
-    MeetingResponse meeting,
-    String newName,
-  ) async {
-    if (newName.isNotEmpty && newName != meeting.title) {
-      try {
-        await Repository.rename(meeting.id, newName);
-
-        // Refresh recordings list
-        await loadRecordings();
-
-        if (context.mounted) {
-          // Close dialog if still open
-          Navigator.of(context).pop();
-
-          // Show success snackbar
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Renamed to "$newName"')));
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
-        }
-      }
+    if (result == true) {
+      await loadRecordings();
     }
   }
 
   Future<void> deleteRecording(BuildContext context, String meetingId) async {
-    final confirmed = await showDeleteDialog(
-      context,
-      title: 'Delete Recording?',
-    );
-
-    if (confirmed == true) {
-      HapticFeedback.heavyImpact();
-      try {
-        await Repository.deleteMeeting(meetingId);
-        await loadRecordings();
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
-        }
-      }
-    }
+    await RecordingService.deleteRecording(context, meetingId, refresh: true);
   }
 
-  Future<void> showRenameRecordingDialog(
+  Future<void> renameRecording(
     BuildContext context,
     String meetingId,
     String meetingTitle,
   ) async {
-    final newName = await showRenameDialog(context, initialTitle: meetingTitle);
-
-    if (newName != null &&
-        newName.isNotEmpty &&
-        newName != meetingTitle &&
-        context.mounted) {
-      // TODO:
-      await _renameRecording(context, meetingTitle, newName);
-    }
-  }
-
-  Future<void> _renameRecording(
-    BuildContext context,
-    String meetingId,
-    String newName,
-  ) async {
-    try {
-      await Repository.rename(meetingId, newName);
-      await loadRecordings();
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Renamed to "$newName"')));
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
-      }
-    }
+    await RecordingService.renameRecording(
+      context,
+      meetingId,
+      meetingTitle,
+      refresh: true,
+    );
   }
 }

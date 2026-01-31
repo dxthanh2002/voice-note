@@ -33,21 +33,19 @@ class $RecordingsTable extends Recordings
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
-  late final GeneratedColumn<String> status = GeneratedColumn<String>(
-    'status',
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _fileNameMeta = const VerificationMeta(
-    'fileName',
-  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
-  late final GeneratedColumn<String> fileName = GeneratedColumn<String>(
-    'file_name',
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -84,18 +82,48 @@ class $RecordingsTable extends Recordings
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isTranscriptActivatedMeta =
+      const VerificationMeta('isTranscriptActivated');
+  @override
+  late final GeneratedColumn<bool> isTranscriptActivated =
+      GeneratedColumn<bool>(
+        'is_transcript_activated',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_transcript_activated" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _isSummaryActivatedMeta =
+      const VerificationMeta('isSummaryActivated');
+  @override
+  late final GeneratedColumn<bool> isSummaryActivated = GeneratedColumn<bool>(
+    'is_summary_activated',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
     requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_summary_activated" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
   );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     meetingId,
+    title,
     status,
-    fileName,
     filePath,
     duration,
     recordedAt,
+    isTranscriptActivated,
+    isSummaryActivated,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -120,6 +148,14 @@ class $RecordingsTable extends Recordings
     } else if (isInserting) {
       context.missing(_meetingIdMeta);
     }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
     if (data.containsKey('status')) {
       context.handle(
         _statusMeta,
@@ -127,14 +163,6 @@ class $RecordingsTable extends Recordings
       );
     } else if (isInserting) {
       context.missing(_statusMeta);
-    }
-    if (data.containsKey('file_name')) {
-      context.handle(
-        _fileNameMeta,
-        fileName.isAcceptableOrUnknown(data['file_name']!, _fileNameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_fileNameMeta);
     }
     if (data.containsKey('file_path')) {
       context.handle(
@@ -156,6 +184,26 @@ class $RecordingsTable extends Recordings
       context.handle(
         _recordedAtMeta,
         recordedAt.isAcceptableOrUnknown(data['recorded_at']!, _recordedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recordedAtMeta);
+    }
+    if (data.containsKey('is_transcript_activated')) {
+      context.handle(
+        _isTranscriptActivatedMeta,
+        isTranscriptActivated.isAcceptableOrUnknown(
+          data['is_transcript_activated']!,
+          _isTranscriptActivatedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_summary_activated')) {
+      context.handle(
+        _isSummaryActivatedMeta,
+        isSummaryActivated.isAcceptableOrUnknown(
+          data['is_summary_activated']!,
+          _isSummaryActivatedMeta,
+        ),
       );
     }
     return context;
@@ -179,13 +227,13 @@ class $RecordingsTable extends Recordings
         DriftSqlType.string,
         data['${effectivePrefix}meeting_id'],
       )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
       status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}status'],
-      )!,
-      fileName: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}file_name'],
       )!,
       filePath: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -199,6 +247,14 @@ class $RecordingsTable extends Recordings
         DriftSqlType.dateTime,
         data['${effectivePrefix}recorded_at'],
       )!,
+      isTranscriptActivated: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_transcript_activated'],
+      )!,
+      isSummaryActivated: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_summary_activated'],
+      )!,
     );
   }
 
@@ -211,30 +267,36 @@ class $RecordingsTable extends Recordings
 class Recording extends DataClass implements Insertable<Recording> {
   final int id;
   final String meetingId;
+  final String title;
   final String status;
-  final String fileName;
   final String filePath;
   final int duration;
   final DateTime recordedAt;
+  final bool isTranscriptActivated;
+  final bool isSummaryActivated;
   const Recording({
     required this.id,
     required this.meetingId,
+    required this.title,
     required this.status,
-    required this.fileName,
     required this.filePath,
     required this.duration,
     required this.recordedAt,
+    required this.isTranscriptActivated,
+    required this.isSummaryActivated,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['meeting_id'] = Variable<String>(meetingId);
+    map['title'] = Variable<String>(title);
     map['status'] = Variable<String>(status);
-    map['file_name'] = Variable<String>(fileName);
     map['file_path'] = Variable<String>(filePath);
     map['duration'] = Variable<int>(duration);
     map['recorded_at'] = Variable<DateTime>(recordedAt);
+    map['is_transcript_activated'] = Variable<bool>(isTranscriptActivated);
+    map['is_summary_activated'] = Variable<bool>(isSummaryActivated);
     return map;
   }
 
@@ -242,11 +304,13 @@ class Recording extends DataClass implements Insertable<Recording> {
     return RecordingsCompanion(
       id: Value(id),
       meetingId: Value(meetingId),
+      title: Value(title),
       status: Value(status),
-      fileName: Value(fileName),
       filePath: Value(filePath),
       duration: Value(duration),
       recordedAt: Value(recordedAt),
+      isTranscriptActivated: Value(isTranscriptActivated),
+      isSummaryActivated: Value(isSummaryActivated),
     );
   }
 
@@ -258,11 +322,15 @@ class Recording extends DataClass implements Insertable<Recording> {
     return Recording(
       id: serializer.fromJson<int>(json['id']),
       meetingId: serializer.fromJson<String>(json['meetingId']),
+      title: serializer.fromJson<String>(json['title']),
       status: serializer.fromJson<String>(json['status']),
-      fileName: serializer.fromJson<String>(json['fileName']),
       filePath: serializer.fromJson<String>(json['filePath']),
       duration: serializer.fromJson<int>(json['duration']),
       recordedAt: serializer.fromJson<DateTime>(json['recordedAt']),
+      isTranscriptActivated: serializer.fromJson<bool>(
+        json['isTranscriptActivated'],
+      ),
+      isSummaryActivated: serializer.fromJson<bool>(json['isSummaryActivated']),
     );
   }
   @override
@@ -271,42 +339,54 @@ class Recording extends DataClass implements Insertable<Recording> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'meetingId': serializer.toJson<String>(meetingId),
+      'title': serializer.toJson<String>(title),
       'status': serializer.toJson<String>(status),
-      'fileName': serializer.toJson<String>(fileName),
       'filePath': serializer.toJson<String>(filePath),
       'duration': serializer.toJson<int>(duration),
       'recordedAt': serializer.toJson<DateTime>(recordedAt),
+      'isTranscriptActivated': serializer.toJson<bool>(isTranscriptActivated),
+      'isSummaryActivated': serializer.toJson<bool>(isSummaryActivated),
     };
   }
 
   Recording copyWith({
     int? id,
     String? meetingId,
+    String? title,
     String? status,
-    String? fileName,
     String? filePath,
     int? duration,
     DateTime? recordedAt,
+    bool? isTranscriptActivated,
+    bool? isSummaryActivated,
   }) => Recording(
     id: id ?? this.id,
     meetingId: meetingId ?? this.meetingId,
+    title: title ?? this.title,
     status: status ?? this.status,
-    fileName: fileName ?? this.fileName,
     filePath: filePath ?? this.filePath,
     duration: duration ?? this.duration,
     recordedAt: recordedAt ?? this.recordedAt,
+    isTranscriptActivated: isTranscriptActivated ?? this.isTranscriptActivated,
+    isSummaryActivated: isSummaryActivated ?? this.isSummaryActivated,
   );
   Recording copyWithCompanion(RecordingsCompanion data) {
     return Recording(
       id: data.id.present ? data.id.value : this.id,
       meetingId: data.meetingId.present ? data.meetingId.value : this.meetingId,
+      title: data.title.present ? data.title.value : this.title,
       status: data.status.present ? data.status.value : this.status,
-      fileName: data.fileName.present ? data.fileName.value : this.fileName,
       filePath: data.filePath.present ? data.filePath.value : this.filePath,
       duration: data.duration.present ? data.duration.value : this.duration,
       recordedAt: data.recordedAt.present
           ? data.recordedAt.value
           : this.recordedAt,
+      isTranscriptActivated: data.isTranscriptActivated.present
+          ? data.isTranscriptActivated.value
+          : this.isTranscriptActivated,
+      isSummaryActivated: data.isSummaryActivated.present
+          ? data.isSummaryActivated.value
+          : this.isSummaryActivated,
     );
   }
 
@@ -315,11 +395,13 @@ class Recording extends DataClass implements Insertable<Recording> {
     return (StringBuffer('Recording(')
           ..write('id: $id, ')
           ..write('meetingId: $meetingId, ')
+          ..write('title: $title, ')
           ..write('status: $status, ')
-          ..write('fileName: $fileName, ')
           ..write('filePath: $filePath, ')
           ..write('duration: $duration, ')
-          ..write('recordedAt: $recordedAt')
+          ..write('recordedAt: $recordedAt, ')
+          ..write('isTranscriptActivated: $isTranscriptActivated, ')
+          ..write('isSummaryActivated: $isSummaryActivated')
           ..write(')'))
         .toString();
   }
@@ -328,11 +410,13 @@ class Recording extends DataClass implements Insertable<Recording> {
   int get hashCode => Object.hash(
     id,
     meetingId,
+    title,
     status,
-    fileName,
     filePath,
     duration,
     recordedAt,
+    isTranscriptActivated,
+    isSummaryActivated,
   );
   @override
   bool operator ==(Object other) =>
@@ -340,80 +424,100 @@ class Recording extends DataClass implements Insertable<Recording> {
       (other is Recording &&
           other.id == this.id &&
           other.meetingId == this.meetingId &&
+          other.title == this.title &&
           other.status == this.status &&
-          other.fileName == this.fileName &&
           other.filePath == this.filePath &&
           other.duration == this.duration &&
-          other.recordedAt == this.recordedAt);
+          other.recordedAt == this.recordedAt &&
+          other.isTranscriptActivated == this.isTranscriptActivated &&
+          other.isSummaryActivated == this.isSummaryActivated);
 }
 
 class RecordingsCompanion extends UpdateCompanion<Recording> {
   final Value<int> id;
   final Value<String> meetingId;
+  final Value<String> title;
   final Value<String> status;
-  final Value<String> fileName;
   final Value<String> filePath;
   final Value<int> duration;
   final Value<DateTime> recordedAt;
+  final Value<bool> isTranscriptActivated;
+  final Value<bool> isSummaryActivated;
   const RecordingsCompanion({
     this.id = const Value.absent(),
     this.meetingId = const Value.absent(),
+    this.title = const Value.absent(),
     this.status = const Value.absent(),
-    this.fileName = const Value.absent(),
     this.filePath = const Value.absent(),
     this.duration = const Value.absent(),
     this.recordedAt = const Value.absent(),
+    this.isTranscriptActivated = const Value.absent(),
+    this.isSummaryActivated = const Value.absent(),
   });
   RecordingsCompanion.insert({
     this.id = const Value.absent(),
     required String meetingId,
+    required String title,
     required String status,
-    required String fileName,
     required String filePath,
     required int duration,
-    this.recordedAt = const Value.absent(),
+    required DateTime recordedAt,
+    this.isTranscriptActivated = const Value.absent(),
+    this.isSummaryActivated = const Value.absent(),
   }) : meetingId = Value(meetingId),
+       title = Value(title),
        status = Value(status),
-       fileName = Value(fileName),
        filePath = Value(filePath),
-       duration = Value(duration);
+       duration = Value(duration),
+       recordedAt = Value(recordedAt);
   static Insertable<Recording> custom({
     Expression<int>? id,
     Expression<String>? meetingId,
+    Expression<String>? title,
     Expression<String>? status,
-    Expression<String>? fileName,
     Expression<String>? filePath,
     Expression<int>? duration,
     Expression<DateTime>? recordedAt,
+    Expression<bool>? isTranscriptActivated,
+    Expression<bool>? isSummaryActivated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (meetingId != null) 'meeting_id': meetingId,
+      if (title != null) 'title': title,
       if (status != null) 'status': status,
-      if (fileName != null) 'file_name': fileName,
       if (filePath != null) 'file_path': filePath,
       if (duration != null) 'duration': duration,
       if (recordedAt != null) 'recorded_at': recordedAt,
+      if (isTranscriptActivated != null)
+        'is_transcript_activated': isTranscriptActivated,
+      if (isSummaryActivated != null)
+        'is_summary_activated': isSummaryActivated,
     });
   }
 
   RecordingsCompanion copyWith({
     Value<int>? id,
     Value<String>? meetingId,
+    Value<String>? title,
     Value<String>? status,
-    Value<String>? fileName,
     Value<String>? filePath,
     Value<int>? duration,
     Value<DateTime>? recordedAt,
+    Value<bool>? isTranscriptActivated,
+    Value<bool>? isSummaryActivated,
   }) {
     return RecordingsCompanion(
       id: id ?? this.id,
       meetingId: meetingId ?? this.meetingId,
+      title: title ?? this.title,
       status: status ?? this.status,
-      fileName: fileName ?? this.fileName,
       filePath: filePath ?? this.filePath,
       duration: duration ?? this.duration,
       recordedAt: recordedAt ?? this.recordedAt,
+      isTranscriptActivated:
+          isTranscriptActivated ?? this.isTranscriptActivated,
+      isSummaryActivated: isSummaryActivated ?? this.isSummaryActivated,
     );
   }
 
@@ -426,11 +530,11 @@ class RecordingsCompanion extends UpdateCompanion<Recording> {
     if (meetingId.present) {
       map['meeting_id'] = Variable<String>(meetingId.value);
     }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
-    }
-    if (fileName.present) {
-      map['file_name'] = Variable<String>(fileName.value);
     }
     if (filePath.present) {
       map['file_path'] = Variable<String>(filePath.value);
@@ -441,6 +545,14 @@ class RecordingsCompanion extends UpdateCompanion<Recording> {
     if (recordedAt.present) {
       map['recorded_at'] = Variable<DateTime>(recordedAt.value);
     }
+    if (isTranscriptActivated.present) {
+      map['is_transcript_activated'] = Variable<bool>(
+        isTranscriptActivated.value,
+      );
+    }
+    if (isSummaryActivated.present) {
+      map['is_summary_activated'] = Variable<bool>(isSummaryActivated.value);
+    }
     return map;
   }
 
@@ -449,11 +561,13 @@ class RecordingsCompanion extends UpdateCompanion<Recording> {
     return (StringBuffer('RecordingsCompanion(')
           ..write('id: $id, ')
           ..write('meetingId: $meetingId, ')
+          ..write('title: $title, ')
           ..write('status: $status, ')
-          ..write('fileName: $fileName, ')
           ..write('filePath: $filePath, ')
           ..write('duration: $duration, ')
-          ..write('recordedAt: $recordedAt')
+          ..write('recordedAt: $recordedAt, ')
+          ..write('isTranscriptActivated: $isTranscriptActivated, ')
+          ..write('isSummaryActivated: $isSummaryActivated')
           ..write(')'))
         .toString();
   }
@@ -474,21 +588,25 @@ typedef $$RecordingsTableCreateCompanionBuilder =
     RecordingsCompanion Function({
       Value<int> id,
       required String meetingId,
+      required String title,
       required String status,
-      required String fileName,
       required String filePath,
       required int duration,
-      Value<DateTime> recordedAt,
+      required DateTime recordedAt,
+      Value<bool> isTranscriptActivated,
+      Value<bool> isSummaryActivated,
     });
 typedef $$RecordingsTableUpdateCompanionBuilder =
     RecordingsCompanion Function({
       Value<int> id,
       Value<String> meetingId,
+      Value<String> title,
       Value<String> status,
-      Value<String> fileName,
       Value<String> filePath,
       Value<int> duration,
       Value<DateTime> recordedAt,
+      Value<bool> isTranscriptActivated,
+      Value<bool> isSummaryActivated,
     });
 
 class $$RecordingsTableFilterComposer
@@ -510,13 +628,13 @@ class $$RecordingsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get status => $composableBuilder(
-    column: $table.status,
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get fileName => $composableBuilder(
-    column: $table.fileName,
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -532,6 +650,16 @@ class $$RecordingsTableFilterComposer
 
   ColumnFilters<DateTime> get recordedAt => $composableBuilder(
     column: $table.recordedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isTranscriptActivated => $composableBuilder(
+    column: $table.isTranscriptActivated,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSummaryActivated => $composableBuilder(
+    column: $table.isSummaryActivated,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -555,13 +683,13 @@ class $$RecordingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get fileName => $composableBuilder(
-    column: $table.fileName,
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -577,6 +705,16 @@ class $$RecordingsTableOrderingComposer
 
   ColumnOrderings<DateTime> get recordedAt => $composableBuilder(
     column: $table.recordedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isTranscriptActivated => $composableBuilder(
+    column: $table.isTranscriptActivated,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSummaryActivated => $composableBuilder(
+    column: $table.isSummaryActivated,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -596,11 +734,11 @@ class $$RecordingsTableAnnotationComposer
   GeneratedColumn<String> get meetingId =>
       $composableBuilder(column: $table.meetingId, builder: (column) => column);
 
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
-
-  GeneratedColumn<String> get fileName =>
-      $composableBuilder(column: $table.fileName, builder: (column) => column);
 
   GeneratedColumn<String> get filePath =>
       $composableBuilder(column: $table.filePath, builder: (column) => column);
@@ -610,6 +748,16 @@ class $$RecordingsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get recordedAt => $composableBuilder(
     column: $table.recordedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isTranscriptActivated => $composableBuilder(
+    column: $table.isTranscriptActivated,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isSummaryActivated => $composableBuilder(
+    column: $table.isSummaryActivated,
     builder: (column) => column,
   );
 }
@@ -647,37 +795,45 @@ class $$RecordingsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> meetingId = const Value.absent(),
+                Value<String> title = const Value.absent(),
                 Value<String> status = const Value.absent(),
-                Value<String> fileName = const Value.absent(),
                 Value<String> filePath = const Value.absent(),
                 Value<int> duration = const Value.absent(),
                 Value<DateTime> recordedAt = const Value.absent(),
+                Value<bool> isTranscriptActivated = const Value.absent(),
+                Value<bool> isSummaryActivated = const Value.absent(),
               }) => RecordingsCompanion(
                 id: id,
                 meetingId: meetingId,
+                title: title,
                 status: status,
-                fileName: fileName,
                 filePath: filePath,
                 duration: duration,
                 recordedAt: recordedAt,
+                isTranscriptActivated: isTranscriptActivated,
+                isSummaryActivated: isSummaryActivated,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String meetingId,
+                required String title,
                 required String status,
-                required String fileName,
                 required String filePath,
                 required int duration,
-                Value<DateTime> recordedAt = const Value.absent(),
+                required DateTime recordedAt,
+                Value<bool> isTranscriptActivated = const Value.absent(),
+                Value<bool> isSummaryActivated = const Value.absent(),
               }) => RecordingsCompanion.insert(
                 id: id,
                 meetingId: meetingId,
+                title: title,
                 status: status,
-                fileName: fileName,
                 filePath: filePath,
                 duration: duration,
                 recordedAt: recordedAt,
+                isTranscriptActivated: isTranscriptActivated,
+                isSummaryActivated: isSummaryActivated,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

@@ -10,11 +10,16 @@ part 'recordings.g.dart';
 class Recordings extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get meetingId => text()();
+  TextColumn get title => text()();
   TextColumn get status => text()();
-  TextColumn get fileName => text()();
   TextColumn get filePath => text()();
   IntColumn get duration => integer()();
   DateTimeColumn get recordedAt => dateTime()();
+
+  BoolColumn get isTranscriptActivated =>
+      boolean().withDefault(const Constant(false))();
+  BoolColumn get isSummaryActivated =>
+      boolean().withDefault(const Constant(false))();
 
   @override
   List<Set<Column>> get uniqueKeys => [
@@ -29,7 +34,7 @@ class RecordingDatabase extends _$RecordingDatabase {
   @override
   int get schemaVersion => 1;
 
-  Future<int> insertRecording(RecordingsCompanion recording) =>
+  Future<int> createRecording(RecordingsCompanion recording) =>
       into(recordings).insert(recording);
 
   Future<Recording?> getRecordingById(String meetingId) => (select(
@@ -50,9 +55,9 @@ class RecordingDatabase extends _$RecordingDatabase {
 
     final searchTerm = '%$query%';
 
-    // Search only in fileName
+    // Search only in title
     return (select(recordings)
-          ..where((item) => item.fileName.like(searchTerm))
+          ..where((item) => item.title.like(searchTerm))
           // Default: newest first
           ..orderBy([
             (t) =>
@@ -63,6 +68,22 @@ class RecordingDatabase extends _$RecordingDatabase {
 
   Future<bool> updateRecording(Recording recording) =>
       update(recordings).replace(recording);
+
+  Future<void> updateTranscriptActivation(
+    String meetingId,
+    bool isActivated,
+  ) async {
+    await (update(recordings)..where((r) => r.meetingId.equals(meetingId)))
+        .write(RecordingsCompanion(isTranscriptActivated: Value(isActivated)));
+  }
+
+  Future<void> updateSummaryActivation(
+    String meetingId,
+    bool isActivated,
+  ) async {
+    await (update(recordings)..where((r) => r.meetingId.equals(meetingId)))
+        .write(RecordingsCompanion(isSummaryActivated: Value(isActivated)));
+  }
 
   Future<int> deleteRecording(Recording recording) =>
       delete(recordings).delete(recording);

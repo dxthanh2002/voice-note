@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/home/keo/develop/flutter/packages/flutter_tools/gradle/src/main/scripts/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/keo/Android/Sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/home/keo/projects/aimate-flutter/android/app/.cxx/debug/1f713g70/armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/keo/Android/Sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/home/keo/projects/aimate-flutter/android/app/.cxx/debug/1f713g70/armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

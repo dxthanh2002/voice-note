@@ -18,22 +18,19 @@ class Console {
 
   static void log(dynamic message) {
     if (kDebugMode) {
-      final timestamp = DateTime.now().toIso8601String();
       debugPrint(' 🔍 DEBUG: $message');
     }
   }
 
   static void warning(dynamic message) {
     if (kDebugMode) {
-      final timestamp = DateTime.now().toIso8601String();
       debugPrint(' ⚠️ WARNING: $message');
     }
   }
 
   static void error(dynamic message, [StackTrace? stackTrace]) {
     if (kDebugMode) {
-      final timestamp = DateTime.now().toIso8601String();
-      debugPrint(' ❌ ERROR [$timestamp] : $message');
+      debugPrint(' ❌ ERROR: $message');
       if (stackTrace != null) {
         debugPrint(' 🗺️ STACKTRACE: $stackTrace');
       }
@@ -42,7 +39,6 @@ class Console {
 
   static void lifecycle(String event) {
     if (kDebugMode) {
-      final timestamp = DateTime.now().toIso8601String();
       debugPrint(' 🔄 LIFECYCLE: $event');
     }
   }

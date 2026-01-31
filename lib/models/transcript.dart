@@ -55,6 +55,59 @@ class TranscriptItem {
   }
 }
 
+class SummaryProcessResponse {
+  final String summaryStatus;
+  final String id;
+  final String userId;
+  final String appId;
+  final String title;
+  final DateTime startedAt;
+  final String status;
+  final String transcriptStatus;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final int version;
+  final DateTime transcriptRequestedAt;
+  final String audio;
+  final DateTime transcriptEnqueuedAt;
+
+  const SummaryProcessResponse({
+    required this.summaryStatus,
+    required this.id,
+    required this.userId,
+    required this.appId,
+    required this.title,
+    required this.startedAt,
+    required this.status,
+    required this.transcriptStatus,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.version,
+    required this.transcriptRequestedAt,
+    required this.audio,
+    required this.transcriptEnqueuedAt,
+  });
+
+  factory SummaryProcessResponse.fromJson(Map<String, dynamic> json) {
+    return SummaryProcessResponse(
+      summaryStatus: json['summaryStatus'] ?? '',
+      id: json['_id'] ?? '',
+      userId: json['userId'] ?? '',
+      appId: json['appId'] ?? '',
+      title: json['title'] ?? '',
+      startedAt: DateTime.parse(json['startedAt']),
+      status: json['status'] ?? '',
+      transcriptStatus: json['transcriptStatus'] ?? '',
+      createdAt: DateTime.parse(json['createdAt']),
+      updatedAt: DateTime.parse(json['updatedAt']),
+      version: json['__v'] ?? 0,
+      transcriptRequestedAt: DateTime.parse(json['transcriptRequestedAt']),
+      audio: json['audio'] ?? '',
+      transcriptEnqueuedAt: DateTime.parse(json['transcriptEnqueuedAt']),
+    );
+  }
+}
+
 // models/summary.dart
 class SummaryTranscriptionResponse {
   final String id;

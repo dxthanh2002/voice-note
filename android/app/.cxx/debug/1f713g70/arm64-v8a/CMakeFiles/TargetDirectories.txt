@@ -1,0 +1,2 @@
+/home/keo/projects/aimate-flutter/android/app/.cxx/debug/1f713g70/arm64-v8a/CMakeFiles/edit_cache.dir
+/home/keo/projects/aimate-flutter/android/app/.cxx/debug/1f713g70/arm64-v8a/CMakeFiles/rebuild_cache.dir

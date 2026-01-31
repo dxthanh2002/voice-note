@@ -114,7 +114,7 @@ class RecordingViewModel with ChangeNotifier {
       // save to local
       await DatabaseService().save(
         meetingId: meetingId,
-        fileName: title,
+        title: title,
         filePath: filePath,
         duration: duration,
         status: 'raw',
@@ -124,7 +124,7 @@ class RecordingViewModel with ChangeNotifier {
 
       Console.log("CHECKING NEW SAVE RECORD");
       Console.log(data?.meetingId);
-      Console.log(data?.fileName);
+      Console.log(data?.title);
       Console.log(data?.filePath);
       Console.log(data?.duration);
       //

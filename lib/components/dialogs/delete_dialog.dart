@@ -6,11 +6,7 @@ class DeleteDialog extends StatelessWidget {
   final String title;
   final String? description;
 
-  const DeleteDialog({
-    super.key,
-    required this.title,
-    this.description,
-  });
+  const DeleteDialog({super.key, required this.title, this.description});
 
   @override
   Widget build(BuildContext context) {
@@ -56,9 +52,9 @@ class DeleteDialog extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
@@ -66,9 +62,9 @@ class DeleteDialog extends StatelessWidget {
                     description ??
                         'This action cannot be undone. All transcription and AI summaries will be permanently removed.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textMuted,
-                          height: 1.5,
-                        ),
+                      color: AppColors.textMuted,
+                      height: 1.5,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -97,7 +93,8 @@ class DeleteDialog extends StatelessWidget {
                       ),
                       child: Text(
                         'Delete',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: AppColors.error,
                             ),
@@ -124,7 +121,8 @@ class DeleteDialog extends StatelessWidget {
                       ),
                       child: Text(
                         'Cancel',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
                               fontWeight: FontWeight.w500,
                               color: AppColors.textSecondary,
                             ),
@@ -149,9 +147,6 @@ Future<bool?> showDeleteDialog(
   return showDialog<bool?>(
     context: context,
     barrierColor: AppColors.black.withValues(alpha: 0.6),
-    builder: (context) => DeleteDialog(
-      title: title,
-      description: description,
-    ),
+    builder: (context) => DeleteDialog(title: title, description: description),
   );
 }

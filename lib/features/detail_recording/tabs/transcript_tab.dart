@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../services/ads/ads.dart';
 import '../../../services/database.dart';
+import '../../../services/process.dart';
 import '../../../theme/colors.dart';
 import '../../../services/repository.dart';
 import '../../../models/transcript.dart';
@@ -28,11 +30,25 @@ class _TranscriptTabState extends State<TranscriptTab> {
   TranscriptState? _state;
   String _errorMessage = '';
   bool _isPolling = false; // Track polling state
+  bool _isTranscriptActivated = false;
+  late DatabaseService _db;
+  bool _isProcessing = false;
 
   @override
   void initState() {
     super.initState();
-    _checkCurrentStatus();
+    _db = DatabaseService();
+
+    if (ProcessingService().isProcessing("transcript_${widget.id!}")) {
+      setState(() {
+        _state = TranscriptState.processing;
+        _isPolling = true;
+        _isProcessing = true;
+      });
+      _pollTranscript();
+    } else {
+      _checkTranscriptStatus();
+    }
   }
 
   @override
@@ -41,33 +57,51 @@ class _TranscriptTabState extends State<TranscriptTab> {
     super.dispose();
   }
 
-  Future<void> _checkCurrentStatus() async {
+  Future<void> _checkTranscriptStatus() async {
     if (widget.id == null) return;
 
     try {
-      final detail = await Repository.getMeetingbyId(widget.id!);
-      if (!mounted) return;
-      final transcriptStatus = detail.meeting.transcriptStatus;
+      final recording = await _db.getRecording(widget.id!);
 
-      if (transcriptStatus == 'DONE' && detail.transcripts.isNotEmpty) {
-        // Transcript already exists, load it
+      if (recording != null) {
+        _isTranscriptActivated = recording.isTranscriptActivated;
+
+        // If transcript is already activated AND DONE, check server status
+        if (_isTranscriptActivated) {
+          final detail = await Repository.getMeetingbyId(widget.id!);
+          if (!mounted) return;
+
+          final transcriptStatus = detail.meeting.transcriptStatus;
+
+          if (transcriptStatus == 'DONE' && detail.transcripts.isNotEmpty) {
+            setState(() {
+              _transcriptItems = detail.transcripts;
+              _state = TranscriptState.done;
+            });
+            return;
+          } else if (transcriptStatus == 'PROCESSING') {
+            setState(() {
+              _state = TranscriptState.processing;
+              _isPolling = true;
+            });
+            _pollTranscript();
+            return;
+          } else if (transcriptStatus == 'FAILED') {
+            setState(() {
+              _state = TranscriptState.failed;
+              _errorMessage =
+                  'Transcription previously failed. Please try again.';
+            });
+            return;
+          }
+        }
+
+        // If not activated OR activated but no transcript yet
         setState(() {
-          _transcriptItems = detail.transcripts;
-          _state = TranscriptState.done;
-        });
-      } else if (transcriptStatus == 'PROCESSING') {
-        // Transcription is in progress, start polling
-        setState(() {
-          _state = TranscriptState.processing;
-          _isPolling = true;
-        });
-        _pollTranscript();
-      } else if (transcriptStatus == 'FAILED') {
-        setState(() {
-          _state = TranscriptState.failed;
-          _errorMessage = 'Transcription previously failed. Please try again.';
+          _state = TranscriptState.none;
         });
       } else {
+        // No recording found
         setState(() {
           _state = TranscriptState.none;
         });
@@ -85,9 +119,26 @@ class _TranscriptTabState extends State<TranscriptTab> {
   Future<void> _getTranscription() async {
     if (widget.id == null) return;
 
+    // ads
+    final result = await RewardedManager.showAndWait(
+      rewardData: {'action': "start_chat"},
+    );
+
+    if (result?.status != RewardResultStatus.success) {
+      Console.log("FAILL to watch reward");
+      return;
+    }
+
+    Console.log("START processing");
+    await _db.updateRecordingStatus(
+      meetingId: widget.id!,
+      status: 'processing',
+    );
+
     setState(() {
       _state = TranscriptState.processing;
       _isPolling = true;
+      _isProcessing = true;
     });
 
     try {
@@ -95,15 +146,14 @@ class _TranscriptTabState extends State<TranscriptTab> {
       if (detail.meeting.transcriptStatus == 'NONE') {
         // get from data local
 
-        final db = DatabaseService();
-
-        final savedRecording = await db.getRecording(widget.id!);
+        final savedRecording = await _db.getRecording(widget.id!);
+        // debug
         if (savedRecording != null) {
           debugPrint('''
         ✅ VERIFIED IN DATABASE:
         ├─ ID: ${savedRecording.id}
         ├─ Meeting ID: ${savedRecording.meetingId}
-        ├─ File: ${savedRecording.fileName}
+        ├─ File: ${savedRecording.title}
         ├─ Path: ${savedRecording.filePath}
         ├─ Duration: ${savedRecording.duration}s
         ├─ Status: ${savedRecording.status}
@@ -115,7 +165,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
 
         final presigned = await Repository.getPresignedUrl(
           widget.id!,
-          savedRecording!.fileName,
+          savedRecording!.title,
           savedRecording.duration,
         );
 
@@ -138,6 +188,47 @@ class _TranscriptTabState extends State<TranscriptTab> {
         // await Repository.processTranscript(detail.meeting.id);
       }
 
+      ProcessingService().startPolling(
+        meetingId: "transcript_${widget.id!}",
+        checkFunction: () async {
+          final status = await Repository.transcriptStatus(widget.id!);
+          return status == 'DONE';
+        },
+        onSuccess: () async {
+          // This runs even when you're not on the tab
+          final detail = await Repository.getMeetingbyId(widget.id!);
+          await _db.updateRecordingStatus(
+            meetingId: widget.id!,
+            status: 'done',
+          );
+          await _db.updateTranscriptActivation(
+            meetingId: widget.id!,
+            isActivated: true,
+          );
+
+          // If user comes back to tab, UI will be updated
+          if (mounted) {
+            setState(() {
+              _isTranscriptActivated = true;
+              _transcriptItems = detail.transcripts;
+              _state = TranscriptState.done;
+              _isPolling = false;
+            });
+          }
+        },
+        onError: () {
+          // Handle background error
+          if (mounted) {
+            setState(() {
+              _state = TranscriptState.failed;
+              _errorMessage = 'Transcription failed in background';
+              _isPolling = false;
+              _isProcessing = false;
+            });
+          }
+        },
+      );
+
       // get
 
       _pollTranscript();
@@ -146,6 +237,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
         _state = TranscriptState.failed;
         _errorMessage = 'Unable to create transcript.\n${e.toString()}';
         _isPolling = false;
+        _isProcessing = false;
       });
       debugPrint('Error in transcription: $e');
     }
@@ -162,22 +254,35 @@ class _TranscriptTabState extends State<TranscriptTab> {
       if (!_isPolling || !mounted) break;
 
       try {
-        final statusResponse = await Repository.status(widget.id!);
+        final statusResponse = await Repository.transcriptStatus(widget.id!);
         debugPrint('Transcription status: $statusResponse');
 
         if (statusResponse == 'DONE') {
           final detail = await Repository.getMeetingbyId(widget.id!);
           if (mounted) {
-            await DatabaseService().updateRecordingStatus(
+            // set status
+            await _db.updateRecordingStatus(
               meetingId: widget.id!,
               status: 'done',
             );
 
+            // set activated
+            await _db.updateTranscriptActivation(
+              meetingId: widget.id!,
+              isActivated: true,
+            );
+
             setState(() {
+              _isTranscriptActivated = true;
               _transcriptItems = detail.transcripts;
               _state = TranscriptState.done;
+              _isProcessing = false;
+
               _isPolling = false;
             });
+
+            // ✅ ADD THIS: Stop background service too
+            ProcessingService().stopPolling("transcript_${widget.id!}");
           }
           break;
         } else if (statusResponse == 'FAILED') {
@@ -190,8 +295,13 @@ class _TranscriptTabState extends State<TranscriptTab> {
             setState(() {
               _state = TranscriptState.failed;
               _errorMessage = 'Transcription failed. Please try again.';
+              _isProcessing = false;
+
               _isPolling = false;
             });
+
+            // ✅ ADD THIS: Stop background service too
+            ProcessingService().stopPolling("transcript_${widget.id!}");
           }
           break;
         }
