@@ -60,17 +60,15 @@ class _RecordControlScreenState extends State<RecordControlScreen>
             builder: (context, _) {
               return _viewModel.isLoading
                   ? _buildLoadingState()
-                  : SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          _buildHeader(context),
-                          _buildMainContent(),
-                          _buildFooter(),
-                          const SizedBox(height: 8),
-                          _buildHomeIndicator(),
-                          const SizedBox(height: 8),
-                        ],
-                      ),
+                  : Column(
+                      children: [
+                        _buildHeader(context),
+                        Expanded(child: _buildMainContent()),
+                        _buildFooter(),
+                        const SizedBox(height: 8),
+                        _buildHomeIndicator(),
+                        const SizedBox(height: 8),
+                      ],
                     );
             },
           ),

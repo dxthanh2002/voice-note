@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../services/ads/ads.dart';
 import '../../../services/database.dart';
-import '../../../services/process.dart';
 import '../../../theme/colors.dart';
 import '../../../services/repository.dart';
 import '../../../models/transcript.dart';
@@ -207,8 +206,6 @@ class _TranscriptTabState extends State<TranscriptTab> {
             _isPolling = false;
           });
 
-          // ✅ ADD THIS: Stop background service too
-          ProcessingService().stopPolling("transcript_${widget.id!}");
           break;
         }
       } catch (e) {

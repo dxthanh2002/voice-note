@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import '../../../services/ads/ads.dart';
 import '../../../services/database.dart';
-import '../../../services/process.dart';
 import '../../../theme/colors.dart';
 import '../../../services/repository.dart';
 import '../../../utils/console.dart';
@@ -36,7 +35,7 @@ class _SummaryTabState extends State<SummaryTab> {
 
   @override
   void dispose() {
-    _isPolling = false; // Only stop local UI polling
+    // _isPolling = false; // Only stop local UI polling
     super.dispose();
   }
 
@@ -48,16 +47,16 @@ class _SummaryTabState extends State<SummaryTab> {
 
     try {
       // check transcript first
-      final detail = await Repository.getMeetingbyId(widget.id!);
-      final transcriptStatus = detail.meeting.transcriptStatus;
-      Console.log('Summary status: $transcriptStatus');
+      // final detail = await Repository.getMeetingbyId(widget.id!);
+      // final transcriptStatus = detail.meeting.transcriptStatus;
+      // Console.log('Summary status: $transcriptStatus');
 
-      if (transcriptStatus != 'DONE') {
-        setState(() {
-          _state = SummaryState.none;
-        });
-        return;
-      }
+      // if (transcriptStatus != 'DONE') {
+      //   setState(() {
+      //     _state = SummaryState.none;
+      //   });
+      //   return;
+      // }
 
       final recording = await _db.getRecording(widget.id!);
       final isActivated = recording?.isSummaryActivated ?? false;
