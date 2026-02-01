@@ -157,16 +157,12 @@ class _DetailRecordScreenState extends State<DetailRecordScreen> {
         children: [
           IconButton(
             onPressed: () async {
-              final shouldExit = await _showExitConfirmation(context);
-              if (shouldExit && mounted) {
-                // show ads
-                Console.log("WHATTT");
-                Console.log("WHATTT");
-                InterstitialManager.show();
-                Future.delayed(const Duration(milliseconds: 300));
+              Console.log("WHATTT");
+              Console.log("WHATTT");
+              InterstitialManager.show();
+              Future.delayed(const Duration(milliseconds: 300));
 
-                Navigator.pop(context, true);
-              }
+              Navigator.pop(context, true);
             },
             tooltip: 'Go back',
             icon: const Icon(Icons.arrow_back),
@@ -249,56 +245,6 @@ class _DetailRecordScreenState extends State<DetailRecordScreen> {
         ],
       ),
     );
-  }
-
-  Future<bool> _showExitConfirmation(BuildContext context) async {
-    // Check if any processing is happening
-    final isTranscriptProcessing = ProcessingService().isProcessing(
-      "transcript_${widget.id}",
-    );
-    final isSummaryProcessing = ProcessingService().isProcessing(
-      "summary_${widget.id}",
-    );
-
-    final isAnyProcessing = isTranscriptProcessing || isSummaryProcessing;
-
-    // If no processing, just exit
-    if (!isAnyProcessing) {
-      return true; // Allow exit
-    }
-
-    // If processing, show confirmation dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Processing in Progress'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('If you exit now:'),
-            const SizedBox(height: 8),
-            Text(
-              '• The transcript proccess will lose',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Exit Anyway'),
-          ),
-        ],
-      ),
-    );
-
-    return confirmed ?? false; // Return false if user cancels
   }
 
   Widget _buildContent(MeetingResponse meeting) {
