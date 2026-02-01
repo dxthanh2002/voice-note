@@ -129,20 +129,19 @@ class ExitRecordingDialog extends StatelessWidget {
                   // Discard button (destructive)
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton.icon(
+                    child: ElevatedButton.icon(
                       onPressed: () =>
                           Navigator.pop(context, ExitRecordingChoice.discard),
                       icon: const Icon(Icons.delete_outline_rounded, size: 20),
                       label: const Text('Discard'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.error,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.error,
+                        foregroundColor: AppColors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        side: BorderSide(
-                          color: AppColors.error.withValues(alpha: 0.3),
-                        ),
+                        elevation: 0,
                         textStyle:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w600,
