@@ -47,9 +47,8 @@ class _SummaryTabState extends State<SummaryTab> {
     }
 
     try {
-      // If summary is already activated, check server status
-      final detail = await Repository.getMeetingbyId(widget.id!);
       // check transcript first
+      final detail = await Repository.getMeetingbyId(widget.id!);
       final transcriptStatus = detail.meeting.transcriptStatus;
       Console.log('Summary status: $transcriptStatus');
 
@@ -61,19 +60,40 @@ class _SummaryTabState extends State<SummaryTab> {
       }
 
       final recording = await _db.getRecording(widget.id!);
+      final isActivated = recording?.isSummaryActivated ?? false;
 
-      if (recording!.isSummaryActivated) {
-        // if activated then proceed get summary
-        _getSummary();
-      } else {
-        setState(() {
-          _state = SummaryState.none;
-        });
+      if (!isActivated) {
+        // User has NEVER activated summary → show button
+        setState(() => _state = SummaryState.none);
+        return;
       }
 
-      // else check if they
+      // if activated
+      final statusResponse = await Repository.getStatusSummary(widget.id!);
+      Console.log("STATUS: ${statusResponse.summaryStatus}");
 
-      // leave it empty
+      if (statusResponse.summaryStatus == 'DONE') {
+        final summaryResponse = await Repository.getSummary(widget.id!);
+        setState(() {
+          _summaryContent = summaryResponse.content;
+          _state = SummaryState.done;
+        });
+      } else if (statusResponse.summaryStatus == 'FAILED') {
+        setState(() {
+          _state = SummaryState.error;
+          _errorMessage = 'Summary generation failed.';
+        });
+      } else {
+        // PROCESSING
+        Console.log("PROCESSSING");
+
+        setState(() {
+          _state = SummaryState.processing;
+          _isPolling = true;
+        });
+        _startPolling();
+      }
+      //
     } catch (e) {
       debugPrint('Error checking summary status: $e');
       setState(() {
@@ -101,7 +121,12 @@ class _SummaryTabState extends State<SummaryTab> {
 
     final recording = await _db.getRecording(widget.id!);
     if (recording!.status != 'done') {
-      Console.log("Can't proceed");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please generate transcript before creating a summary'),
+          duration: Duration(seconds: 2),
+        ),
+      );
       return;
     }
 
@@ -110,35 +135,24 @@ class _SummaryTabState extends State<SummaryTab> {
       _isPolling = true;
     });
 
-    try {
-      final response = await Repository.proccessSummary(widget.id!);
-      Console.log('Summary process started: ${response.id}');
-
-      _startPolling();
-      //
-    } catch (e) {
-      setState(() {
-        _state = SummaryState.error;
-        _errorMessage = 'Could not create summary.\n${e.toString()}';
-        _isPolling = false;
-      });
-      Console.error('Error generating summary: $e');
-    }
+    _startPolling();
   }
 
   Future<void> _startPolling() async {
     if (!_isPolling) return;
 
-    const checkInterval = Duration(seconds: 5);
+    const checkInterval = Duration(seconds: 2);
 
     while (_isPolling) {
       await Future.delayed(checkInterval);
 
-      if (!_isPolling || !mounted) break;
-
       try {
-        final detail = await Repository.getMeetingbyId(widget.id!);
-        final summaryStatus = detail.meeting.summaryStatus;
+        // final detail = await Repository.getMeetingbyId(widget.id!);
+        // final summaryStatus = detail.meeting.summaryStatus;
+
+        final response = await Repository.getStatusSummary(widget.id!);
+        final summaryStatus = response.summaryStatus;
+        Console.log('Summary process started: ${response.id}');
 
         if (summaryStatus == 'DONE') {
           final summaryResponse = await Repository.getSummary(widget.id!);

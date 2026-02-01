@@ -60,15 +60,17 @@ class _RecordControlScreenState extends State<RecordControlScreen>
             builder: (context, _) {
               return _viewModel.isLoading
                   ? _buildLoadingState()
-                  : Column(
-                      children: [
-                        _buildHeader(context),
-                        Expanded(child: _buildMainContent()),
-                        _buildFooter(),
-                        const SizedBox(height: 8),
-                        _buildHomeIndicator(),
-                        const SizedBox(height: 8),
-                      ],
+                  : SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildHeader(context),
+                          _buildMainContent(),
+                          _buildFooter(),
+                          const SizedBox(height: 8),
+                          _buildHomeIndicator(),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
                     );
             },
           ),
@@ -427,15 +429,45 @@ class _RecordControlScreenState extends State<RecordControlScreen>
   }
 
   Future<void> _onExit(BuildContext context) async {
-    // TODO: save id
-    // Show if they want to exit or not while recording
     if (_viewModel.isRecordingOrPaused) {
-      // Save recording then go back
-      // MSG: do u wanna save
-      await _onStopRecording(context);
+      final choice = await showDialog<String>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Exit Recording'),
+          content: const Text('What would you like to do with this recording?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'cancel'),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'discard'),
+              child: const Text('Discard', style: TextStyle(color: Colors.red)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'save'),
+              child: const Text('Save & Exit'),
+            ),
+          ],
+        ),
+      );
+
+      switch (choice) {
+        case 'save':
+          await _onStopRecording(context);
+          break;
+        case 'discard':
+          final response = await Repository.deleteMeeting(widget.meeting.id);
+          print("DISCARDD MEETING ID: ${widget.meeting.id}");
+          print("DISCARDD: $response");
+
+          if (mounted) Navigator.pop(context);
+          break;
+        // 'cancel' or null - do nothing, stay on screen
+      }
     } else {
-      // is recording
-      // POP a meetingId
+      // Not recording - just exit
       Navigator.pop(context);
     }
   }

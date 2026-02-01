@@ -135,7 +135,7 @@ class Repository {
     return SummaryTranscriptionResponse.fromJson(response.data['data']);
   }
 
-  static Future<SummaryProcessResponse> proccessSummary(String id) async {
+  static Future<SummaryProcessResponse> getStatusSummary(String id) async {
     final response = await api.post('app-audio-note/meetings/$id/summary');
 
     Console.log("PROCESS SUMMARY");
