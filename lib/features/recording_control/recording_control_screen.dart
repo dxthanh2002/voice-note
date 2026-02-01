@@ -2,6 +2,7 @@ import 'package:aimateflutter/models/meeting.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../components/dialogs/exit_recording_dialog.dart';
 import '../../services/repository.dart';
 import '../../utils/console.dart';
 import 'recording_control_viewmodel.dart';
@@ -428,41 +429,22 @@ class _RecordControlScreenState extends State<RecordControlScreen>
 
   Future<void> _onExit(BuildContext context) async {
     if (_viewModel.isRecordingOrPaused) {
-      final choice = await showDialog<String>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: const Text('Exit Recording'),
-          content: const Text('What would you like to do with this recording?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'cancel'),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'discard'),
-              child: const Text('Discard', style: TextStyle(color: Colors.red)),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'save'),
-              child: const Text('Save & Exit'),
-            ),
-          ],
-        ),
-      );
+      final choice = await showExitRecordingDialog(context);
 
       switch (choice) {
-        case 'save':
+        case ExitRecordingChoice.save:
           await _onStopRecording(context);
           break;
-        case 'discard':
+        case ExitRecordingChoice.discard:
           final response = await Repository.deleteMeeting(widget.meeting.id);
           print("DISCARDD MEETING ID: ${widget.meeting.id}");
           print("DISCARDD: $response");
 
           if (mounted) Navigator.pop(context);
           break;
-        // 'cancel' or null - do nothing, stay on screen
+        case null:
+          // User closed dialog - stay on screen
+          break;
       }
     } else {
       // Not recording - just exit
