@@ -83,54 +83,6 @@ class _CreateRecordSheetContent extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-
-                  // Title label
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 4),
-                      child: Text(
-                        'TITLE',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.2,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Title input field
-                  TextField(
-                    controller: viewModel.titleController,
-                    autofocus: true,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Enter meeting title...',
-                      hintStyle: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textMuted.withOpacity(0.5),
-                      ),
-                      filled: true,
-                      fillColor: AppColors.backgroundDark,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: 20),
 
                   // Start button
@@ -156,11 +108,6 @@ class _StartRecordButton extends StatelessWidget {
 
     if (meeting != null && context.mounted) {
       Navigator.pop(context, meeting);
-    } else if (context.mounted) {
-      // Show validation error
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please enter a title')));
     }
   }
 

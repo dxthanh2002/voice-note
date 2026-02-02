@@ -3,37 +3,22 @@ import '../../../services/repository.dart';
 import '../../../models/meeting.dart';
 
 class CreateRecordViewModel with ChangeNotifier {
-  final TextEditingController _titleController = TextEditingController();
+  static const String defaultTitle = 'New Meeting';
+  
   bool _isSubmitting = false;
   MeetingResponse? _createdMeeting;
 
   // Getters
-  TextEditingController get titleController => _titleController;
   bool get isSubmitting => _isSubmitting;
   MeetingResponse? get createdMeeting => _createdMeeting;
-  bool get canSubmit => _titleController.text.trim().isNotEmpty;
 
-  // Validation
-  String? validateTitle(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Please enter a title';
-    }
-    return null;
-  }
-
-  // Create meeting
+  // Create meeting with default title
   Future<MeetingResponse?> createMeeting() async {
-    final title = _titleController.text.trim();
-
-    if (title.isEmpty) {
-      return null;
-    }
-
     _isSubmitting = true;
     notifyListeners();
 
     try {
-      final meeting = await Repository.createMeeting(title);
+      final meeting = await Repository.createMeeting(defaultTitle);
       _createdMeeting = meeting;
       return meeting;
     } catch (e) {
@@ -47,15 +32,8 @@ class CreateRecordViewModel with ChangeNotifier {
 
   // Reset state
   void reset() {
-    _titleController.clear();
     _isSubmitting = false;
     _createdMeeting = null;
     notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    super.dispose();
   }
 }
