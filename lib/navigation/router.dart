@@ -2,12 +2,12 @@ import 'package:aimateflutter/features/recording_control/recording_control_scree
 import 'package:aimateflutter/models/meeting.dart';
 import 'package:flutter/material.dart';
 
+import '../features/detail_recording/detail_record_screen.dart';
 import 'routes.dart';
 import '../features/auth/login_screen.dart';
 import '../features/main/bottom_navigator_tab.dart';
 import '../features/onboarding/onboarding_screen.dart';
 
-import '../features/detail_recording/detail_record_screen.dart';
 import '../features/subscription/upgrade_screen.dart';
 
 Route<dynamic> AppRouter(RouteSettings settings) {

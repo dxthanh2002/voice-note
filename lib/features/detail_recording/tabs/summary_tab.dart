@@ -1,13 +1,9 @@
+// summary_tab.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import '../../../services/ads/ads.dart';
-import '../../../services/database.dart';
+import 'package:provider/provider.dart';
 import '../../../theme/colors.dart';
-import '../../../services/repository.dart';
-import '../../../utils/console.dart';
-
-enum SummaryState { loading, none, processing, done, error }
+import 'summary_viewmodel.dart';
 
 class SummaryTab extends StatefulWidget {
   const SummaryTab({super.key, this.id});
@@ -19,195 +15,27 @@ class SummaryTab extends StatefulWidget {
 }
 
 class _SummaryTabState extends State<SummaryTab> {
-  String? _summaryContent;
-  String? _errorMessage;
-  SummaryState _state = SummaryState.loading;
-  late DatabaseService _db;
-  bool _isPolling = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _db = DatabaseService();
-
-    _checkStatus();
-  }
-
-  @override
-  void dispose() {
-    // _isPolling = false; // Only stop local UI polling
-    super.dispose();
-  }
-
-  Future<void> _checkStatus() async {
-    if (widget.id == null) {
-      setState(() => _state = SummaryState.none);
-      return;
-    }
-
-    try {
-      // check transcript first
-      // final detail = await Repository.getMeetingbyId(widget.id!);
-      // final transcriptStatus = detail.meeting.transcriptStatus;
-      // Console.log('Summary status: $transcriptStatus');
-
-      // if (transcriptStatus != 'DONE') {
-      //   setState(() {
-      //     _state = SummaryState.none;
-      //   });
-      //   return;
-      // }
-
-      final recording = await _db.getRecording(widget.id!);
-      final isActivated = recording?.isSummaryActivated ?? false;
-
-      if (!isActivated) {
-        // User has NEVER activated summary → show button
-        setState(() => _state = SummaryState.none);
-        return;
-      }
-
-      // if activated
-      final statusResponse = await Repository.getStatusSummary(widget.id!);
-      Console.log("STATUS: ${statusResponse.summaryStatus}");
-
-      if (statusResponse.summaryStatus == 'DONE') {
-        final summaryResponse = await Repository.getSummary(widget.id!);
-        setState(() {
-          _summaryContent = summaryResponse.content;
-          _state = SummaryState.done;
-        });
-      } else if (statusResponse.summaryStatus == 'FAILED') {
-        setState(() {
-          _state = SummaryState.error;
-          _errorMessage = 'Summary generation failed.';
-        });
-      } else {
-        // PROCESSING
-        Console.log("PROCESSSING");
-
-        setState(() {
-          _state = SummaryState.processing;
-          _isPolling = true;
-        });
-        _startPolling();
-      }
-      //
-    } catch (e) {
-      debugPrint('Error checking summary status: $e');
-      setState(() {
-        _state = SummaryState.error;
-        _errorMessage = 'Error checking status: ${e.toString()}';
-      });
-    }
-  }
-
-  Future<void> showAds() async {
-    final result = await RewardedManager.showAndWait(
-      rewardData: {'action': "start_chat"},
-    );
-
-    if (result?.status != RewardResultStatus.success) {
-      Console.log("FAILL to watch reward");
-      return;
-    }
-  }
-
-  Future<void> _getSummary() async {
-    if (widget.id == null) return;
-
-    // showAds();
-
-    final recording = await _db.getRecording(widget.id!);
-    if (recording!.status != 'done') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please generate transcript before creating a summary'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _state = SummaryState.processing;
-      _isPolling = true;
-    });
-
-    _startPolling();
-  }
-
-  Future<void> _startPolling() async {
-    if (!_isPolling) return;
-
-    const checkInterval = Duration(seconds: 2);
-
-    while (_isPolling) {
-      await Future.delayed(checkInterval);
-
-      try {
-        // final detail = await Repository.getMeetingbyId(widget.id!);
-        // final summaryStatus = detail.meeting.summaryStatus;
-
-        final response = await Repository.getStatusSummary(widget.id!);
-        final summaryStatus = response.summaryStatus;
-        Console.log('Summary process started: ${response.id}');
-
-        if (summaryStatus == 'DONE') {
-          final summaryResponse = await Repository.getSummary(widget.id!);
-
-          await _db.updateSummaryActivation(
-            meetingId: widget.id!,
-            isActivated: true,
-          );
-
-          if (mounted) {
-            setState(() {
-              _summaryContent = summaryResponse.content;
-              _state = SummaryState.done;
-              _isPolling = false;
-            });
-          }
-          break;
-        } else if (summaryStatus == 'FAILED') {
-          if (mounted) {
-            setState(() {
-              _state = SummaryState.error;
-              _errorMessage = 'Summary generation failed. Please try again.';
-              _isPolling = false;
-            });
-          }
-          break;
-        }
-        // Continue polling if still PROCESSING
-      } catch (e) {
-        debugPrint('Error polling summary: $e');
-        if (mounted) {
-          setState(() {
-            _state = SummaryState.error;
-            _errorMessage = 'Error checking summary status: ${e.toString()}';
-            _isPolling = false;
-          });
-        }
-        break;
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    switch (_state) {
-      case SummaryState.loading:
-        return _buildLoadingState();
-      case SummaryState.none:
-        return _buildEmptyState();
-      case SummaryState.processing:
-        return _buildProcessingState();
-      case SummaryState.done:
-        return _buildSummaryList();
-      case SummaryState.error:
-        return _buildErrorState();
-    }
+    return ChangeNotifierProvider(
+      create: (_) => SummaryViewModel(id: widget.id),
+      child: Consumer<SummaryViewModel>(
+        builder: (context, viewModel, child) {
+          switch (viewModel.state) {
+            case SummaryState.loading:
+              return _buildLoadingState();
+            case SummaryState.none:
+              return _buildEmptyState(context, viewModel);
+            case SummaryState.processing:
+              return _buildProcessingState();
+            case SummaryState.done:
+              return _buildSummaryList(context, viewModel);
+            case SummaryState.error:
+              return _buildErrorState(context, viewModel);
+          }
+        },
+      ),
+    );
   }
 
   Widget _buildLoadingState() {
@@ -225,14 +53,13 @@ class _SummaryTabState extends State<SummaryTab> {
                 color: AppColors.primary,
               ),
             ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context, SummaryViewModel viewModel) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -313,7 +140,7 @@ class _SummaryTabState extends State<SummaryTab> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton.icon(
-                onPressed: _getSummary,
+                onPressed: () => viewModel.getSummary(),
                 icon: Icon(Icons.auto_awesome, size: 20),
                 label: Text('Generate Summary'),
                 style: ElevatedButton.styleFrom(
@@ -373,7 +200,7 @@ class _SummaryTabState extends State<SummaryTab> {
     );
   }
 
-  Widget _buildSummaryList() {
+  Widget _buildSummaryList(BuildContext context, SummaryViewModel viewModel) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -405,16 +232,16 @@ class _SummaryTabState extends State<SummaryTab> {
             ),
           ),
           const SizedBox(height: 20),
-          _buildSummaryContent(),
+          _buildSummaryContent(viewModel),
           const SizedBox(height: 20),
-          _buildSummaryActions(),
+          _buildSummaryActions(context, viewModel),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryContent() {
-    if (_summaryContent == null) {
+  Widget _buildSummaryContent(SummaryViewModel viewModel) {
+    if (viewModel.summaryContent == null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -428,7 +255,7 @@ class _SummaryTabState extends State<SummaryTab> {
       );
     }
 
-    final lines = _summaryContent!.split('\n');
+    final lines = viewModel.summaryContent!.split('\n');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: lines.map((line) {
@@ -532,11 +359,14 @@ class _SummaryTabState extends State<SummaryTab> {
     );
   }
 
-  Widget _buildSummaryActions() {
+  Widget _buildSummaryActions(
+    BuildContext context,
+    SummaryViewModel viewModel,
+  ) {
     return OutlinedButton.icon(
       onPressed: () {
-        if (_summaryContent != null) {
-          Clipboard.setData(ClipboardData(text: _summaryContent!));
+        if (viewModel.summaryContent != null) {
+          Clipboard.setData(ClipboardData(text: viewModel.summaryContent!));
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Summary copied to clipboard'),
@@ -554,7 +384,7 @@ class _SummaryTabState extends State<SummaryTab> {
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildErrorState(BuildContext context, SummaryViewModel viewModel) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -575,7 +405,7 @@ class _SummaryTabState extends State<SummaryTab> {
             ),
             const SizedBox(height: 8),
             Text(
-              _errorMessage ?? 'Unknown error',
+              viewModel.errorMessage ?? 'Unknown error',
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
@@ -583,7 +413,7 @@ class _SummaryTabState extends State<SummaryTab> {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: _getSummary,
+              onPressed: () => viewModel.getSummary(),
               icon: const Icon(Icons.refresh, size: 20),
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(

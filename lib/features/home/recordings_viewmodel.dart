@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:aimateflutter/services/database.dart';
+import 'package:aimateflutter/services/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -60,11 +61,19 @@ class RecordingsViewModel extends ChangeNotifier {
       final recordings = await DatabaseService().searchRecordings(_searchTitle);
       if (recordings.length != 0) {
         for (var recording in recordings) {
-          Console.log(recording.meetingId);
+          Console.log("${recording.title} STATUS: ${recording.status}");
+          Console.log("ID: ${recording.meetingId}");
           Console.log("duration : ${recording.duration}");
-          Console.log(recording.status);
-          Console.log(recording.title);
+          Console.log("==========");
         }
+      }
+      final recordingsSV = await Repository.getMeetings("");
+      for (var recording in recordingsSV) {
+        Console.log("${recording.title} STATUS: ${recording.transcriptStatus}");
+        Console.log("ID: ${recording.id}");
+
+        Console.log("duration : ${recording.duration}");
+        Console.log("==========");
       }
       _recordings = recordings;
       //

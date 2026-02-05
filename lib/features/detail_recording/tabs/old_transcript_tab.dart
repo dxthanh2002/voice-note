@@ -1,9 +1,20 @@
-// transcript_tab.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
+import '../../../services/ads/ads.dart';
+import '../../../services/database.dart';
 import '../../../theme/colors.dart';
+import '../../../services/repository.dart';
+import '../../../models/transcript.dart';
+import '../../../utils/console.dart';
 import '../widgets/transcript_message_bubble.dart';
-import 'transcript_viewmodel.dart';
+
+enum TranscriptState {
+  loading,
+  none, // No transcript, show button
+  processing, // Transcription in progress
+  done, // Transcript loaded successfully
+  failed, // Error occurred
+}
 
 class TranscriptTab extends StatefulWidget {
   const TranscriptTab({super.key, this.id});
@@ -15,27 +26,209 @@ class TranscriptTab extends StatefulWidget {
 }
 
 class _TranscriptTabState extends State<TranscriptTab> {
+  List<TranscriptItem> _transcriptItems = [];
+  TranscriptState _state = TranscriptState.loading;
+  String _errorMessage = '';
+  bool _isPolling = false; // Track polling state
+  late DatabaseService _db;
+
+  @override
+  void initState() {
+    super.initState();
+    _db = DatabaseService();
+
+    _checkStatus();
+  }
+
+  @override
+  void dispose() {
+    _isPolling = false; // Stop polling when widget is disposed
+    super.dispose();
+  }
+
+  Future<void> _checkStatus() async {
+    if (widget.id == null) return;
+
+    try {
+      final detail = await Repository.getMeetingbyId(widget.id!);
+      if (!mounted) return;
+
+      switch (detail.meeting.transcriptStatus) {
+        case 'DONE' when detail.transcripts.isNotEmpty:
+          setState(() {
+            _transcriptItems = detail.transcripts;
+            _state = TranscriptState.done;
+          });
+          return;
+        case 'PROCESSING':
+          setState(() {
+            _state = TranscriptState.processing;
+            _isPolling = true;
+          });
+          // continue polling
+          _startPolling();
+          return;
+        case 'FAILED':
+          setState(() {
+            _state = TranscriptState.failed;
+            _errorMessage = 'Transcription previously failed.';
+          });
+          return;
+        case 'NONE':
+          setState(() {
+            _state = TranscriptState.none;
+          });
+          return;
+      }
+      //
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('Error checking transcript status: $e');
+      setState(() {
+        _state = TranscriptState.failed;
+        _errorMessage = 'Error checking status: ${e.toString()}';
+      });
+    }
+  }
+
+  Future<void> showAds() async {
+    final result = await RewardedManager.showAndWait(
+      rewardData: {'action': "start_chat"},
+    );
+
+    if (result?.status != RewardResultStatus.success) {
+      Console.log("FAILL to watch reward");
+      return;
+    }
+  }
+
+  Future<void> _getTranscript() async {
+    if (widget.id == null) return;
+    // showAds();
+
+    Console.log("START processing");
+    await _db.updateRecordingStatus(
+      meetingId: widget.id!,
+      status: 'processing',
+    );
+
+    setState(() {
+      _state = TranscriptState.processing;
+      _isPolling = true;
+    });
+
+    try {
+      final detail = await Repository.getMeetingbyId(widget.id!);
+      if (detail.meeting.transcriptStatus == 'NONE') {
+        // get from data local
+
+        Console.log("SAVE TO LOCAL");
+        final savedRecording = await _db.getRecording(widget.id!);
+        // debug
+        if (savedRecording == null) {
+          throw Exception('Recording not found in database');
+        }
+
+        final presigned = await Repository.getPresignedUrl(
+          widget.id!,
+          savedRecording!.title,
+          savedRecording.duration,
+        );
+
+        await Repository.uploadAudioToServer(
+          presigned.url,
+          savedRecording.filePath,
+        );
+
+        final responseConfirm = await Repository.confirm(presigned.audioId);
+        Console.log("ID from confirm ${responseConfirm.id}");
+      }
+
+      _startPolling();
+      //
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _state = TranscriptState.failed;
+        _errorMessage = 'Unable to create transcript.\n${e.toString()}';
+        _isPolling = false;
+      });
+
+      await _db.updateRecordingStatus(meetingId: widget.id!, status: 'failed');
+    }
+  }
+
+  Future<void> _startPolling() async {
+    if (!_isPolling) return;
+
+    const checkInterval = Duration(seconds: 5);
+
+    while (_isPolling) {
+      await Future.delayed(checkInterval);
+
+      if (!_isPolling || !mounted) break;
+
+      try {
+        final statusResponse = await Repository.transcriptStatus(widget.id!);
+        debugPrint('Transcription status: $statusResponse');
+
+        if (statusResponse == 'DONE') {
+          final detail = await Repository.getMeetingbyId(widget.id!);
+          // set status
+          await _db.updateRecordingStatus(
+            meetingId: widget.id!,
+            status: 'done',
+          );
+
+          // set activated
+          await _db.updateTranscriptActivation(
+            meetingId: widget.id!,
+            isActivated: true,
+          );
+
+          setState(() {
+            _transcriptItems = detail.transcripts;
+            _state = TranscriptState.done;
+
+            _isPolling = false;
+          });
+          break;
+        } else if (statusResponse == 'FAILED') {
+          await _db.updateRecordingStatus(
+            meetingId: widget.id!,
+            status: 'failed',
+          );
+
+          setState(() {
+            _state = TranscriptState.failed;
+            _errorMessage = 'Transcription failed. Please try again.';
+
+            _isPolling = false;
+          });
+
+          break;
+        }
+      } catch (e) {
+        debugPrint('Error polling transcript: $e');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => TranscriptViewModel(id: widget.id),
-      child: Consumer<TranscriptViewModel>(
-        builder: (context, viewModel, child) {
-          switch (viewModel.state) {
-            case TranscriptState.loading:
-              return _buildLoadingState();
-            case TranscriptState.none:
-              return _buildNoneState(context, viewModel);
-            case TranscriptState.processing:
-              return _buildProcessingState(); // while processing
-            case TranscriptState.done:
-              return _buildTranscriptList(viewModel);
-            case TranscriptState.failed:
-              return _buildErrorState(context, viewModel);
-          }
-        },
-      ),
-    );
+    switch (_state) {
+      case TranscriptState.loading:
+        return _buildLoadingState();
+
+      case TranscriptState.none:
+        return _buildNoneState();
+      case TranscriptState.processing:
+        return _buildProcessingState();
+      case TranscriptState.done:
+        return _buildTranscriptList();
+      case TranscriptState.failed:
+        return _buildErrorState();
+    }
   }
 
   Widget _buildLoadingState() {
@@ -54,21 +247,25 @@ class _TranscriptTabState extends State<TranscriptTab> {
                 strokeWidth: 6,
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNoneState(BuildContext context, TranscriptViewModel viewModel) {
+  // Empty state - show button to start transcription
+  Widget _buildNoneState() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
           const SizedBox(height: 40),
+          // Icon container with glow effect
           Stack(
             alignment: Alignment.center,
             children: [
+              // Glow
               Container(
                 width: 100,
                 height: 100,
@@ -84,6 +281,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
                   ],
                 ),
               ),
+              // Icon box
               Container(
                 width: 80,
                 height: 80,
@@ -117,6 +315,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
             ],
           ),
           const SizedBox(height: 24),
+          // Title
           Text(
             'No transcript yet',
             style: Theme.of(
@@ -124,6 +323,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
+          // Description
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
@@ -136,12 +336,13 @@ class _TranscriptTabState extends State<TranscriptTab> {
             ),
           ),
           const SizedBox(height: 24),
+          // CTA Button
           SizedBox(
             width: double.infinity,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton.icon(
-                onPressed: () => viewModel.startTranscription(),
+                onPressed: _getTranscript,
                 icon: const Icon(Icons.transcribe, size: 20),
                 label: const Text('Transcribe conversation'),
                 style: ElevatedButton.styleFrom(
@@ -163,6 +364,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
     );
   }
 
+  // Processing state - show loading with progress
   Widget _buildProcessingState() {
     return Center(
       child: Padding(
@@ -170,6 +372,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Circular progress indicator
             SizedBox(
               width: 80,
               height: 80,
@@ -201,8 +404,9 @@ class _TranscriptTabState extends State<TranscriptTab> {
     );
   }
 
-  Widget _buildTranscriptList(TranscriptViewModel viewModel) {
-    if (viewModel.transcriptItems.isEmpty) {
+  // Loaded state - show transcript messages
+  Widget _buildTranscriptList() {
+    if (_transcriptItems.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -218,19 +422,20 @@ class _TranscriptTabState extends State<TranscriptTab> {
 
     return ListView.builder(
       padding: const EdgeInsets.only(top: 16, bottom: 24),
-      itemCount: viewModel.transcriptItems.length,
+      itemCount: _transcriptItems.length,
       itemBuilder: (context, index) {
-        final item = viewModel.transcriptItems[index];
+        final item = _transcriptItems[index];
+        // Check if previous message is from same speaker
         final showAvatar =
-            index == 0 ||
-            viewModel.transcriptItems[index - 1].speaker != item.speaker;
+            index == 0 || _transcriptItems[index - 1].speaker != item.speaker;
 
         return TranscriptMessageBubble(item: item, showAvatar: showAvatar);
       },
     );
   }
 
-  Widget _buildErrorState(BuildContext context, TranscriptViewModel viewModel) {
+  // Error state - show error message with retry button
+  Widget _buildErrorState() {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -251,7 +456,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
             ),
             const SizedBox(height: 8),
             Text(
-              viewModel.errorMessage,
+              _errorMessage,
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
@@ -259,7 +464,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: viewModel.startTranscription,
+              onPressed: _getTranscript,
               icon: const Icon(Icons.refresh, size: 20),
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(

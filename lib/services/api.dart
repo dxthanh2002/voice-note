@@ -29,10 +29,6 @@ class LoggingInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     Console.error('''
         ❌ API ERROR:
-        --request: ${err.requestOptions.data}
-        --request: ${err.requestOptions.path}
-        --request: ${err.requestOptions.method}
-        --request: ${err.requestOptions.headers}
         --Status: ${err.response?.statusCode}
         --Error: ${err.message}
     ''', err.stackTrace);

@@ -1,21 +1,18 @@
-import 'package:aimateflutter/models/meeting.dart';
-import 'package:aimateflutter/services/repository.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:provider/provider.dart';
 
-import '../../services/ads/ads.dart';
-import '../../services/recording.dart';
 import '../../theme/colors.dart';
 import '../../utils/console.dart';
 // TODO: Uncomment when Chat AI feature is ready
 // import 'tabs/chat_ai_tab.dart';
+import 'detai_record_viewmodel.dart';
 import 'tabs/summary_tab.dart';
 import 'tabs/transcript_tab.dart';
 import 'widgets/audio_player_bar.dart';
 import 'widgets/pill_tab_bar.dart';
-
 import '../../utils/format.dart';
 
+// Main Screen
 class DetailRecordScreen extends StatefulWidget {
   final String? id;
 
@@ -26,120 +23,78 @@ class DetailRecordScreen extends StatefulWidget {
 }
 
 class _DetailRecordScreenState extends State<DetailRecordScreen> {
-  // Audio player
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  int _selectedTabIndex = 0;
-
-  MeetingDetail? _detailMeeting;
-
-  Duration _position = Duration.zero;
-  Duration _duration = Duration.zero;
-
-  bool _isPlaying = false;
-  bool _loading = true;
-
-  // TODO: Uncomment when Chat AI feature is ready
-  // final List<String> _tabs = ['Transcript', 'Summary', 'Chat AI'];
-  final List<String> _tabs = ['Transcript', 'Summary'];
+  late DetailRecordViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
-
-    _loadMeetingInfo();
+    _viewModel = DetailRecordViewModel(id: widget.id);
+    _viewModel.loadMeetingInfo();
   }
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    _viewModel.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadMeetingInfo() async {
-    try {
-      // if uploaded to server or not ? confirm
-      Console.log("HEHEHEHE DETAIL");
-      final response = await Repository.getMeetingbyId(widget.id!);
-
-      Console.log(widget.id!);
-      await Repository.getMeetingbyId(widget.id!);
-
-      setState(() {
-        _detailMeeting = response;
-        _loading = false;
-      });
-
-      if (response.audio?.playUrl != null) {
-        await _initAudioPlayer(response.audio!.playUrl);
-      } else {
-        debugPrint('No audio URL available for this meeting');
-        // You might want to show a message to the user
-      }
-    } catch (e) {
-      debugPrint('Failed to load meeting: $e');
-    }
-  }
-
-  Future<void> _initAudioPlayer(String url) async {
-    try {
-      await _audioPlayer.setUrl(url);
-
-      _audioPlayer.playerStateStream.listen((state) {
-        if (mounted) {
-          setState(() => _isPlaying = state.playing);
-        }
-      });
-
-      _audioPlayer.positionStream.listen((pos) {
-        if (mounted) {
-          setState(() => _position = pos);
-        }
-      });
-
-      _audioPlayer.durationStream.listen((dur) {
-        if (mounted) {
-          setState(() => _duration = dur ?? Duration.zero);
-        }
-      });
-    } catch (e) {
-      debugPrint('Error initializing audio player: $e');
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Show loading while saving recording
-    if (_loading || _detailMeeting == null) {
-      return Scaffold(
-        backgroundColor: AppColors.backgroundDark,
-        body: const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-      );
-    }
-
-    final meeting = _detailMeeting!.meeting;
-
-    return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // App Bar
-            _buildAppBar(context),
-            // Content
-            Expanded(child: _buildContent(meeting)),
-            // Bottom bar - Audio player
-            _buildBottomPlayBar(),
-          ],
-        ),
-      ),
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
+      child: const _DetailRecordScreenContent(),
     );
   }
+}
 
-  Widget _buildAppBar(BuildContext context) {
-    final meeting = _detailMeeting!.meeting;
+// Screen Content
+class _DetailRecordScreenContent extends StatelessWidget {
+  const _DetailRecordScreenContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<DetailRecordViewModel>(
+      builder: (context, viewModel, child) {
+        if (viewModel.isLoading || viewModel.meetingInfo == null) {
+          return Scaffold(
+            backgroundColor: AppColors.backgroundDark,
+            body: const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: AppColors.backgroundDark,
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                // App Bar
+                _HeaderBar(viewModel: viewModel),
+                // Content
+                Expanded(child: _Content(viewModel: viewModel)),
+                // Bottom bar - Audio player
+                _BottomAudioPlayBar(viewModel: viewModel),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HeaderBar extends StatelessWidget {
+  final DetailRecordViewModel viewModel;
+
+  const _HeaderBar({required this.viewModel});
+
+  @override
+  Widget build(BuildContext context) {
+    if (viewModel.meetingInfo == null) return const SizedBox.shrink();
+
+    // final meeting = viewModel.meetingDetail!.meeting;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -154,21 +109,14 @@ class _DetailRecordScreenState extends State<DetailRecordScreen> {
       child: Row(
         children: [
           IconButton(
-            onPressed: () async {
-              Console.log("WHATTT");
-              Console.log("WHATTT");
-              InterstitialManager.show();
-              Future.delayed(const Duration(milliseconds: 300));
-
-              Navigator.pop(context, true);
-            },
+            onPressed: () => viewModel.onNavigateBack(context),
             tooltip: 'Go back',
             icon: const Icon(Icons.arrow_back),
             color: Colors.white,
           ),
           Expanded(
             child: Text(
-              meeting.title,
+              viewModel.meetingInfo?.title ?? "Unknown",
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -182,24 +130,12 @@ class _DetailRecordScreenState extends State<DetailRecordScreen> {
             offset: const Offset(0, 48),
             onSelected: (value) async {
               if (value == 'delete') {
-                await RecordingService.deleteRecording(
-                  context,
-                  meeting.id,
-                  refresh: false,
-                );
+                await viewModel.deleteRecording(context);
                 if (context.mounted) {
                   Navigator.pop(context, true);
                 }
               } else if (value == 'rename') {
-                await RecordingService.renameRecording(
-                  context,
-                  meeting.id,
-                  meeting.title,
-                  refresh: false,
-                );
-                if (context.mounted) {
-                  await _loadMeetingInfo();
-                }
+                await viewModel.renameRecording(context);
               }
             },
             icon: const Icon(Icons.more_vert, size: 20, color: Colors.white),
@@ -244,96 +180,94 @@ class _DetailRecordScreenState extends State<DetailRecordScreen> {
       ),
     );
   }
+}
 
-  Widget _buildContent(MeetingResponse meeting) {
+class _Content extends StatelessWidget {
+  final DetailRecordViewModel viewModel;
+
+  const _Content({required this.viewModel});
+
+  @override
+  Widget build(BuildContext context) {
+    if (viewModel.meetingInfo == null) return const SizedBox.shrink();
+
+    final meeting = viewModel.meetingInfo;
+
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
           child: Column(
             children: [
-              // Text(
-              //   '${_getFileName(meeting.title)}.mp3',
-              //   style: Theme.of(
-              //     context,
-              //   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              //   textAlign: TextAlign.center,
-              // ),
-              // const SizedBox(height: 4),
               Text(
-                'Recorded on ${formatDate(meeting.startedAt)}',
+                meeting != null
+                    ? 'Recorded on ${formatDate(meeting.recordedAt)}'
+                    : "Recorded on Unknown",
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
               ),
               const SizedBox(height: 24),
               PillTabBar(
-                tabs: _tabs,
-                selectedIndex: _selectedTabIndex,
-                onTabSelected: (i) => setState(() => _selectedTabIndex = i),
+                tabs: viewModel.tabs,
+                selectedIndex: viewModel.selectedTabIndex,
+                onTabSelected: viewModel.selectTab,
               ),
             ],
           ),
         ),
-        Expanded(child: _buildTabContent(meeting.id)),
+        Expanded(child: _buildTabContent()),
       ],
     );
   }
 
-  Widget _buildTabContent(String id) {
-    switch (_selectedTabIndex) {
+  Widget _buildTabContent() {
+    if (viewModel.meetingInfo == null) return const SizedBox.shrink();
+
+    final meetingId = viewModel.meetingInfo!.meetingId;
+
+    switch (viewModel.selectedTabIndex) {
       case 0:
-        return TranscriptTab(id: id);
+        return TranscriptTab(id: meetingId);
       case 1:
-        return SummaryTab(id: id);
+        return SummaryTab(id: meetingId);
       // TODO: Uncomment when Chat AI feature is ready
       // case 2:
       //   return const ChatAITab();
       default:
-        return TranscriptTab(id: id);
+        return TranscriptTab(id: meetingId);
     }
   }
+}
 
-  Widget _buildBottomPlayBar() {
+class _BottomAudioPlayBar extends StatelessWidget {
+  final DetailRecordViewModel viewModel;
+
+  const _BottomAudioPlayBar({required this.viewModel});
+
+  @override
+  Widget build(BuildContext context) {
     // TODO: Uncomment when Chat AI feature is ready
-    // if (_selectedTabIndex == 2) return const SizedBox.shrink();
+    // if (viewModel.selectedTabIndex == 2) return const SizedBox.shrink();
+    if (viewModel.meetingInfo == null) return const SizedBox.shrink();
 
-    final meeting = _detailMeeting!.meeting;
-    final meetingDuration = meeting.duration ?? Duration.zero;
-    final total = _duration.inMilliseconds > 0 ? _duration : meetingDuration;
+    final total = viewModel.duration.inMilliseconds > 0
+        ? viewModel.duration
+        : Duration(seconds: viewModel.meetingInfo!.duration);
 
     final progress = total.inMilliseconds == 0
         ? 0.0
-        : _position.inMilliseconds / total.inMilliseconds;
+        : viewModel.position.inMilliseconds / total.inMilliseconds;
 
     return AudioPlayerBar(
-      isPlaying: _isPlaying,
+      isPlaying: viewModel.isPlaying,
       progress: progress.clamp(0.0, 1.0),
-      currentTime: formatDuration(_position),
+      currentTime: formatDuration(viewModel.position),
       totalTime: formatDuration(total),
-      onPlayPause: () {
-        if (_isPlaying) {
-          _audioPlayer.pause();
-        } else {
-          _audioPlayer.play();
-        }
-      },
-      onSeek: (value) {
-        final newPosition = Duration(
-          milliseconds: (value * total.inMilliseconds).round(),
-        );
-        _audioPlayer.seek(newPosition);
-      },
-      onRewind: () {
-        final newPosition = _position - const Duration(seconds: 10);
-        _audioPlayer.seek(
-          newPosition < Duration.zero ? Duration.zero : newPosition,
-        );
-      },
-      onForward: () {
-        final newPosition = _position + const Duration(seconds: 10);
-        _audioPlayer.seek(newPosition > total ? total : newPosition);
-      },
+      onPlayPause: viewModel.togglePlayPause,
+      onSeek: viewModel.seekAudio,
+      onRewind: viewModel.rewindAudio,
+      onForward: viewModel.forwardAudio,
       onEdit: () {
         // TODO: Edit
       },

@@ -5,7 +5,6 @@ import 'contexts/app_context.dart';
 import 'navigation/router.dart';
 import 'features/main/bottom_navigator_tab.dart';
 import 'features/onboarding/onboarding_screen.dart';
-import 'services/ads/ads_initializer.dart';
 import 'services/bootstrap.dart';
 import 'theme/app_theme.dart';
 import 'theme/colors.dart';
@@ -14,9 +13,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Bootstrap.init();
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    AdsInitializer.init();
-  });
+  // WidgetsBinding.instance.addPostFrameCallback((_) {
+  //   AdsInitializer.init();
+  // });
 
   runApp(const MeetingRecorderApp());
 }
