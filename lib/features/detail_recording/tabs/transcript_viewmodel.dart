@@ -37,22 +37,29 @@ class TranscriptViewModel extends ChangeNotifier {
     if (id == null) return;
 
     try {
-      final detail = await Repository.getMeetingbyId(id!);
+      // get status
+      final meetingInfo = await Repository.getMeetingbyId(id!);
+      final recording = await _db.getRecording(id!);
 
-      switch (detail.meeting.transcriptStatus) {
-        case 'DONE' when detail.transcripts.isNotEmpty:
-          // reset
-          _transcriptItems = detail.transcripts;
+      switch (meetingInfo.meeting.transcriptStatus) {
+        case 'DONE' when meetingInfo.transcripts.isNotEmpty:
+          // if local not yet update then now update
+          if (recording!.status != 'done') {
+            await _db.updateRecordingStatus(meetingId: id!, status: 'done');
+          }
+          _transcriptItems = meetingInfo.transcripts;
           _state = TranscriptState.done;
           notifyListeners();
           return;
         case 'PROCESSING':
-          _state = TranscriptState.processing;
-          _isPolling = true;
-          notifyListeners();
-          _startPolling();
+          _processPolling();
           return;
         case 'FAILED':
+          // if local not yet update then now update
+          if (recording!.status != 'failed') {
+            await _db.updateRecordingStatus(meetingId: id!, status: 'failed');
+          }
+
           _state = TranscriptState.failed;
           _errorMessage = 'Transcription previously failed.';
           notifyListeners();
@@ -69,16 +76,17 @@ class TranscriptViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> startTranscription() async {
+  Future<void> processTranscript() async {
     if (id == null) return;
+
+    // update local as well
+    await _db.updateRecordingStatus(meetingId: id!, status: 'processing');
 
     _state = TranscriptState.processing;
     _isPolling = true;
     notifyListeners();
 
     try {
-      await _db.updateRecordingStatus(meetingId: id!, status: 'processing');
-
       final detail = await Repository.getMeetingbyId(id!);
       if (detail.meeting.transcriptStatus == 'NONE') {
         final savedRecording = await _db.getRecording(id!);
@@ -100,7 +108,7 @@ class TranscriptViewModel extends ChangeNotifier {
         await Repository.confirm(presigned.audioId);
       }
 
-      _startPolling();
+      _processPolling();
     } catch (e) {
       _isPolling = false;
       _state = TranscriptState.failed;
@@ -110,7 +118,7 @@ class TranscriptViewModel extends ChangeNotifier {
     }
   }
 
-  void _startPolling() {
+  void _processPolling() {
     if (!_isPolling) return;
 
     _pollingTimer?.cancel();
@@ -127,10 +135,6 @@ class TranscriptViewModel extends ChangeNotifier {
         if (statusResponse == 'DONE') {
           final detail = await Repository.getMeetingbyId(id!);
           await _db.updateRecordingStatus(meetingId: id!, status: 'done');
-          // await _db.updateTranscriptActivation(
-          //   meetingId: id!,
-          //   isActivated: true,
-          // );
 
           _transcriptItems = detail.transcripts;
           _state = TranscriptState.done;

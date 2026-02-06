@@ -1,12 +1,13 @@
 import 'dart:async';
 
+import 'package:aimateflutter/services/ads/interstitial_sdk.dart';
 import 'package:aimateflutter/services/database.dart';
 import 'package:aimateflutter/services/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../navigation/routes.dart';
-import '../../services/ads/ads.dart';
+import '../../services/ads/rewarder_sdk.dart';
 import '../../services/recording.dart';
 import '../../services/data/recordings.dart';
 import '../../utils/console.dart';
@@ -123,8 +124,6 @@ class RecordingsViewModel extends ChangeNotifier {
 
   // ============ Recording Actions ============
   void navigateToRecordingDetail(BuildContext context, String meetingId) async {
-    // InterstitialManager.show();
-
     HapticFeedback.selectionClick();
     final result = await Navigator.pushNamed(
       context,
@@ -138,7 +137,8 @@ class RecordingsViewModel extends ChangeNotifier {
   }
 
   Future<void> deleteRecording(BuildContext context, String meetingId) async {
-    await RecordingService.deleteRecording(context, meetingId, refresh: true);
+    await RecordingService.deleteRecording(context, meetingId);
+    await loadRecordings();
   }
 
   Future<void> renameRecording(
@@ -146,11 +146,7 @@ class RecordingsViewModel extends ChangeNotifier {
     String meetingId,
     String meetingTitle,
   ) async {
-    await RecordingService.renameRecording(
-      context,
-      meetingId,
-      meetingTitle,
-      refresh: true,
-    );
+    await RecordingService.renameRecording(context, meetingId, meetingTitle);
+    await loadRecordings();
   }
 }

@@ -1,4 +1,5 @@
 // transcript_tab.dart
+import 'package:aimateflutter/services/ads/rewarder_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../theme/colors.dart';
@@ -141,7 +142,12 @@ class _TranscriptTabState extends State<TranscriptTab> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton.icon(
-                onPressed: () => viewModel.startTranscription(),
+                onPressed: () async {
+                  RewarderManager.startShowAutoLoadRewardedVideoAd();
+                  await Future.delayed(const Duration(seconds: 1));
+
+                  await viewModel.processTranscript();
+                },
                 icon: const Icon(Icons.transcribe, size: 20),
                 label: const Text('Transcribe conversation'),
                 style: ElevatedButton.styleFrom(
@@ -259,7 +265,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: viewModel.startTranscription,
+              onPressed: viewModel.processTranscript,
               icon: const Icon(Icons.refresh, size: 20),
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(

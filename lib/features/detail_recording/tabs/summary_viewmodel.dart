@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:aimateflutter/services/database.dart';
 import 'package:aimateflutter/services/repository.dart';
 
+import '../../../services/ads/rewarder_sdk.dart';
+
 enum SummaryState { loading, none, processing, done, error }
 
 class SummaryViewModel extends ChangeNotifier {
@@ -52,9 +54,6 @@ class SummaryViewModel extends ChangeNotifier {
         notifyListeners();
       } else {
         // still processing
-        _state = SummaryState.processing;
-        await Future.delayed(const Duration(seconds: 2));
-        notifyListeners();
         getSummary();
       }
     } catch (e) {
@@ -72,12 +71,21 @@ class SummaryViewModel extends ChangeNotifier {
       throw Exception('Please generate transcript before creating a summary');
     }
 
-    await _db.updateSummaryActivation(meetingId: id!, isActivated: true);
+    // load ads
+    RewarderManager.startShowAutoLoadRewardedVideoAd();
+    await Future.delayed(const Duration(seconds: 1));
+
+    // change state UI
+    _state = SummaryState.processing;
+    notifyListeners();
 
     final summaryResponse = await Repository.getSummary(id!);
-
     _summaryContent = summaryResponse.content;
     _state = SummaryState.done;
+
+    await _db.updateSummaryActivation(meetingId: id!, isActivated: true);
+
+    await Future.delayed(const Duration(seconds: 3));
     notifyListeners();
   }
 }

@@ -8,6 +8,7 @@ import '../../components/bouncing_button.dart';
 import '../../components/shimmer_loading.dart';
 import '../../models/meeting.dart';
 import '../../navigation/routes.dart';
+import '../../services/ads/interstitial_sdk.dart';
 import '../../services/data/recordings.dart';
 import '../../theme/colors.dart';
 import '../../utils/console.dart';
@@ -357,8 +358,14 @@ class _RecordingsScreenContent extends StatelessWidget {
         final recording = viewModel.recordings[index];
         return RecordingCard(
           meeting: recording,
-          onTap: () =>
-              viewModel.navigateToRecordingDetail(context, recording.meetingId),
+          onTap: () async {
+            InterstitialManager.startShowAutoLoadInterstitialAd();
+            await Future.delayed(const Duration(seconds: 1));
+
+            if (context.mounted) {
+              viewModel.navigateToRecordingDetail(context, recording.meetingId);
+            }
+          },
           onDelete: () =>
               viewModel.deleteRecording(context, recording.meetingId),
           onRename: () => viewModel.renameRecording(

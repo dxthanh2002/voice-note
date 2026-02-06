@@ -1,4 +1,5 @@
 // summary_tab.dart
+import 'package:aimateflutter/services/ads/rewarder_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class _SummaryTabState extends State<SummaryTab> {
             case SummaryState.loading:
               return _buildLoadingState();
             case SummaryState.none:
-              return _buildEmptyState(context, viewModel);
+              return _buildNoneState(context, viewModel);
             case SummaryState.processing:
               return _buildProcessingState();
             case SummaryState.done:
@@ -59,7 +60,7 @@ class _SummaryTabState extends State<SummaryTab> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, SummaryViewModel viewModel) {
+  Widget _buildNoneState(BuildContext context, SummaryViewModel viewModel) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -140,7 +141,11 @@ class _SummaryTabState extends State<SummaryTab> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton.icon(
-                onPressed: () => viewModel.getSummary(),
+                onPressed: () {
+                  RewarderManager.startShowAutoLoadRewardedVideoAd();
+
+                  viewModel.getSummary();
+                },
                 icon: Icon(Icons.auto_awesome, size: 20),
                 label: Text('Generate Summary'),
                 style: ElevatedButton.styleFrom(
