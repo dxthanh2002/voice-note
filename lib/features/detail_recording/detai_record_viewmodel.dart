@@ -138,11 +138,7 @@ class DetailRecordViewModel extends ChangeNotifier {
   Future<void> deleteRecording(BuildContext context) async {
     if (meetingInfo == null) return;
 
-    await RecordingService.deleteRecording(
-      context,
-      meetingInfo!.meetingId,
-      refresh: false,
-    );
+    await RecordingService.deleteRecording(context, meetingInfo!.meetingId);
   }
 
   Future<void> renameRecording(BuildContext context) async {
@@ -152,7 +148,6 @@ class DetailRecordViewModel extends ChangeNotifier {
       context,
       meetingInfo!.meetingId,
       meetingInfo!.title,
-      refresh: false,
     );
 
     await loadMeetingInfo();
