@@ -63,13 +63,14 @@ class SummaryViewModel extends ChangeNotifier {
     }
   }
 
+  Future<bool> hasTranscript() async {
+    if (id == null) return false;
+    final recording = await _db.getRecording(id!);
+    return recording?.status == 'done';
+  }
+
   Future<void> getSummary() async {
     if (id == null) return;
-
-    final recording = await _db.getRecording(id!);
-    if (recording?.status != 'done') {
-      throw Exception('Please generate transcript before creating a summary');
-    }
 
     // load ads
     RewarderManager.startShowAutoLoadRewardedVideoAd();

@@ -223,7 +223,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.only(top: 16, bottom: 24),
+      padding: const EdgeInsets.only(top: 0, bottom: 24),
       itemCount: viewModel.transcriptItems.length,
       itemBuilder: (context, index) {
         final item = viewModel.transcriptItems[index];
