@@ -3,6 +3,13 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -22,13 +29,13 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.topon.flutter.demo"
+    namespace "com.nesailab.voicenote"
     compileSdkVersion 36
     ndkVersion "28.2.13676358"
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.topon.flutter.demo"
+        applicationId "com.nesailab.voicenote"
         minSdkVersion 24
         targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
@@ -40,19 +47,27 @@ android {
     dexOptions {
         javaMaxHeapSize "4g"
     }
-
+    
+       signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+    
 
     buildTypes {
         release {
-            signingConfig null
             minifyEnabled false  // Change to false temporarily
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
 
+            signingConfig = signingConfigs.getByName("release")
 
-            signingConfig signingConfigs.debug
         }
     }
 }
