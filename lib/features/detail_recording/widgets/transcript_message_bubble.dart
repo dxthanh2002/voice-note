@@ -49,9 +49,7 @@ class TranscriptMessageBubble extends StatelessWidget {
                       children: [
                         Text(
                           item.speaker,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
+                          style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textPrimary,
@@ -60,12 +58,8 @@ class TranscriptMessageBubble extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           item.formattedStartTime,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                color: AppColors.textMuted,
-                              ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.textMuted),
                         ),
                       ],
                     ),
@@ -86,9 +80,9 @@ class TranscriptMessageBubble extends StatelessWidget {
                   child: Text(
                     item.text,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                          height: 1.5,
-                        ),
+                      color: AppColors.textSecondary,
+                      height: 1.5,
+                    ),
                   ),
                 ),
               ],

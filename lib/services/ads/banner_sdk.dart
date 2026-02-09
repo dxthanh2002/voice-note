@@ -138,6 +138,27 @@ class BannerTool {
         case BannerStatus.bannerAdUnknown:
           log("flutter bannerAdUnknown");
           break;
+        case BannerStatus.bannerAdDidMultipleLoaded:
+          // TODO: Handle this case.
+          throw UnimplementedError();
+        case BannerStatus.bannerAdDidAdSourceBiddingAttempt:
+          // TODO: Handle this case.
+          throw UnimplementedError();
+        case BannerStatus.bannerAdDidAdSourceBiddingFilled:
+          // TODO: Handle this case.
+          throw UnimplementedError();
+        case BannerStatus.bannerAdDidAdSourceBiddingFail:
+          // TODO: Handle this case.
+          throw UnimplementedError();
+        case BannerStatus.bannerAdDidAdSourceAttempt:
+          // TODO: Handle this case.
+          throw UnimplementedError();
+        case BannerStatus.bannerAdDidAdSourceLoadFilled:
+          // TODO: Handle this case.
+          throw UnimplementedError();
+        case BannerStatus.bannerAdDidAdSourceLoadFail:
+          // TODO: Handle this case.
+          throw UnimplementedError();
       }
     });
   }

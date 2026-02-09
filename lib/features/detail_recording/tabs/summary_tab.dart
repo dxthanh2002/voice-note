@@ -323,34 +323,20 @@ class _SummaryTabState extends State<SummaryTab> {
       );
     }
 
+    // Split by bullet points
+    final bulletPoints = <String>[];
     final lines = viewModel.summaryContent!.split('\n');
-    final sections = <_SummarySection>[];
-    _SummarySection? current;
 
     for (final line in lines) {
-      if (line.startsWith('## ') || line.startsWith('### ')) {
-        final title =
-            line.startsWith('## ') ? line.substring(3) : line.substring(4);
-        current = _SummarySection(title: title, items: []);
-        sections.add(current);
-      } else if (line.startsWith('- ') && current != null) {
-        current.items.add(line.substring(2).trim());
-      } else if (line.startsWith('- [') && current != null) {
-        current.items
-            .add(line.substring(line.indexOf(']') + 1).trim());
-      } else if (line.trim().isNotEmpty &&
-          !line.startsWith('---') &&
-          !line.startsWith('**')) {
-        if (current != null) {
-          current.items.add(line.trim());
-        } else {
-          current = _SummarySection(title: '', items: [line.trim()]);
-          sections.add(current);
-        }
+      final trimmed = line.trim();
+      if (trimmed.startsWith('- ')) {
+        // Extract bullet point text
+        bulletPoints.add(trimmed.substring(2).trim());
       }
     }
 
-    if (sections.isEmpty) {
+    // If no bullet points found, show as plain text
+    if (bulletPoints.isEmpty) {
       return _buildSectionCard(
         icon: Icons.auto_awesome,
         iconColor: AppColors.primary,
@@ -369,58 +355,43 @@ class _SummaryTabState extends State<SummaryTab> {
       );
     }
 
+    // Display bullet points
     return _buildSectionCard(
       icon: Icons.lightbulb,
       iconColor: const Color(0xFF818CF8),
       title: 'The main points',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: sections.expand((section) {
-          return [
-            if (section.title.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 8),
-                child: Text(
-                  section.title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+        children: bulletPoints.map((point) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, right: 12),
+                  child: Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
                   ),
                 ),
-              ),
-            ...section.items.map(
-              (item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8, right: 12),
-                      child: Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.3),
-                        ),
-                      ),
+                Expanded(
+                  child: Text(
+                    point,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.5,
                     ),
-                    Expanded(
-                      child: Text(
-                        item,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: AppColors.textSecondary,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ];
+          );
         }).toList(),
       ),
     );
@@ -438,9 +409,7 @@ class _SummaryTabState extends State<SummaryTab> {
       decoration: BoxDecoration(
         color: AppColors.cardDark,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.05),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -468,7 +437,6 @@ class _SummaryTabState extends State<SummaryTab> {
       ),
     );
   }
-
 
   Widget _buildErrorState(BuildContext context, SummaryViewModel viewModel) {
     return Center(
@@ -527,5 +495,3 @@ class _SummarySection {
 
   _SummarySection({required this.title, required this.items});
 }
-
-

@@ -74,7 +74,7 @@ class SummaryViewModel extends ChangeNotifier {
 
     // load ads
     RewarderManager.startShowAutoLoadRewardedVideoAd();
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 2));
 
     // change state UI
     _state = SummaryState.processing;
@@ -86,7 +86,7 @@ class SummaryViewModel extends ChangeNotifier {
 
     await _db.updateSummaryActivation(meetingId: id!, isActivated: true);
 
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 1));
     notifyListeners();
   }
 }

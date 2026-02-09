@@ -360,7 +360,7 @@ class _RecordingsScreenContent extends StatelessWidget {
           meeting: recording,
           onTap: () async {
             InterstitialManager.startShowAutoLoadInterstitialAd();
-            await Future.delayed(const Duration(seconds: 1));
+            await Future.delayed(const Duration(seconds: 2));
 
             if (context.mounted) {
               viewModel.navigateToRecordingDetail(context, recording.meetingId);
