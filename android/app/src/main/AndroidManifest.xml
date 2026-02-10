@@ -12,7 +12,7 @@
 
         <!-- android:name=".ApplicationDemo" -->
     <application
-
+        android:name="com.nesailab.voicenote.ApplicationDemo"
         android:icon="@mipmap/ic_launcher"
         android:label="Voice Note"
         tools:replace="android:label">
