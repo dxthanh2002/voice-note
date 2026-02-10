@@ -129,7 +129,8 @@ class InitTool {
     print("flutter: flutter startPreLoadAd");
     //预加载广告
     InterstitialManager.startLoadAutoInterstitialAd();
-    RewarderManager.startLoadAutoRewardedVideoAd();
+    summaryReward.startLoadAutoRewardedVideoAd();
+    transcriptReward.startLoadAutoRewardedVideoAd();
     // BannerManager.startShowBannerAd();
     // SplashManager.startShowSplashAd();
     // NativeManager.startShowNativeAd();

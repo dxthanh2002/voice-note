@@ -143,7 +143,7 @@ class _TranscriptTabState extends State<TranscriptTab> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton.icon(
                 onPressed: () async {
-                  RewarderManager.startShowAutoLoadRewardedVideoAd();
+                  transcriptReward.startShowAutoLoadRewardedVideoAd();
                   await Future.delayed(const Duration(seconds: 2));
 
                   await viewModel.processTranscript();

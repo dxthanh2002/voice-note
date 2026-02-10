@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:aimateflutter/services/ads/interstitial_sdk.dart';
 import 'package:aimateflutter/services/database.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
@@ -153,8 +154,9 @@ class DetailRecordViewModel extends ChangeNotifier {
     await loadMeetingInfo();
   }
 
-  void onNavigateBack(BuildContext context) {
-    Future.delayed(const Duration(milliseconds: 300));
+  void onNavigateBack(BuildContext context) async {
+    InterstitialManager.startShowAutoLoadInterstitialAd();
+    await Future.delayed(const Duration(milliseconds: 300));
     Navigator.pop(context, true);
   }
 

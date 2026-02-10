@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../navigation/routes.dart';
 import '../../theme/colors.dart';
@@ -13,9 +14,33 @@ class SettingsTab extends StatefulWidget {
 
 class _SettingsTabState extends State<SettingsTab> {
   // Switch states
-  bool _autoVoiceDetection = true;
-  bool _noiseFilter = true;
-  bool _autoSummarize = false;
+  // bool _autoVoiceDetection = true;
+  // bool _noiseFilter = true;
+  // bool _autoSummarize = false;
+
+  Future<void> _openPrivacyPolicy() async {
+    final uri = Uri.parse('https://nesailab.com/tos');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Unable to open link.')));
+    }
+  }
+
+  Future<void> _openHelpCenter() async {
+    final uri = Uri(scheme: 'mailto', path: 'feedback@nesailab.com');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open email client.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,110 +63,110 @@ class _SettingsTabState extends State<SettingsTab> {
               ),
               const SizedBox(height: 8),
               // Recording section
-              _buildSection(
-                context,
-                title: 'RECORDING',
-                items: [
-                  _SettingsItem(
-                    icon: Icons.graphic_eq,
-                    title: 'Audio Quality',
-                    subtitle: 'High',
-                    onTap: () {},
-                    trailing: const Icon(
-                      Icons.expand_more,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.record_voice_over,
-                    title: 'Auto Voice Detection',
-                    subtitle: 'Auto pause when silent',
-                    trailing: Switch(
-                      value: _autoVoiceDetection,
-                      onChanged: (value) {
-                        HapticFeedback.selectionClick();
-                        setState(() => _autoVoiceDetection = value);
-                      },
-                    ),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.noise_control_off,
-                    title: 'Noise Filter',
-                    subtitle: 'Reduce background noise',
-                    trailing: Switch(
-                      value: _noiseFilter,
-                      onChanged: (value) {
-                        HapticFeedback.selectionClick();
-                        setState(() => _noiseFilter = value);
-                      },
-                    ),
-                  ),
-                ],
-              ),
+              // _buildSection(
+              //   context,
+              //   title: 'RECORDING',
+              //   items: [
+              //     _SettingsItem(
+              //       icon: Icons.graphic_eq,
+              //       title: 'Audio Quality',
+              //       subtitle: 'High',
+              //       onTap: () {},
+              //       trailing: const Icon(
+              //         Icons.expand_more,
+              //         color: AppColors.textMuted,
+              //       ),
+              //     ),
+              //     _SettingsItem(
+              //       icon: Icons.record_voice_over,
+              //       title: 'Auto Voice Detection',
+              //       subtitle: 'Auto pause when silent',
+              //       trailing: Switch(
+              //         value: _autoVoiceDetection,
+              //         onChanged: (value) {
+              //           HapticFeedback.selectionClick();
+              //           setState(() => _autoVoiceDetection = value);
+              //         },
+              //       ),
+              //     ),
+              //     _SettingsItem(
+              //       icon: Icons.noise_control_off,
+              //       title: 'Noise Filter',
+              //       subtitle: 'Reduce background noise',
+              //       trailing: Switch(
+              //         value: _noiseFilter,
+              //         onChanged: (value) {
+              //           HapticFeedback.selectionClick();
+              //           setState(() => _noiseFilter = value);
+              //         },
+              //       ),
+              //     ),
+              //   ],
+              // ),
               // Summary section
-              _buildSection(
-                context,
-                title: 'SUMMARY',
-                items: [
-                  _SettingsItem(
-                    icon: Icons.translate,
-                    title: 'Summary Language',
-                    subtitle: 'English',
-                    onTap: () {},
-                    trailing: const Icon(
-                      Icons.expand_more,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.auto_awesome,
-                    title: 'Auto Summarize',
-                    subtitle: 'After recording stops',
-                    trailing: Switch(
-                      value: _autoSummarize,
-                      onChanged: (value) {
-                        HapticFeedback.selectionClick();
-                        setState(() => _autoSummarize = value);
-                      },
-                    ),
-                  ),
-                ],
-              ),
+              // _buildSection(
+              //   context,
+              //   title: 'SUMMARY',
+              //   items: [
+              //     _SettingsItem(
+              //       icon: Icons.translate,
+              //       title: 'Summary Language',
+              //       subtitle: 'English',
+              //       onTap: () {},
+              //       trailing: const Icon(
+              //         Icons.expand_more,
+              //         color: AppColors.textMuted,
+              //       ),
+              //     ),
+              //     _SettingsItem(
+              //       icon: Icons.auto_awesome,
+              //       title: 'Auto Summarize',
+              //       subtitle: 'After recording stops',
+              //       trailing: Switch(
+              //         value: _autoSummarize,
+              //         onChanged: (value) {
+              //           HapticFeedback.selectionClick();
+              //           setState(() => _autoSummarize = value);
+              //         },
+              //       ),
+              //     ),
+              //   ],
+              // ),
               // General section
-              _buildSection(
-                context,
-                title: 'GENERAL',
-                items: [
-                  _SettingsItem(
-                    icon: Icons.workspace_premium,
-                    title: 'Upgrade to Pro',
-                    subtitle: 'Unlimited recording & summary',
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.upgrade);
-                    },
-                  ),
-                  _SettingsItem(
-                    icon: Icons.account_circle,
-                    title: 'Account Management',
-                    onTap: () {},
-                  ),
-                  _SettingsItem(
-                    icon: Icons.notifications,
-                    title: 'Notifications',
-                    onTap: () {},
-                  ),
-                  _SettingsItem(
-                    icon: Icons.dark_mode,
-                    title: 'Appearance',
-                    subtitle: 'System default',
-                    onTap: () {},
-                    trailing: const Icon(
-                      Icons.expand_more,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
+              // _buildSection(
+              //   context,
+              //   title: 'GENERAL',
+              //   items: [
+              //     _SettingsItem(
+              //       icon: Icons.workspace_premium,
+              //       title: 'Upgrade to Pro',
+              //       subtitle: 'Unlimited recording & summary',
+              //       onTap: () {
+              //         Navigator.pushNamed(context, AppRoutes.upgrade);
+              //       },
+              //     ),
+              //     _SettingsItem(
+              //       icon: Icons.account_circle,
+              //       title: 'Account Management',
+              //       onTap: () {},
+              //     ),
+              //     _SettingsItem(
+              //       icon: Icons.notifications,
+              //       title: 'Notifications',
+              //       onTap: () {},
+              //     ),
+              //     _SettingsItem(
+              //       icon: Icons.dark_mode,
+              //       title: 'Appearance',
+              //       subtitle: 'System default',
+              //       onTap: () {},
+              //       trailing: const Icon(
+              //         Icons.expand_more,
+              //         color: AppColors.textMuted,
+              //       ),
+              //     ),
+              //   ],
+              // ),
               // Other section
               _buildSection(
                 context,
@@ -150,31 +175,35 @@ class _SettingsTabState extends State<SettingsTab> {
                   _SettingsItem(
                     icon: Icons.help,
                     title: 'Help & Feedback',
-                    onTap: () {},
+                    onTap: _openHelpCenter,
                   ),
-                  _SettingsItem(icon: Icons.info, title: 'About', onTap: () {}),
+                  _SettingsItem(
+                    icon: Icons.gavel,
+                    title: 'Privacy Policy',
+                    onTap: _openPrivacyPolicy,
+                  ),
                 ],
               ),
               // Logout button
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      HapticFeedback.mediumImpact();
-                      Navigator.pushReplacementNamed(context, '/login');
-                    },
-                    icon: const Icon(Icons.logout),
-                    label: const Text('Logout'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.error.withValues(alpha: 0.1),
-                      foregroundColor: AppColors.error,
-                      elevation: 0,
-                    ),
-                  ),
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.all(16),
+              //   child: SizedBox(
+              //     width: double.infinity,
+              //     child: ElevatedButton.icon(
+              //       onPressed: () {
+              //         HapticFeedback.mediumImpact();
+              //         Navigator.pushReplacementNamed(context, '/login');
+              //       },
+              //       icon: const Icon(Icons.logout),
+              //       label: const Text('Logout'),
+              //       style: ElevatedButton.styleFrom(
+              //         backgroundColor: AppColors.error.withValues(alpha: 0.1),
+              //         foregroundColor: AppColors.error,
+              //         elevation: 0,
+              //       ),
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 100),
             ],
           ),

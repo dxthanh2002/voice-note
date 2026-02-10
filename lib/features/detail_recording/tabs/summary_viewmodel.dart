@@ -73,7 +73,7 @@ class SummaryViewModel extends ChangeNotifier {
     if (id == null) return;
 
     // load ads
-    RewarderManager.startShowAutoLoadRewardedVideoAd();
+    summaryReward.startShowAutoLoadRewardedVideoAd();
     await Future.delayed(const Duration(seconds: 2));
 
     // change state UI

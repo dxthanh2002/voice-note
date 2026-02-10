@@ -16,7 +16,7 @@ class InterstitialTool {
     loadInterstitialAd();
     EventBusUtil.eventBus.fire(
       AdEvent(
-        placementId: Configuration.interstitialPlacementID,
+        placementId: Configuration.interstitial,
         type: AdEventType.loading,
       ),
     );
@@ -25,17 +25,17 @@ class InterstitialTool {
   startShowInterstitialAd() async {
     //到达展示场景，展示前检查是否准备就绪
     ATInterstitialManager.hasInterstitialAdReady(
-      placementID: Configuration.interstitialPlacementID,
+      placementID: Configuration.interstitial,
     ).then((value) async {
       print('flutter hasInterstitialAdReady: $value');
       if (value == true) {
         //场景统计(可选)
         entryInterstitialScenario(
-          Configuration.interstitialPlacementID,
+          Configuration.interstitial,
           Configuration.interstitialSceneID,
         );
         //查看有效广告缓存(可选)
-        getInterstitialValidAds(Configuration.interstitialPlacementID);
+        getInterstitialValidAds(Configuration.interstitial);
         //展示广告
         showInterstitialAdWithShowConfig();
       } else {
@@ -44,12 +44,12 @@ class InterstitialTool {
         //若加载中，重复发起加载是无效的。
         //您可以根据实际逻辑来调整具体代码
         int isLoading = await checkInterstitialLoadStatus(
-          Configuration.interstitialPlacementID,
+          Configuration.interstitial,
         );
         if (isLoading == 1) {
-          print('广告正在加载中... + ${Configuration.interstitialPlacementID}');
+          print('广告正在加载中... + ${Configuration.interstitial}');
         } else {
-          print('广告还没加载，发起加载 + ${Configuration.interstitialPlacementID}');
+          print('广告还没加载，发起加载 + ${Configuration.interstitial}');
           startLoadInterstitialAd();
         }
       }
@@ -62,7 +62,7 @@ class InterstitialTool {
     autoLoadInterstitialAD();
     EventBusUtil.eventBus.fire(
       AdEvent(
-        placementId: Configuration.autoInterstitialPlacementID,
+        placementId: Configuration.interstitial,
         type: AdEventType.loading,
       ),
     );
@@ -71,30 +71,30 @@ class InterstitialTool {
   startShowAutoLoadInterstitialAd() async {
     //到达展示场景，展示前检查是否准备就绪
     ATInterstitialManager.hasInterstitialAdReady(
-      placementID: Configuration.autoInterstitialPlacementID,
+      placementID: Configuration.interstitial,
     ).then((value) async {
       print('flutter hasInterstitialAdReady: $value');
       if (value == true) {
         //场景统计（可选）
         entryInterstitialScenario(
-          Configuration.autoInterstitialPlacementID,
+          Configuration.interstitial,
           Configuration.autoInterstitialSceneID,
         );
         //全自动加载插屏设置展示时透传参数(可选)
         autoLoadInterstitialADSetLocalExtra();
         //检查状态(可选)
         int isLoading = await checkInterstitialLoadStatus(
-          Configuration.autoInterstitialPlacementID,
+          Configuration.interstitial,
         );
         print(
-          '全自动插屏广告加载状态 + $isLoading + "placementID :" + ${Configuration.autoInterstitialPlacementID}',
+          '全自动插屏广告加载状态 + $isLoading + "placementID :" + ${Configuration.interstitial}',
         );
         //查看缓存(可选)
-        getInterstitialValidAds(Configuration.autoInterstitialPlacementID);
+        getInterstitialValidAds(Configuration.interstitial);
         //已经准备就绪，开始展示
         showAutoLoadInterstitialADWithPlacementID();
       } else {
-        print('广告正在自动加载中... + ${Configuration.autoInterstitialPlacementID}');
+        print('广告正在自动加载中... + ${Configuration.interstitial}');
       }
     });
   }
@@ -227,7 +227,7 @@ class InterstitialTool {
   // Load interstitial ad
   loadInterstitialAd() async {
     await ATInterstitialManager.loadInterstitialAd(
-      placementID: Configuration.interstitialPlacementID,
+      placementID: Configuration.interstitial,
       extraMap: {
         // Sigmob rewarded video ----> Interstitial ads
         // ATInterstitialManager.useRewardedVideoAsInterstitialKey(): true
@@ -252,7 +252,7 @@ class InterstitialTool {
       placementID: placementID,
     ).then((value) {
       print(
-        'flutter getInterstitialValidAds: $value + placementID: + ${Configuration.autoInterstitialPlacementID}',
+        'flutter getInterstitialValidAds: $value + placementID: + ${Configuration.interstitial}',
       );
     });
   }
@@ -275,7 +275,7 @@ class InterstitialTool {
   // Show interstitial ad
   showInterstitialAd() async {
     await ATInterstitialManager.showInterstitialAd(
-      placementID: Configuration.interstitialPlacementID,
+      placementID: Configuration.interstitial,
     );
   }
 
@@ -283,7 +283,7 @@ class InterstitialTool {
   // Show interstitial ad for a specific scene
   showSceneInterstitialAd() async {
     await ATInterstitialManager.showSceneInterstitialAd(
-      placementID: Configuration.interstitialPlacementID,
+      placementID: Configuration.interstitial,
       sceneID: Configuration.interstitialSceneID,
     );
   }
@@ -292,7 +292,7 @@ class InterstitialTool {
   // Show interstitial ad with show configuration
   showInterstitialAdWithShowConfig() async {
     await ATInterstitialManager.showInterstitialAdWithShowConfig(
-      placementID: Configuration.interstitialPlacementID,
+      placementID: Configuration.interstitial,
       sceneID: Configuration.interstitialSceneID,
       showCustomExt: Configuration.interstitialShowCustomExt,
     );
@@ -311,7 +311,7 @@ class InterstitialTool {
   // Auto-load interstitial ad
   autoLoadInterstitialAD() async {
     await ATInterstitialManager.autoLoadInterstitialAD(
-      placementIDs: Configuration.autoInterstitialPlacementID,
+      placementIDs: Configuration.interstitial,
     );
   }
 
@@ -319,7 +319,7 @@ class InterstitialTool {
   // Cancel auto-loading interstitial ad
   cancelAutoLoadInterstitialAD() async {
     await ATInterstitialManager.cancelAutoLoadInterstitialAD(
-      placementIDs: Configuration.autoInterstitialPlacementID,
+      placementIDs: Configuration.interstitial,
     );
   }
 
@@ -327,7 +327,7 @@ class InterstitialTool {
   // Show auto-loaded interstitial ad using placementID
   showAutoLoadInterstitialADWithPlacementID() async {
     await ATInterstitialManager.showAutoLoadInterstitialAD(
-      placementID: Configuration.autoInterstitialPlacementID,
+      placementID: Configuration.interstitial,
       sceneID: Configuration.autoInterstitialSceneID,
     );
   }
@@ -336,7 +336,7 @@ class InterstitialTool {
   // Set local extra information for auto-loaded interstitial ad
   autoLoadInterstitialADSetLocalExtra() async {
     await ATInterstitialManager.autoLoadInterstitialADSetLocalExtra(
-      placementID: Configuration.autoInterstitialPlacementID,
+      placementID: Configuration.interstitial,
       extraMap: {
         ATInterstitialManager.kATAdShowCustomExtKey():
             '1234 auto show ins extra',

@@ -4,38 +4,72 @@ import 'package:secmtp_sdk/at_index.dart';
 import 'configuration_sdk.dart';
 import 'event_sdk.dart';
 
-final RewarderManager = RewarderTool();
+// final RewarderManager = RewarderTool();
+final summaryReward = RewarderTool(placementId: Configuration.summaryReward);
+final transcriptReward = RewarderTool(
+  placementId: Configuration.transcriptReward,
+);
 
 class RewarderTool {
-  RewarderTool() {
+  String placementId;
+  static bool _isListening = false;
+  static final Map<String, RewarderTool> _instances = {};
+  RewarderTool({required this.placementId}) {
+    _instances[placementId] = this;
+    if (!_isListening) {
+      _setupGlobalListener();
+      _isListening = true;
+    }
     //设置监听
-    rewardedAdListener();
+    // rewardedAdListener();
+  }
+
+  static void _setupGlobalListener() {
+    ATListenerManager.rewardedVideoEventHandler.listen((value) {
+      // Find the instance for this placement ID
+      final instance = _instances[value.placementID];
+      if (instance != null) {
+        instance._handleAdEvent(value);
+      }
+    });
+  }
+
+  void _handleAdEvent(value) {
+    // Your existing switch case logic
+    switch (value.rewardStatus) {
+      case RewardedStatus.rewardedVideoDidFailToLoad:
+        // Handle event for this specific placement
+        EventBusUtil.eventBus.fire(
+          AdEvent(placementId: placementId, type: AdEventType.failed),
+        );
+        break;
+      case RewardedStatus.rewardedVideoDidFinishLoading:
+        log(
+          "flutter rewardedVideoDidFinishLoading ---- placementID: ${value.placementID}",
+        );
+        checkReadyAndSendStatus(value.placementID);
+        break;
+    }
   }
 
   void startLoadRewardedVideoAd() async {
     loadRewardedVideo();
     EventBusUtil.eventBus.fire(
-      AdEvent(
-        placementId: Configuration.rewarderPlacementID,
-        type: AdEventType.loading,
-      ),
+      AdEvent(placementId: placementId, type: AdEventType.loading),
     );
   }
 
   void startShowRewardedVideoAd() async {
     //到达展示场景，展示前检查是否准备就绪
-    ATRewardedManager.rewardedVideoReady(
-      placementID: Configuration.rewarderPlacementID,
-    ).then((value) async {
+    ATRewardedManager.rewardedVideoReady(placementID: placementId).then((
+      value,
+    ) async {
       print('flutter rewardedVideoReady: $value');
       if (value == true) {
         //场景统计（可选）
-        entryRewardedVideoScenario(
-          Configuration.rewarderPlacementID,
-          Configuration.rewarderSceneID,
-        );
+        entryRewardedVideoScenario(placementId, Configuration.rewarderSceneID);
         //查看有效广告缓存(可选)
-        getRewardedVideoAdValidAds(Configuration.rewarderPlacementID);
+        getRewardedVideoAdValidAds(placementId);
         //开始展示
         showRewardedVideoAdWithShowConfig();
       } else {
@@ -43,13 +77,11 @@ class RewarderTool {
         //若加载失败，可在加载失败监听中重新发起加载。
         //若加载中，重复发起加载是无效的。
         //您可以根据实际逻辑来调整具体代码
-        int isLoading = await checkRewardedVideoAdLoadStatus(
-          Configuration.rewarderPlacementID,
-        );
+        int isLoading = await checkRewardedVideoAdLoadStatus(placementId);
         if (isLoading == 1) {
-          print('广告正在加载中... + ${Configuration.rewarderPlacementID}');
+          print('广告正在加载中... + $placementId');
         } else {
-          print('广告还没加载，发起加载 + ${Configuration.rewarderPlacementID}');
+          print('广告还没加载，发起加载 + $placementId');
           startLoadRewardedVideoAd();
         }
       }
@@ -64,41 +96,34 @@ class RewarderTool {
     //开始加载
     autoLoadRewardedVideo();
     EventBusUtil.eventBus.fire(
-      AdEvent(
-        placementId: Configuration.autoRewarderPlacementID,
-        type: AdEventType.loading,
-      ),
+      AdEvent(placementId: placementId, type: AdEventType.loading),
     );
   }
 
   //全自动加载广告展示
   startShowAutoLoadRewardedVideoAd() async {
     //到达展示场景，展示前检查是否准备就绪
-    ATRewardedManager.rewardedVideoReady(
-      placementID: Configuration.autoRewarderPlacementID,
-    ).then((value) async {
+    ATRewardedManager.rewardedVideoReady(placementID: placementId).then((
+      value,
+    ) async {
       print('flutter rewardedVideoReady: $value');
       if (value == true) {
         //场景统计（可选）
         entryRewardedVideoScenario(
-          Configuration.autoRewarderPlacementID,
+          placementId,
           Configuration.autoRewarderSceneID,
         );
         //全自动加载激励视频设置展示时透传参数（可选）
         autoLoadRewardedVideoSetLocalExtra();
         //检查状态（可选）
-        int isLoading = await checkRewardedVideoAdLoadStatus(
-          Configuration.autoRewarderPlacementID,
-        );
-        print(
-          '全自动激励视频广告加载状态 + $isLoading + "placementID :" + ${Configuration.autoRewarderPlacementID}',
-        );
+        int isLoading = await checkRewardedVideoAdLoadStatus(placementId);
+        print('全自动激励视频广告加载状态 + $isLoading + "placementID :" + $placementId');
         //查看缓存（可选）
-        getRewardedVideoAdValidAds(Configuration.autoRewarderPlacementID);
+        getRewardedVideoAdValidAds(placementId);
         //已经准备就绪，开始展示
         showAutoLoadRewardedVideoAD();
       } else {
-        print('广告正在全自动加载中... + ${Configuration.autoRewarderPlacementID}');
+        print('广告正在全自动加载中... + $placementId');
       }
     });
   }
@@ -250,7 +275,7 @@ class RewarderTool {
   //加载广告
   loadRewardedVideo() async {
     await ATRewardedManager.loadRewardedVideo(
-      placementID: Configuration.rewarderPlacementID,
+      placementID: placementId,
       extraMap: {
         //如果需要通过开发者的服务器进行奖励的下发（部分广告平台支持此服务器激励），则需要传递下面两个key
         //您可以自定义value内容，但需要保证是字符串类型。例如json字符串。
@@ -295,23 +320,21 @@ class RewarderTool {
 
   //展示广告
   showRewardedVideoAd() async {
-    await ATRewardedManager.showRewardedVideo(
-      placementID: Configuration.rewarderPlacementID,
-    );
+    await ATRewardedManager.showRewardedVideo(placementID: placementId);
   }
 
   //展示广告，带场景ID
   showSceneRewardedAd() async {
     await ATRewardedManager.showSceneRewardedVideo(
       sceneID: Configuration.rewarderSceneID,
-      placementID: Configuration.rewarderPlacementID,
+      placementID: placementId,
     );
   }
 
   //展示广告，带sceneID：TopOn/Taku 后台的场景ID，showCustomExt展示时的透传参数
   showRewardedVideoAdWithShowConfig() async {
     await ATRewardedManager.showRewardedVideoWithShowConfig(
-      placementID: Configuration.rewarderPlacementID,
+      placementID: placementId,
       sceneID: Configuration.rewarderSceneID,
       showCustomExt: Configuration.rewardedShowCustomExt,
     );
@@ -325,21 +348,19 @@ class RewarderTool {
   }
 
   autoLoadRewardedVideo() async {
-    await ATRewardedManager.autoLoadRewardedVideo(
-      placementIDs: Configuration.autoRewarderPlacementID,
-    );
+    await ATRewardedManager.autoLoadRewardedVideo(placementIDs: placementId);
   }
 
   cancelAutoLoadRewardedVideo() async {
     await ATRewardedManager.cancelAutoLoadRewardedVideo(
-      placementIDs: Configuration.autoRewarderPlacementID,
+      placementIDs: placementId,
     );
   }
 
   //展示全自动加载的广告
   showAutoLoadRewardedVideoAD() async {
     await ATRewardedManager.showAutoLoadRewardedVideoAD(
-      placementID: Configuration.autoRewarderPlacementID,
+      placementID: placementId,
       sceneID: Configuration.autoRewarderSceneID,
     );
   }
@@ -348,7 +369,7 @@ class RewarderTool {
   // Set local extra information for auto-loaded ad
   autoLoadRewardedVideoSetLocalExtra() async {
     await ATRewardedManager.autoLoadRewardedVideoSetLocalExtra(
-      placementID: Configuration.autoRewarderPlacementID,
+      placementID: placementId,
       extraMap: {
         ATRewardedManager.kATAdLoadingExtraUserDataKeywordKey():
             '1234 auto show rv extra',

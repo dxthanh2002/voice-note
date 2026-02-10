@@ -1,25 +1,13 @@
 import 'dart:io';
 
 class Configuration {
-  static String appidStr = Platform.isIOS ? 'a5b0e8491845b3' : 'a62b013be01931';
+  static String appidStr = 'h697c2a0d45144';
+  static String appidkeyStr = 'a9066bb9ca581fd1c0ad828b68faf8d7a';
 
-  static String appidkeyStr = Platform.isIOS
-      ? '7eae0567827cfe2b22874061763f30c9'
-      : 'c3d0d2a9a9d451b07e62b509659f7c97';
+  static String summaryReward = 'n697c2a3480a4d';
+  static String transcriptReward = 'n697c2a33996b6';
 
-  static String rewarderPlacementID = Platform.isIOS
-      ? 'b5b72b21184aa8'
-      : 'b62ecb800e1f84';
-  static String autoRewarderPlacementID = Platform.isIOS
-      ? 'b62fe22b92bb41'
-      : 'b62ecb800e1f84';
-
-  static String interstitialPlacementID = Platform.isIOS
-      ? 'b5bacad26a752a'
-      : 'b62b028b61c800';
-  static String autoInterstitialPlacementID = Platform.isIOS
-      ? 'b62fe22e06dd64'
-      : 'b62b028b61c800';
+  static String interstitial = 'n697c2a34cf827';
 
   static String bannerPlacementID = Platform.isIOS
       ? 'b5bacaccb61c29'
