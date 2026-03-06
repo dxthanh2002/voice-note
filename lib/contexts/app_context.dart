@@ -1,6 +1,9 @@
+import 'package:aimateflutter/utils/constants.dart';
 import 'package:flutter/foundation.dart';
 
 import '../services/api.dart';
+import '../services/device.dart';
+import '../services/repository.dart';
 import '../services/storage.dart';
 import '../utils/console.dart';
 
@@ -19,22 +22,51 @@ class AppService extends ChangeNotifier {
   Future<void> init() async {
     if (_booted) return;
 
-    final storedToken = await StorageService.get(AppStorageKeys.accessToken);
-    final isNewUser =
-        await StorageService.get(AppStorageKeys.isNewUser) == 'true';
+    final bool success = await loginDevice();
 
-    if (storedToken != null && !isNewUser) {
-      Console.log("TEST: $storedToken");
-      api.options.headers['Authorization'] = "Bearer $storedToken";
-
-      _onboarded = true;
+    if (success) {
+      Console.log("success");
     } else {
-      api.options.headers['Authorization'] = "Bearer $storedToken";
-      _onboarded = false;
+      Console.log("fail to login");
     }
 
+    // final storedToken = await StorageService.get(AppStorageKeys.accessToken);
+    // final isNewUser =
+    //     await StorageService.get(AppStorageKeys.isNewUser) == 'true';
+
+    // if (storedToken != null && !isNewUser) {
+    //   Console.log("TEST: $storedToken");
+    //   api.options.headers['Authorization'] = "Bearer $storedToken";
+
+    //   _onboarded = true;
+    // } else {
+    //   // api.options.headers['Authorization'] = "Bearer $storedToken";
+    //   _onboarded = false;
+    // }
+
     _booted = true;
+    _onboarded = true;
     notifyListeners();
+  }
+
+  static Future<bool> loginDevice() async {
+    try {
+      final deviceId = await DeviceService.getId();
+      final platform = DeviceService.getPlatform();
+      final response = await Repository.login(deviceId, platform, APP_CODE);
+
+      final accessToken = response.accessToken;
+
+      if (accessToken != null && accessToken.isNotEmpty) {
+        api.options.headers['token'] = accessToken;
+
+        return true;
+      }
+      return false;
+    } catch (e) {
+      Console.error("loginDevice failed: $e");
+      return false;
+    }
   }
 
   Future<void> completeOnboarding() async {

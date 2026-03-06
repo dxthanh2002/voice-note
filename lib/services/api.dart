@@ -62,7 +62,7 @@ class LoggingInterceptor extends Interceptor {
     try {
       await StorageService.remove(AppStorageKeys.accessToken);
 
-      final deviceId = await DeviceService.getDeviceId();
+      final deviceId = await DeviceService.getId();
       final platform = DeviceService.getPlatform();
 
       final response = await Repository.login(deviceId, platform, APP_CODE);

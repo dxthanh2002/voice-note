@@ -6,7 +6,7 @@ import 'repository.dart';
 class DeviceService {
   static final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
 
-  static Future<String> getDeviceId() async {
+  static Future<String> getId() async {
     if (Platform.isAndroid) {
       final info = await _deviceInfo.androidInfo;
       return info.id;
@@ -27,7 +27,7 @@ class DeviceService {
   }
 
   static Future<LoginResponse> login(String appCode) async {
-    final deviceId = await DeviceService.getDeviceId();
+    final deviceId = await DeviceService.getId();
     final platform = DeviceService.getPlatform();
 
     final response = await Repository.login(deviceId, platform, appCode);
