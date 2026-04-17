@@ -18,15 +18,23 @@ class _SettingsTabState extends State<SettingsTab> {
   // bool _noiseFilter = true;
   // bool _autoSummarize = false;
 
-  Future<void> _openPrivacyPolicy() async {
+  Future<void> _openTermsOfService() async {
     final uri = Uri.parse('https://nesailab.com/tos');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Unable to open link.')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open link.')),
+      );
+    }
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    final uri = Uri.parse('https://nesailab.com/privacy');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open link.')),
+      );
     }
   }
 
@@ -176,6 +184,11 @@ class _SettingsTabState extends State<SettingsTab> {
                     icon: Icons.help,
                     title: 'Help & Feedback',
                     onTap: _openHelpCenter,
+                  ),
+                  _SettingsItem(
+                    icon: Icons.description,
+                    title: 'Terms of Service',
+                    onTap: _openTermsOfService,
                   ),
                   _SettingsItem(
                     icon: Icons.gavel,
