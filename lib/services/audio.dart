@@ -49,44 +49,13 @@ class AudioService {
   /// Get the recordings directory path
   /// Path: /storage/emulated/0/Recordings/Recapit/
   static Future<String> getRecordingsDirectory() async {
-    if (Platform.isAndroid) {
-      // Try to get public Recordings directory
-      final dirs = await getExternalStorageDirectories(
-        type: StorageDirectory.music,
-      );
-
-      if (dirs != null && dirs.isNotEmpty) {
-        // dirs.first is like /storage/emulated/0/Android/data/[package]/files/Music
-        // We need to get /storage/emulated/0/Recordings/Recapit
-        final basePath = dirs.first.path.split('/Android/data').first;
-        final recordingsDir = p.join(basePath, 'Recordings', 'Recapit');
-
-        debugPrint('Creating recordings directory: $recordingsDir');
-
-        final dir = Directory(recordingsDir);
-        if (!await dir.exists()) {
-          await dir.create(recursive: true);
-        }
-        return recordingsDir;
-      }
-
-      // Fallback: use external storage directory
-      final extDir = await getExternalStorageDirectory();
-      if (extDir != null) {
-        final basePath = extDir.path.split('/Android/data').first;
-        final recordingsDir = p.join(basePath, 'Recordings', 'Recapit');
-
-        final dir = Directory(recordingsDir);
-        if (!await dir.exists()) {
-          await dir.create(recursive: true);
-        }
-        return recordingsDir;
-      }
-    }
-
-    // iOS or final fallback
+    // We use getApplicationDocumentsDirectory() for all platforms to ensure
+    // consistent behavior and avoid Scoped Storage restrictions on Android 10+.
     final directory = await getApplicationDocumentsDirectory();
     final recordingsDir = p.join(directory.path, 'Recordings');
+
+    debugPrint('Creating recordings directory: $recordingsDir');
+
     final dir = Directory(recordingsDir);
     if (!await dir.exists()) {
       await dir.create(recursive: true);
@@ -313,9 +282,10 @@ class AudioService {
     _ampSubscription = null;
   }
 
-  /// Convert dBFS [-60..0] to normalized [0..1]
+  /// Convert dBFS [-80..0] to normalized [0..1]
   double _dbToNormalized(double db) {
-    const minDb = -60.0;
+    // Lowered floor to -80.0 to capture quieter input on various hardware
+    const minDb = -80.0;
     final clamped = db.clamp(minDb, 0.0);
     return (clamped - minDb) / (0.0 - minDb);
   }

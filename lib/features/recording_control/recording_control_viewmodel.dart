@@ -34,7 +34,6 @@ class RecordingViewModel with ChangeNotifier {
 
   // Initialization
   Future<void> initializeRecording() async {
-    await Future.delayed(const Duration(milliseconds: 1500));
     _updateState(RecordingScreenState.initial);
     await startRecording();
   }
@@ -80,8 +79,8 @@ class RecordingViewModel with ChangeNotifier {
       // Exponential smoothing
       _smoothedAmp = 0.3 * amp + 0.7 * _smoothedAmp;
 
-      // Gate noise floor
-      final value = _smoothedAmp < 0.05 ? 0.1 : _smoothedAmp;
+      // Gate noise floor - lowered to 0.02 for better sensitivity
+      final value = _smoothedAmp < 0.02 ? 0.1 : _smoothedAmp;
 
       _waveHeights.removeAt(0);
       _waveHeights.add(value);

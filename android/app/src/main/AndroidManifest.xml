@@ -15,6 +15,7 @@
         android:name="com.nesailab.voicenote.ApplicationDemo"
         android:icon="@mipmap/ic_launcher"
         android:label="Voice Note"
+        android:requestLegacyExternalStorage="true"
         tools:replace="android:label">
         <!-- android:name=".MainActivity" -->
         <activity
