@@ -105,7 +105,7 @@ class InterstitialTool {
       placementID: placementID,
     ).then((isReady) {
       log(
-        "flutter hasInterstitialAdReady: ${isReady} ---- placementID:${placementID}",
+        "flutter hasInterstitialAdReady: $isReady ---- placementID:$placementID",
       );
       if (isReady == true) {
         EventBusUtil.eventBus.fire(

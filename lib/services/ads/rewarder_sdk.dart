@@ -134,7 +134,7 @@ class RewarderTool {
       isReady,
     ) {
       print(
-        "flutter rewardedVideoReady: ${isReady} ---- placementID:${placementID}",
+        "flutter rewardedVideoReady: $isReady ---- placementID:$placementID",
       );
       if (isReady == true) {
         EventBusUtil.eventBus.fire(

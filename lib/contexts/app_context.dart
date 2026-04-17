@@ -57,7 +57,7 @@ class AppService extends ChangeNotifier {
 
       final accessToken = response.accessToken;
 
-      if (accessToken != null && accessToken.isNotEmpty) {
+      if (accessToken.isNotEmpty) {
         api.options.headers['token'] = accessToken;
 
         return true;

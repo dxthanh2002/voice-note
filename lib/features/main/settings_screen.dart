@@ -329,9 +329,7 @@ class _SettingsItem {
   const _SettingsItem({
     required this.icon,
     required this.title,
-    this.subtitle,
     this.onTap,
-    this.trailing,
   });
 
   final IconData icon;

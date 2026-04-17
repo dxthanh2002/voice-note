@@ -4,10 +4,8 @@ import 'package:aimateflutter/services/database.dart';
 import 'package:aimateflutter/services/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 
 import '../components/dialogs/delete_dialog.dart';
-import '../features/home/recordings_viewmodel.dart';
 import '../utils/console.dart';
 
 class RecordingService {

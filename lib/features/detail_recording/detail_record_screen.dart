@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../theme/colors.dart';
-import '../../utils/console.dart';
 // TODO: Uncomment when Chat AI feature is ready
 // import 'tabs/chat_ai_tab.dart';
 import 'detai_record_viewmodel.dart';

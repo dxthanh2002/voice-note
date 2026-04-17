@@ -60,7 +60,7 @@ class RecordingsViewModel extends ChangeNotifier {
       Console.log("LOADING RECORDINGS");
 
       final recordings = await DatabaseService().searchRecordings(_searchTitle);
-      if (recordings.length != 0) {
+      if (recordings.isNotEmpty) {
         for (var recording in recordings) {
           Console.log("${recording.title} STATUS: ${recording.status}");
           Console.log("ID: ${recording.meetingId}");
