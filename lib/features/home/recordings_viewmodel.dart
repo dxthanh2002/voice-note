@@ -123,17 +123,15 @@ class RecordingsViewModel extends ChangeNotifier {
   }
 
   // ============ Recording Actions ============
-  void navigateToRecordingDetail(BuildContext context, String meetingId) async {
+  Future<void> navigateToRecordingDetail(BuildContext context, String meetingId) async {
     HapticFeedback.selectionClick();
-    final result = await Navigator.pushNamed(
+    await Navigator.pushNamed(
       context,
       AppRoutes.recordDetail,
       arguments: meetingId,
     );
 
-    if (result == true) {
-      await loadRecordings();
-    }
+    await loadRecordings();
   }
 
   Future<void> deleteRecording(BuildContext context, String meetingId) async {

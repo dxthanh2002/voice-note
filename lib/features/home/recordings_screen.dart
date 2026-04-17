@@ -431,8 +431,9 @@ class _RecordingsScreenContent extends StatelessWidget {
       );
 
       if (meetingId != null && meetingId is String && context.mounted) {
-        viewModel.navigateToRecordingDetail(context, meetingId);
+        await viewModel.navigateToRecordingDetail(context, meetingId);
       }
+      viewModel.loadRecordings();
     }
   }
 }
@@ -473,27 +474,26 @@ class RecordingCard extends StatelessWidget {
             '${meeting.title}, recorded on ${formatDate(meeting.recordedAt)}, duration ${formatDurationFromSeconds(meeting.duration)}, status ${_getStatusText()}',
         child: Material(
           color: AppColors.cardDark,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(16),
           child: InkWell(
             onTap: () {
               HapticFeedback.selectionClick();
               onTap();
             },
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(16),
             child: Container(
-              padding: const EdgeInsets.all(22),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
 
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildMainRow(context),
-                  const SizedBox(height: 20),
-
-                  _buildFooterRow(),
+                  const SizedBox(height: 8),
+                  _buildStatusBadge(),
                 ],
               ),
             ),
@@ -508,15 +508,15 @@ class RecordingCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 48,
-          height: 48,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(
             Icons.audio_file,
-            size: 24,
+            size: 20,
             color: AppColors.primary,
           ),
         ),
@@ -567,9 +567,7 @@ class RecordingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFooterRow() {
-    return Row(children: [_buildStatusBadge()]);
-  }
+
 
   Widget _buildOptionsMenu() {
     return PopupMenuButton<String>(
@@ -652,7 +650,7 @@ class RecordingCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
 
       decoration: BoxDecoration(
         color: bgColor,
