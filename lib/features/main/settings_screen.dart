@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../navigation/routes.dart';
 import '../../theme/colors.dart';
 
 class SettingsTab extends StatefulWidget {
@@ -329,7 +327,9 @@ class _SettingsItem {
   const _SettingsItem({
     required this.icon,
     required this.title,
+    this.subtitle,
     this.onTap,
+    this.trailing,
   });
 
   final IconData icon;
