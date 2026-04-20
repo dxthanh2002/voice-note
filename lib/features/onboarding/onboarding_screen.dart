@@ -18,12 +18,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<OnboardingStep> _steps = [
     OnboardingStep(
-      title: 'Ask anything',
-      subtitle: 'Ask AI anything about your meetings and get instant answers',
-      icon: Icons.forum_outlined,
-      buttonText: 'Get Started',
-    ),
-    OnboardingStep(
       title: 'Record effortlessly',
       subtitle: 'Capture any conversation with one tap',
       icon: Icons.mic_none_outlined,
@@ -34,6 +28,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       subtitle: 'Turn long conversations into clear summaries, key points, and decisions in seconds',
       icon: Icons.description_outlined,
       buttonText: 'Continue',
+    ),
+    OnboardingStep(
+      title: 'Ask anything',
+      subtitle: 'Ask AI anything about your meetings and get instant answers',
+      icon: Icons.forum_outlined,
+      buttonText: 'Get Started',
     ),
   ];
 
@@ -85,25 +85,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               children: [
                 // Header Shell
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        context.read<AppService>().completeOnboarding();
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: onSurfaceVariant,
-                      ),
-                      child: const Text(
-                        'Skip',
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'AI Voice Note',
                         style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                    ),
+                      TextButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          context.read<AppService>().completeOnboarding();
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: onSurfaceVariant,
+                        ),
+                        child: const Text(
+                          'Skip',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -121,91 +131,97 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Hero Visual Section
-                          Center(
-                            child: Stack(
-                              alignment: Alignment.center,
-                              clipBehavior: Clip.none,
-                              children: [
-                                // Background Radial Glow
-                                Container(
-                                  width: 256,
-                                  height: 256,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: RadialGradient(
-                                      colors: [
-                                        primary.withValues(alpha: 0.15),
-                                        primary.withValues(alpha: 0),
+                          // Fixed height Hero Section to prevent jumping
+                          SizedBox(
+                            height: 320,
+                            child: Center(
+                              child: Stack(
+                                alignment: Alignment.center,
+                                clipBehavior: Clip.none,
+                                children: [
+                                  // Background Radial Glow
+                                  Container(
+                                    width: 256,
+                                    height: 256,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: RadialGradient(
+                                        colors: [
+                                          primary.withValues(alpha: 0.15),
+                                          primary.withValues(alpha: 0),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Floating Icon Container
+                                  Container(
+                                    width: 128,
+                                    height: 128,
+                                    decoration: BoxDecoration(
+                                      color: surfaceContainer,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: primary.withValues(alpha: 0.2),
+                                        width: 1,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: primary.withValues(alpha: 0.15),
+                                          blurRadius: 80,
+                                          spreadRadius: 10,
+                                        ),
                                       ],
                                     ),
-                                  ),
-                                ),
-
-                                // Floating Icon Container
-                                Container(
-                                  width: 128,
-                                  height: 128,
-                                  decoration: BoxDecoration(
-                                    color: surfaceContainer,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: primary.withValues(alpha: 0.2),
-                                      width: 1,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: primary.withValues(alpha: 0.15),
-                                        blurRadius: 80,
-                                        spreadRadius: 10,
+                                    child: Center(
+                                      child: Icon(
+                                        step.icon,
+                                        color: primary,
+                                        size: 64,
                                       ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      step.icon,
-                                      color: primary,
-                                      size: 64,
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
 
-                          const SizedBox(height: 64),
+                          const SizedBox(height: 29),
 
-                          // Typography Content
+                          // Typography Content - Unified fixed height container
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 32),
-                            child: Column(
-                              children: [
-                                Text(
-                                  step.title,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: -0.5,
-                                    height: 1.2,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 300),
-                                  child: Text(
-                                    step.subtitle,
+                            child: SizedBox(
+                              height: 140, // Fixed total height for the text area
+                              child: Column(
+                                children: [
+                                  Text(
+                                    step.title,
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
-                                      color: onSurfaceVariant,
-                                      fontSize: 16,
-                                      height: 1.5,
-                                      fontWeight: FontWeight.w400,
+                                      color: Colors.white,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.5,
+                                      height: 1.1,
                                     ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 2), // Very small gap
+                                  ConstrainedBox(
+                                    constraints: const BoxConstraints(maxWidth: 300),
+                                    child: Text(
+                                      step.subtitle,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: onSurfaceVariant,
+                                        fontSize: 14,
+                                        height: 1.5,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
