@@ -45,7 +45,7 @@ class AppService extends ChangeNotifier {
     // }
 
     _booted = true;
-    _onboarded = true;
+    _onboarded = false;
     notifyListeners();
   }
 
